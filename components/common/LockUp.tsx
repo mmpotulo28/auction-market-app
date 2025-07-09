@@ -1,7 +1,9 @@
 import { Colors } from "@/constants/Colors";
 import { iLockUpProps, iSize } from "@/lib/types";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet } from "react-native";
+import { ThemedText } from "../ThemedText";
+import { ThemedView } from "../ThemedView";
 
 const truncate = (text?: string) => {
 	if (!text) return "";
@@ -16,21 +18,26 @@ const LockUp: React.FC<iLockUpProps> = ({
 	centered = false,
 	bold = false,
 }) => (
-	<View style={[styles.lockup, centered && styles.centered]}>
-		{overline ? (
-			<Text style={[styles.overline, bold && styles.bold]}>{truncate(overline)}</Text>
-		) : null}
-		<Text style={[styles.title, bold && styles.bold]}>{truncate(title)}</Text>
-		{subtitle ? (
-			<Text style={[styles.subtitle, bold && styles.bold]}>{truncate(subtitle)}</Text>
-		) : null}
-	</View>
+	<ThemedView style={[styles.lockup, centered && styles.centered]}>
+		{overline && (
+			<ThemedText style={[styles.overline, bold && styles.bold]}>
+				{truncate(overline)}
+			</ThemedText>
+		)}
+		<ThemedText style={[styles.title, bold && styles.bold]}>{truncate(title)}</ThemedText>
+		{subtitle && (
+			<ThemedText style={[styles.subtitle, bold && styles.bold]}>
+				{truncate(subtitle)}
+			</ThemedText>
+		)}
+	</ThemedView>
 );
 
 const styles = StyleSheet.create({
 	lockup: {
 		flexDirection: "column",
 		marginBottom: 12,
+		backgroundColor: "transparent",
 	},
 	centered: {
 		alignItems: "center",
@@ -49,12 +56,11 @@ const styles = StyleSheet.create({
 	title: {
 		fontSize: 24,
 		fontWeight: "bold",
-		color: "#222",
 		marginBottom: 2,
 	},
 	subtitle: {
 		fontSize: 16,
-		color: "#555",
+		color: "#ddd",
 	},
 });
 

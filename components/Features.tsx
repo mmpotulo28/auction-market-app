@@ -1,7 +1,8 @@
 import { Colors } from "@/constants/Colors";
 import { Clock, ShieldCheck, Sparkles, User2 } from "lucide-react-native";
 import React from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, View } from "react-native";
+import { ThemedText } from "./ThemedText";
 
 const styles = StyleSheet.create({
 	section: {
@@ -9,8 +10,6 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 16,
 	},
 	heading: {
-		fontSize: 28,
-		fontWeight: "bold",
 		textAlign: "center",
 		marginBottom: 24,
 	},
@@ -75,13 +74,15 @@ const features = [
 
 const Features = () => (
 	<View style={styles.section}>
-		<Text style={styles.heading}>Platform Features</Text>
+		<ThemedText type="title" style={styles.heading}>
+			Platform Features
+		</ThemedText>
 		<View style={styles.grid}>
 			{features.map((feature, idx) => (
 				<View key={feature.title} style={styles.card}>
 					{feature.icon}
-					<Text style={styles.cardTitle}>{feature.title}</Text>
-					<Text style={styles.cardDesc}>{feature.description}</Text>
+					<ThemedText style={styles.cardTitle}>{feature.title}</ThemedText>
+					<ThemedText style={styles.cardDesc}>{feature.description}</ThemedText>
 				</View>
 			))}
 		</View>

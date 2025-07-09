@@ -1,6 +1,9 @@
+import Divider from "@/components/Divider";
 import Features from "@/components/Features";
+import HowItWorks from "@/components/HowItWorks";
 import { ThemedView } from "@/components/ThemedView";
 import TopBanner from "@/components/TopBanner";
+import UpcomingAuctions from "@/components/UpcomingAuctions";
 import { ScrollView } from "react-native";
 
 export default function Index() {
@@ -22,6 +25,14 @@ export default function Index() {
 					subtitle="Join the auction now"
 					centered
 				/>
+
+				<Divider />
+				<UpcomingAuctions />
+
+				<Divider />
+				<HowItWorks />
+
+				<Divider />
 				<Features />
 			</ThemedView>
 		</ScrollView>

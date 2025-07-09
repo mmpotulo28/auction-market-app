@@ -2,7 +2,7 @@ import Actions from "@/components/common/Actions";
 import LockUp from "@/components/common/LockUp";
 import { iButtonProps, iLockUpProps, iSize } from "@/lib/types";
 import React from "react";
-import { Image, StyleSheet, View } from "react-native";
+import { Dimensions, Image, StyleSheet, View } from "react-native";
 
 export interface iTopBannerProps extends iLockUpProps {
 	action?: iButtonProps;
@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 24,
 		paddingVertical: 32,
 		width: "100%",
-		minHeight: 600,
+		minHeight: Dimensions.get("window").height, // or use Dimensions.get('window').height for full screen height
 	},
 	centerImage: {
 		width: 140,
