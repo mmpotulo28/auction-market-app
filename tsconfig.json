@@ -5,7 +5,28 @@
     "paths": {
       "@/*": [
         "./*"
-      ]
+      ],
+      "@/components/*": [
+        "./components/*"
+      ],
+      "@/hooks/*": [
+        "./hooks/*"
+      ],
+      "@/utils/*": [
+        "./utils/*"
+      ],
+      "@/constants/*": [
+        "./constants/*"
+      ],
+      "@/types/*": [
+        "./types/*"
+      ],
+      "@/screens/*": [
+        "./screens/*"
+      ],
+      "@/assets/*": [
+        "./assets/*"
+      ],
     }
   },
   "include": [

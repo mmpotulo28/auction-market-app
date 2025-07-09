@@ -1,7 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 
-export default function Index() {
+const SettingsScreen = () => {
 	return (
 		<ThemedView
 			style={{
@@ -9,7 +9,9 @@ export default function Index() {
 				justifyContent: "center",
 				alignItems: "center",
 			}}>
-			<ThemedText>Edit app/index.tsx to edit this screen.</ThemedText>
+			<ThemedText>Settings Screen</ThemedText>
 		</ThemedView>
 	);
-}
+};
+
+export default SettingsScreen;
