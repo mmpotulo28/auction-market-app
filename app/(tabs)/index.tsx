@@ -1,6 +1,7 @@
 import Divider from "@/components/Divider";
 import Features from "@/components/Features";
 import HowItWorks from "@/components/HowItWorks";
+import ShareApp from "@/components/ShareApp";
 import { ThemedView } from "@/components/ThemedView";
 import TopBanner from "@/components/TopBanner";
 import UpcomingAuctions from "@/components/UpcomingAuctions";
@@ -25,7 +26,7 @@ export default function Index() {
 					subtitle="Join the auction now"
 					centered
 				/>
-
+				<ShareApp />
 				<Divider />
 				<UpcomingAuctions />
 

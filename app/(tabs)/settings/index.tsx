@@ -1,5 +1,6 @@
 import AboutModal from "@/components/AboutModal";
 import PopupModal from "@/components/PopupModal";
+import ShareApp from "@/components/ShareApp";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
@@ -187,6 +188,13 @@ const SettingsScreen = () => {
 							</View>
 						</TouchableOpacity>
 					))}
+				</View>
+				<View style={styles.section}>
+					<ThemedText style={styles.sectionTitle}>Share the App</ThemedText>
+					<ThemedText style={styles.rowLabel}>
+						Help us spread the word! Share the app with your friends and family.
+					</ThemedText>
+					<ShareApp />
 				</View>
 
 				<View style={styles.section}>

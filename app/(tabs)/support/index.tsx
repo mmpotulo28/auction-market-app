@@ -1,3 +1,4 @@
+import ShareApp from "@/components/ShareApp";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
@@ -76,6 +77,9 @@ const SupportScreen = () => {
 						</TouchableOpacity>
 					))}
 				</View>
+
+				<ShareApp />
+
 				<View style={styles.footer}>
 					<ThemedText style={styles.footerText}>
 						For urgent support, email us at{" "}

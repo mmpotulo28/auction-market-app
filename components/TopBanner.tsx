@@ -65,7 +65,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 24,
 		paddingVertical: 32,
 		width: "100%",
-		minHeight: Dimensions.get("window").height, // or use Dimensions.get('window').height for full screen height
+		minHeight: Dimensions.get("window").height - 200, // or use Dimensions.get('window').height for full screen height
 	},
 	centerImage: {
 		width: 140,
