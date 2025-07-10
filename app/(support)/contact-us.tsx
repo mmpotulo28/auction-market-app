@@ -1,10 +1,12 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
+import { contactFormTemplate, contactFormUserConfirmationTemplate } from "@/lib/email_templates";
+import axios from "axios";
 import { Mail, MessageCircle, Phone, Send, Smile, Users } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-	Alert,
+	GestureResponderEvent,
 	KeyboardAvoidingView,
 	Platform,
 	ScrollView,
@@ -26,19 +28,72 @@ const ContactUsScreen = () => {
 		setForm((prev) => ({ ...prev, [key]: value }));
 	};
 
-	const handleSubmit = async () => {
-		if (!form.name || !form.email || !form.message) {
-			Alert.alert("Please fill in all fields.");
-			return;
-		}
+	const handleSubmit = async (event: GestureResponderEvent) => {
+		event.preventDefault();
 		setLoading(true);
+
 		try {
-			// Replace with your API call or email logic
-			await new Promise((res) => setTimeout(res, 1200));
-			Alert.alert("Message sent!", "We'll get back to you soon.");
-			setForm({ name: "", email: "", message: "" });
-		} catch (err) {
-			Alert.alert("Failed to send message.");
+			// Send support email
+			console.log("Sending contact form:", form);
+			const { data } = await axios.post(
+				"https://auctionmarket.tech/api/email/send",
+				{
+					to: "mpotulom28@gmail.com",
+					from: form.email,
+					subject: `Contact Form: ${form.name}`,
+					html: contactFormTemplate({
+						name: form.name,
+						email: form.email,
+						message: form.message,
+					}),
+					text: `Name: ${form.name}\nEmail: ${form.email}\nMessage:\n${form.message}`,
+				},
+				{
+					headers: {
+						Authorization: `Bearer ${process.env.EXPO_PUBLIC_EMAIL_API_KEY || ""}`,
+					},
+				},
+			);
+
+			// Send user confirmation email (do not block UI on error)
+			console.log("Sending user confirmation email:", form);
+			axios
+				.post(
+					"https://auctionmarket.tech/api/email/send",
+					{
+						to: form.email,
+						from: "support@auctionmarket.tech",
+						subject: "We've received your message at Auction Market SA",
+						html: contactFormUserConfirmationTemplate({
+							name: form.name,
+							email: form.email,
+							message: form.message,
+						}),
+						text: `Hi ${form.name},\n\nThank you for contacting Auction Market SA. We have received your message and will get back to you soon.\n\nYour message:\n${form.message}\n\nBest regards,\nAuction Market SA Team`,
+					},
+					{
+						headers: {
+							Authorization: `Bearer ${process.env.EXPO_PUBLIC_EMAIL_API_KEY || ""}`,
+						},
+					},
+				)
+				.catch((err) => {
+					// Sentry.captureException(err);
+					console.error("User confirmation email error:", err);
+				});
+
+			if (data.success) {
+				// toast.success("Message sent! We'll get back to you soon.");
+				setForm({ name: "", email: "", message: "" });
+			} else {
+				// Sentry.captureException(new Error(data.error || "Failed to send message."));
+				console.error("Contact form error:", data.error || "Failed to send message.");
+				// toast.error(data.error || "Failed to send message.");
+			}
+		} catch (err: any) {
+			// Sentry.captureException(err);
+			console.error("Contact form error:", err);
+			// toast.error(err?.response?.data?.error || err?.message || "Failed to send message.");
 		}
 		setLoading(false);
 	};
