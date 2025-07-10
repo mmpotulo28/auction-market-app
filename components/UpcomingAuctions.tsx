@@ -6,6 +6,7 @@ import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import Actions from "./common/Actions";
+import CountdownTimer from "./CountdownTimer";
 import { ThemedView } from "./ThemedView";
 
 // Replace this with your real fetchAuctions implementation
@@ -38,29 +39,6 @@ async function fetchAuctions(): Promise<iAuction[]> {
 		},
 	];
 }
-
-// Dummy TimerContainer
-const TimerContainer = ({ targetDate }: { targetDate: string }) => {
-	const [timeLeft, setTimeLeft] = useState<string>("");
-
-	useEffect(() => {
-		const interval = setInterval(() => {
-			const diff = new Date(targetDate).getTime() - Date.now();
-			if (diff <= 0) {
-				setTimeLeft("Started");
-				clearInterval(interval);
-			} else {
-				const h = Math.floor(diff / 3600000);
-				const m = Math.floor((diff % 3600000) / 60000);
-				const s = Math.floor((diff % 60000) / 1000);
-				setTimeLeft(`${h}h ${m}m ${s}s`);
-			}
-		}, 1000);
-		return () => clearInterval(interval);
-	}, [targetDate]);
-
-	return <Text style={styles.timerText}>{timeLeft}</Text>;
-};
 
 const UpcomingAuctions: React.FC = () => {
 	const router = useRouter();
@@ -112,8 +90,7 @@ const UpcomingAuctions: React.FC = () => {
 								{item.items_count} Items Available
 							</Text>
 							<View style={styles.timerRow}>
-								<Text style={styles.timerLabel}>Starts in:</Text>
-								<TimerContainer targetDate={item.start_time} />
+								<CountdownTimer targetDate={item.start_time} />
 							</View>
 							<Actions
 								actions={[
