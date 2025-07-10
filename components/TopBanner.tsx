@@ -1,6 +1,7 @@
 import Actions from "@/components/common/Actions";
 import LockUp from "@/components/common/LockUp";
 import { iButtonProps, iLockUpProps, iSize } from "@/lib/types";
+import { useRouter } from "expo-router";
 import React from "react";
 import { Dimensions, Image, StyleSheet, View } from "react-native";
 
@@ -29,6 +30,7 @@ const TopBanner: React.FC<iTopBannerProps> = ({
 	centered = false,
 	bold = false,
 }) => {
+	const router = useRouter();
 	return (
 		<View style={styles.topBanner}>
 			<Image
@@ -44,15 +46,21 @@ const TopBanner: React.FC<iTopBannerProps> = ({
 				centered={centered}
 				bold={bold}
 			/>
-			<Actions
-				actions={[
-					{
-						label: action?.label || "Get Started",
-						click: action?.click,
-					},
-				]}
-				fullWidth
-			/>
+			<View style={{ flexDirection: "row", gap: 12, width: "100%" }}>
+				<Actions
+					actions={[
+						{
+							label: action?.label || "Get Started",
+							click: action?.click,
+						},
+						{
+							label: "Sign Up",
+							click: () => router.push("/(auth)/sign-up"),
+						},
+					]}
+					fullWidth
+				/>
+			</View>
 		</View>
 	);
 };
