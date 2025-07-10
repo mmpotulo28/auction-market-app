@@ -1,44 +1,14 @@
 import LockUp from "@/components/common/LockUp";
 import Illustration from "@/components/Illustration";
 import { Colors } from "@/constants/Colors";
+import { fetchAuctions } from "@/lib/helpers";
 import { iAuction } from "@/lib/types";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { FlatList, StyleSheet, Text, View } from "react-native";
 import Actions from "./common/Actions";
-import CountdownTimer from "./CountdownTimer";
+import { CountdownTimer } from "./CountdownTimer";
 import { ThemedView } from "./ThemedView";
-
-// Replace this with your real fetchAuctions implementation
-async function fetchAuctions(): Promise<iAuction[]> {
-	// Simulate API delay
-	await new Promise((res) => setTimeout(res, 1200));
-	// Mock data
-	return [
-		{
-			id: "1",
-			name: "Spring Auction",
-			description: "A variety of spring items.",
-			start_time: new Date(Date.now() + 3600 * 1000).toISOString(),
-			duration: 3600,
-			created_by: "admin",
-			date_created: new Date().toISOString(),
-			items_count: 12,
-			re_open_count: 0,
-		},
-		{
-			id: "2",
-			name: "Summer Auction",
-			description: "Hot deals for summer.",
-			start_time: new Date(Date.now() + 7200 * 1000).toISOString(),
-			duration: 3600,
-			created_by: "admin",
-			date_created: new Date().toISOString(),
-			items_count: 8,
-			re_open_count: 0,
-		},
-	];
-}
 
 const UpcomingAuctions: React.FC = () => {
 	const router = useRouter();
@@ -48,7 +18,7 @@ const UpcomingAuctions: React.FC = () => {
 
 	useEffect(() => {
 		setIsLoading(true);
-		fetchAuctions()
+		fetchAuctions({ setIsLoading, onError: setError, onLoad: setAuctions })
 			.then((data) => {
 				setAuctions(data);
 				setIsLoading(false);

@@ -1,8 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
 
 const supabase = createClient(
-	process.env.NEXT_PUBLIC_SUPABASE_URL!,
-	process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+	process.env.EXPO_PUBLIC_SUPABASE_URL!,
+	process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY!,
 	{
 		auth: {
 			persistSession: true,
@@ -12,8 +12,8 @@ const supabase = createClient(
 );
 
 const supabaseAdmin = createClient(
-	process.env.NEXT_PUBLIC_SUPABASE_URL!,
-	process.env.NEXT_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!,
+	process.env.EXPO_PUBLIC_SUPABASE_URL!,
+	process.env.EXPO_PUBLIC_SUPABASE_SERVICE_ROLE_KEY!,
 );
 
 export { supabaseAdmin };

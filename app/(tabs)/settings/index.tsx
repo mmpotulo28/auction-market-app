@@ -45,6 +45,7 @@ const SettingsScreen = () => {
 		} catch (e) {
 			setShowClearModal(false);
 			Alert.alert("Error", "Failed to clear storage.");
+			console.error("Error clearing storage:", e);
 		}
 	};
 

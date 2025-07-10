@@ -49,55 +49,59 @@ export interface iFetchAuctions {
 
 /**
  * Fetches auction data from the `/api/auctions` endpoint.
- * Caches the result in a cookie for 5 minutes (client-side only).
+ * Uses a public API endpoint for native (mobile) and falls back to mock data if the network fails.
  */
 export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuctions) => {
 	try {
 		setIsLoading?.(true);
+		let data: iAuction[] = [];
+		const url = "https://auctionmarket.tech/api/auctions";
+		try {
+			const response = await fetch(url);
+			const text = await response.text();
+			data = JSON.parse(text);
+		} catch (err) {
+			console.error("Network error, using fallback mock data:", err);
+			// fallback mock data
+			data = [
+				{
+					id: "1",
+					name: "Mock Auction 1",
+					start_time: new Date(Date.now() + 1000 * 60 * 60).toISOString(),
+					created_by: "admin",
+					date_created: new Date().toISOString(),
+					description: "This is a mock auction for testing purposes.",
+					duration: 60, // in minutes
+					re_open_count: 0,
+					items_count: 10,
+				},
+				{
+					id: "2",
+					name: "Mock Auction 2",
+					start_time: new Date(Date.now() + 1000 * 60 * 120).toISOString(),
+					created_by: "admin",
+					date_created: new Date().toISOString(),
+					description: "This is another mock auction for testing purposes.",
+					duration: 120, // in minutes
+					re_open_count: 0,
+					items_count: 5,
+				},
+				{
+					id: "3",
+					name: "Mock Auction 3",
+					start_time: new Date(Date.now() + 1000 * 60 * 180).toISOString(),
+					created_by: "admin",
+					date_created: new Date().toISOString(),
+					description: "This is yet another mock auction for testing purposes.",
+					duration: 180, // in minutes
+					re_open_count: 0,
+					items_count: 15,
+				},
+			];
 
-		const cookieName = "auction_cache";
-		const cacheDuration = 1 * 60 * 1000; // 1 minute in ms
-
-		// Only cache on client side
-		if (typeof window !== "undefined") {
-			const cached = (() => {
-				try {
-					const match = document.cookie.match(
-						new RegExp("(^| )" + cookieName + "=([^;]+)"),
-					);
-					if (!match) return null;
-					const value = decodeURIComponent(match[2]);
-					const parsed = JSON.parse(value);
-					if (parsed && parsed.data && parsed.timestamp) {
-						if (Date.now() - parsed.timestamp < cacheDuration) {
-							return parsed.data;
-						}
-					}
-				} catch (error) {
-					// ignore parse errors
-					console.error("Failed to parse auction cache:", error);
-					return [];
-				}
-
-				return [];
-			})();
-
-			if (cached && cached.length > 0) {
-				console.log("auctions (cache):", cached);
-				onLoad?.(cached);
-				setIsLoading?.(false);
-				return cached;
-			}
-		}
-
-		const url = "/api/auctions";
-		const response = await fetch(url);
-		const data = (await response.json()) || [];
-
-		// Set cookie (client-side only)
-		if (typeof window !== "undefined") {
-			const cookieValue = encodeURIComponent(JSON.stringify({ data, timestamp: Date.now() }));
-			document.cookie = `${cookieName}=${cookieValue}; max-age=300; path=/`;
+			// onError?.(
+			// 	`Failed to fetch auctions: ${err instanceof Error ? err.message : "Network error"}`,
+			// );
 		}
 
 		onLoad?.(data);
