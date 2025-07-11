@@ -11,6 +11,7 @@ export const Colors = {
 		text: "#00132d",
 		background: "#f6faff",
 		secondary: "#eaf3fb", // darker shade of background
+		overlay: "#eaf3fba4",
 		tint: tintColorLight,
 		icon: "#000b28",
 		tabIconDefault: "#000b28",
@@ -68,6 +69,7 @@ export const Colors = {
 		primary: "#014b8b",
 		primaryForeground: "#e3f1fb",
 		secondary: "#00132d",
+		overlay: "#00132da8",
 		secondaryForeground: "#b7d2e6",
 		muted: "#00182a",
 		mutedForeground: "#8ea1b0",

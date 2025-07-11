@@ -6,6 +6,7 @@ import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
 	FlatList,
+	SafeAreaView,
 	StyleSheet,
 	Switch,
 	TouchableOpacity,
@@ -94,101 +95,107 @@ export default function NotificationsScreen() {
 	});
 
 	return (
-		<ThemedView style={styles.container}>
-			<View style={styles.headerRow}>
-				<View style={styles.headerLeft}>
-					<Bell size={28} color={Colors.light.tint} />
-					<ThemedText type="title" style={styles.heading}>
-						Notifications
-					</ThemedText>
-				</View>
-				<View style={styles.headerControls}>
-					<View style={styles.switchRow}>
-						<Switch
-							value={showOld}
-							onValueChange={setShowOld}
-							thumbColor={Colors.light.tint}
-							trackColor={{ false: "#e0eaff", true: Colors.light.tint }}
-						/>
-						<ThemedText style={styles.switchLabel}>
-							{showOld ? "Show Old" : "Show New"}
+		<SafeAreaView style={{ flex: 1, backgroundColor: Colors.light.background, paddingTop: 24 }}>
+			<ThemedView style={styles.container}>
+				<View style={styles.headerRow}>
+					<View style={styles.headerLeft}>
+						<Bell size={28} color={Colors.light.tint} />
+						<ThemedText type="title" style={styles.heading}>
+							Notifications
 						</ThemedText>
 					</View>
-					<TouchableOpacity
-						style={styles.refreshBtn}
-						onPress={fetchNotifications}
-						disabled={loading}
-						accessibilityLabel="Refresh notifications">
-						<RotateCcw size={22} color={Colors.light.tint} />
-					</TouchableOpacity>
-				</View>
-			</View>
-			{error && (
-				<View style={styles.errorCard}>
-					<XCircle size={20} color={Colors.light.destructive} />
-					<ThemedText style={styles.errorText}>{error}</ThemedText>
-				</View>
-			)}
-			<View style={styles.card}>
-				{loading ? (
-					<ActivityIndicator
-						size="large"
-						color={Colors.light.tint}
-						style={{ marginVertical: 32 }}
-					/>
-				) : filteredNotifications.length === 0 ? (
-					<View style={styles.emptyState}>
-						<Bell size={40} color={Colors.light.textMutedForeground} />
-						<ThemedText style={styles.emptyText}>No notifications found.</ThemedText>
+					<View style={styles.headerControls}>
+						<View style={styles.switchRow}>
+							<Switch
+								value={showOld}
+								onValueChange={setShowOld}
+								thumbColor={Colors.light.tint}
+								trackColor={{ false: "#e0eaff", true: Colors.light.tint }}
+							/>
+							<ThemedText style={styles.switchLabel}>
+								{showOld ? "Show Old" : "Show New"}
+							</ThemedText>
+						</View>
+						<TouchableOpacity
+							style={styles.refreshBtn}
+							onPress={fetchNotifications}
+							disabled={loading}
+							accessibilityLabel="Refresh notifications">
+							<RotateCcw size={22} color={Colors.light.tint} />
+						</TouchableOpacity>
 					</View>
-				) : (
-					<FlatList
-						data={filteredNotifications}
-						keyExtractor={(item) => item.id}
-						renderItem={({ item }) => (
-							<View
-								style={[
-									styles.notificationItem,
-									item.read ? styles.notificationRead : styles.notificationUnread,
-								]}>
-								<View style={styles.notificationIcon}>
-									{typeIcon[item.type] || typeIcon.default}
-								</View>
-								<View style={styles.notificationContent}>
-									<View style={styles.notificationMessageRow}>
-										<ThemedText style={styles.notificationMessage}>
-											{item.message}
-										</ThemedText>
-										{item.read && (
-											<CheckCircle2
-												size={18}
-												color="#22c55e"
-												style={{ marginLeft: 6 }}
-											/>
-										)}
-									</View>
-									<ThemedText style={styles.notificationDate}>
-										{item.created_at
-											? new Date(item.created_at).toLocaleString()
-											: "-"}
-									</ThemedText>
-								</View>
-								{!item.read && (
-									<TouchableOpacity
-										style={styles.markReadBtn}
-										onPress={() => markAsRead(item.id)}>
-										<ThemedText style={styles.markReadBtnText}>
-											Mark as read
-										</ThemedText>
-									</TouchableOpacity>
-								)}
-							</View>
-						)}
-						contentContainerStyle={{ paddingVertical: 8 }}
-					/>
+				</View>
+				{error && (
+					<View style={styles.errorCard}>
+						<XCircle size={20} color={Colors.light.destructive} />
+						<ThemedText style={styles.errorText}>{error}</ThemedText>
+					</View>
 				)}
-			</View>
-		</ThemedView>
+				<View style={styles.card}>
+					{loading ? (
+						<ActivityIndicator
+							size="large"
+							color={Colors.light.tint}
+							style={{ marginVertical: 32 }}
+						/>
+					) : filteredNotifications.length === 0 ? (
+						<View style={styles.emptyState}>
+							<Bell size={40} color={Colors.light.textMutedForeground} />
+							<ThemedText style={styles.emptyText}>
+								No notifications found.
+							</ThemedText>
+						</View>
+					) : (
+						<FlatList
+							data={filteredNotifications}
+							keyExtractor={(item) => item.id}
+							renderItem={({ item }) => (
+								<View
+									style={[
+										styles.notificationItem,
+										item.read
+											? styles.notificationRead
+											: styles.notificationUnread,
+									]}>
+									<View style={styles.notificationIcon}>
+										{typeIcon[item.type] || typeIcon.default}
+									</View>
+									<View style={styles.notificationContent}>
+										<View style={styles.notificationMessageRow}>
+											<ThemedText style={styles.notificationMessage}>
+												{item.message}
+											</ThemedText>
+											{item.read && (
+												<CheckCircle2
+													size={18}
+													color="#22c55e"
+													style={{ marginLeft: 6 }}
+												/>
+											)}
+										</View>
+										<ThemedText style={styles.notificationDate}>
+											{item.created_at
+												? new Date(item.created_at).toLocaleString()
+												: "-"}
+										</ThemedText>
+									</View>
+									{!item.read && (
+										<TouchableOpacity
+											style={styles.markReadBtn}
+											onPress={() => markAsRead(item.id)}>
+											<ThemedText style={styles.markReadBtnText}>
+												Mark as read
+											</ThemedText>
+										</TouchableOpacity>
+									)}
+								</View>
+							)}
+							contentContainerStyle={{ paddingVertical: 8 }}
+						/>
+					)}
+				</View>
+			</ThemedView>
+		</SafeAreaView>
 	);
 }
 

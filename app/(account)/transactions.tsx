@@ -6,7 +6,14 @@ import { iTransaction } from "@/lib/types";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye, Receipt, RotateCcw } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
-import { ActivityIndicator, FlatList, StyleSheet, TouchableOpacity, View } from "react-native";
+import {
+	ActivityIndicator,
+	FlatList,
+	SafeAreaView,
+	StyleSheet,
+	TouchableOpacity,
+	View,
+} from "react-native";
 
 const statusBadgeColor = (status: string) => {
 	switch (status.toLowerCase()) {
@@ -81,132 +88,142 @@ export default function TransactionsScreen() {
 	}, [fetchData]);
 
 	return (
-		<ThemedView style={styles.container}>
-			<View style={styles.headerRow}>
-				<ThemedText type="title" style={styles.heading}>
-					My Transactions
-				</ThemedText>
-				<TouchableOpacity
-					style={styles.refreshBtn}
-					onPress={fetchData}
-					disabled={loading}
-					accessibilityLabel="Refresh transactions">
-					<RotateCcw size={22} color={Colors.light.tint} />
-				</TouchableOpacity>
-			</View>
-			{error && (
-				<View style={styles.errorCard}>
-					<ThemedText style={styles.errorText}>{error}</ThemedText>
+		<SafeAreaView style={{ flex: 1, backgroundColor: Colors.light.background, paddingTop: 24 }}>
+			<ThemedView style={styles.container}>
+				<View style={styles.headerRow}>
+					<ThemedText type="title" style={styles.heading}>
+						My Transactions
+					</ThemedText>
+					<TouchableOpacity
+						style={styles.refreshBtn}
+						onPress={fetchData}
+						disabled={loading}
+						accessibilityLabel="Refresh transactions">
+						<RotateCcw size={22} color={Colors.light.tint} />
+					</TouchableOpacity>
 				</View>
-			)}
-			<View style={styles.card}>
-				{loading ? (
-					<ActivityIndicator
-						size="large"
-						color={Colors.light.tint}
-						style={{ marginVertical: 32 }}
-					/>
-				) : transactions.length === 0 ? (
-					<View style={styles.emptyState}>
-						<ThemedText style={styles.emptyText}>No transactions found.</ThemedText>
+				{error && (
+					<View style={styles.errorCard}>
+						<ThemedText style={styles.errorText}>{error}</ThemedText>
 					</View>
-				) : (
-					<FlatList
-						data={transactions}
-						keyExtractor={(item) => item.pf_payment_id}
-						renderItem={({ item }) => {
-							const badge = statusBadgeColor(item.payment_status);
-							return (
-								<LinearGradient
-									colors={["#f6faff", "#eaf3fb"]}
-									start={{ x: 0, y: 0 }}
-									end={{ x: 1, y: 1 }}
-									style={styles.txCardGradient}>
-									<View style={styles.txItem}>
-										<View style={styles.txHeader}>
-											<View style={styles.txHeaderLeft}>
-												<Receipt size={22} color={Colors.light.tint} />
-												<ThemedText style={styles.txIdText}>
-													{item.m_payment_id || item.pf_payment_id}
-												</ThemedText>
-											</View>
-											<TouchableOpacity
-												onPress={() => setSelectedTransaction(item)}
-												style={styles.eyeBtn}
-												accessibilityLabel="View Receipt">
-												<Eye size={20} color={Colors.light.tint} />
-											</TouchableOpacity>
-										</View>
-										<View style={styles.txDetailsRow}>
-											<ThemedText style={styles.txLabel}>Date:</ThemedText>
-											<ThemedText style={styles.txValue}>
-												{item.created_at
-													? new Date(item.created_at).toLocaleString()
-													: "-"}
-											</ThemedText>
-										</View>
-										<View style={styles.txDetailsRow}>
-											<ThemedText style={styles.txLabel}>Status:</ThemedText>
-											<View
-												style={[
-													styles.statusBadge,
-													{ backgroundColor: badge.backgroundColor },
-												]}>
-												<ThemedText
-													style={[
-														styles.statusBadgeText,
-														{ color: badge.color },
-													]}>
-													{item.payment_status}
-												</ThemedText>
-											</View>
-										</View>
-										<View style={styles.txDetailsRow}>
-											<ThemedText style={styles.txLabel}>Item:</ThemedText>
-											<ThemedText style={styles.txValue}>
-												{item.item_name}
-											</ThemedText>
-										</View>
-										<View style={styles.txDetailsRow}>
-											<ThemedText style={styles.txLabel}>Net:</ThemedText>
-											<ThemedText style={styles.txValue}>
-												R {Number(item.amount_net).toFixed(2)}
-											</ThemedText>
-										</View>
-										<View style={styles.txDetailsRow}>
-											<ThemedText style={styles.txLabel}>Fee:</ThemedText>
-											<ThemedText style={styles.txValue}>
-												R {Math.abs(Number(item.amount_fee)).toFixed(2)}
-											</ThemedText>
-										</View>
-										<View style={styles.txDetailsRow}>
-											<ThemedText style={styles.txLabel}>Total:</ThemedText>
-											<ThemedText style={styles.txValue}>
-												R {Number(item.amount_gross).toFixed(2)}
-											</ThemedText>
-										</View>
-									</View>
-								</LinearGradient>
-							);
-						}}
-						contentContainerStyle={{ paddingVertical: 8 }}
-					/>
 				)}
-			</View>
-			<ReceiptModal
-				transaction={selectedTransaction!}
-				visible={!!selectedTransaction}
-				onClose={() => setSelectedTransaction(null)}
-			/>
-		</ThemedView>
+				<View style={styles.card}>
+					{loading ? (
+						<ActivityIndicator
+							size="large"
+							color={Colors.light.tint}
+							style={{ marginVertical: 32 }}
+						/>
+					) : transactions.length === 0 ? (
+						<View style={styles.emptyState}>
+							<ThemedText style={styles.emptyText}>No transactions found.</ThemedText>
+						</View>
+					) : (
+						<FlatList
+							data={transactions}
+							keyExtractor={(item) => item.pf_payment_id}
+							renderItem={({ item }) => {
+								const badge = statusBadgeColor(item.payment_status);
+								return (
+									<LinearGradient
+										colors={["#f6faff", "#eaf3fb"]}
+										start={{ x: 0, y: 0 }}
+										end={{ x: 1, y: 1 }}
+										style={styles.txCardGradient}>
+										<View style={styles.txItem}>
+											<View style={styles.txHeader}>
+												<View style={styles.txHeaderLeft}>
+													<Receipt size={22} color={Colors.light.tint} />
+													<ThemedText style={styles.txIdText}>
+														{item.m_payment_id || item.pf_payment_id}
+													</ThemedText>
+												</View>
+												<TouchableOpacity
+													onPress={() => setSelectedTransaction(item)}
+													style={styles.eyeBtn}
+													accessibilityLabel="View Receipt">
+													<Eye size={20} color={Colors.light.tint} />
+												</TouchableOpacity>
+											</View>
+											<View style={styles.txDetailsRow}>
+												<ThemedText style={styles.txLabel}>
+													Date:
+												</ThemedText>
+												<ThemedText style={styles.txValue}>
+													{item.created_at
+														? new Date(item.created_at).toLocaleString()
+														: "-"}
+												</ThemedText>
+											</View>
+											<View style={styles.txDetailsRow}>
+												<ThemedText style={styles.txLabel}>
+													Status:
+												</ThemedText>
+												<View
+													style={[
+														styles.statusBadge,
+														{ backgroundColor: badge.backgroundColor },
+													]}>
+													<ThemedText
+														style={[
+															styles.statusBadgeText,
+															{ color: badge.color },
+														]}>
+														{item.payment_status}
+													</ThemedText>
+												</View>
+											</View>
+											<View style={styles.txDetailsRow}>
+												<ThemedText style={styles.txLabel}>
+													Item:
+												</ThemedText>
+												<ThemedText style={styles.txValue}>
+													{item.item_name}
+												</ThemedText>
+											</View>
+											<View style={styles.txDetailsRow}>
+												<ThemedText style={styles.txLabel}>Net:</ThemedText>
+												<ThemedText style={styles.txValue}>
+													R {Number(item.amount_net).toFixed(2)}
+												</ThemedText>
+											</View>
+											<View style={styles.txDetailsRow}>
+												<ThemedText style={styles.txLabel}>Fee:</ThemedText>
+												<ThemedText style={styles.txValue}>
+													R {Math.abs(Number(item.amount_fee)).toFixed(2)}
+												</ThemedText>
+											</View>
+											<View style={styles.txDetailsRow}>
+												<ThemedText style={styles.txLabel}>
+													Total:
+												</ThemedText>
+												<ThemedText style={styles.txValue}>
+													R {Number(item.amount_gross).toFixed(2)}
+												</ThemedText>
+											</View>
+										</View>
+									</LinearGradient>
+								);
+							}}
+							contentContainerStyle={{ paddingVertical: 8 }}
+						/>
+					)}
+				</View>
+				<ReceiptModal
+					transaction={selectedTransaction!}
+					visible={!!selectedTransaction}
+					onClose={() => setSelectedTransaction(null)}
+				/>
+			</ThemedView>
+		</SafeAreaView>
 	);
 }
 
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		paddingTop: 24,
 		backgroundColor: Colors.light.background,
+		paddingTop: 24,
 	},
 	headerRow: {
 		flexDirection: "row",

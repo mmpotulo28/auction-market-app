@@ -2,9 +2,19 @@ import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
 import { iTransaction } from "@/lib/types";
 import * as Clipboard from "expo-clipboard";
-import { ChevronDown, ChevronUp, Copy } from "lucide-react-native";
-import React, { useState } from "react";
-import { Alert, Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import * as Print from "expo-print";
+import * as Sharing from "expo-sharing";
+import { ChevronDown, ChevronUp, Copy, Download, X } from "lucide-react-native";
+import React, { useRef, useState } from "react";
+import {
+	Alert,
+	Modal,
+	Platform,
+	ScrollView,
+	StyleSheet,
+	TouchableOpacity,
+	View,
+} from "react-native";
 
 interface ReceiptProps {
 	transaction: iTransaction;
@@ -14,6 +24,12 @@ interface ReceiptProps {
 
 const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 	const [showFull, setShowFull] = useState(false);
+	const [downloading, setDownloading] = useState(false);
+	const receiptRef = useRef<View>(null);
+
+	if (!transaction) {
+		return null;
+	}
 
 	const handleCopyReceipt = async () => {
 		if (!transaction) return;
@@ -55,11 +71,119 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 		Alert.alert("Copied!", "Receipt copied to clipboard.");
 	};
 
+	const handleDownloadPDF = async () => {
+		if (!transaction) return;
+		setDownloading(true);
+		try {
+			// Generate HTML for the receipt
+			const html = `
+				<html>
+				<head>
+					<meta name="viewport" content="width=device-width, initial-scale=1.0">
+					<style>
+						body { font-family: monospace; background: #f6faff; color: #014b8b; margin: 0; padding: 0; }
+						.receipt-container { background: #fff; border-radius: 18px; margin: 24px; padding: 24px 18px; box-shadow: 0 2px 12px rgba(1,75,139,0.13); }
+						.logo { font-weight: bold; font-size: 22px; color: #1976c5; text-align: center; margin-bottom: 2px; }
+						.title { font-size: 15px; color: #7fa1c0; text-align: center; margin-bottom: 12px; }
+						.row { display: flex; justify-content: space-between; margin-bottom: 8px; }
+						.label { font-weight: 600; color: #7fa1c0; }
+						.value { font-weight: 600; color: #014b8b; text-align: right; }
+						.bold { font-weight: 700; }
+						.divider { border-bottom: 1px dashed #e0eaff; margin: 12px 0; }
+						.thank { text-align: center; color: #7fa1c0; font-size: 13px; margin-top: 10px; }
+						.powered { text-align: center; color: #b0b0b0; font-size: 11px; margin-bottom: 6px; }
+					</style>
+				</head>
+				<body>
+					<div class="receipt-container">
+						<div class="logo">AUCTION MARKET SA</div>
+						<div class="title">Transaction Receipt</div>
+						<div class="divider"></div>
+						<div class="row"><span class="label">Date</span><span class="value">${
+							transaction.created_at
+								? new Date(transaction.created_at).toLocaleString()
+								: new Date().toLocaleString()
+						}</span></div>
+						<div class="row"><span class="label">Ref</span><span class="value">${
+							transaction.m_payment_id || transaction.pf_payment_id
+						}</span></div>
+						<div class="row"><span class="label">Status</span><span class="value">${
+							transaction.payment_status
+						}</span></div>
+						<div class="row"><span class="label">Item</span><span class="value">${
+							transaction.item_name
+						}</span></div>
+						${
+							transaction.custom_str2
+								? `<div class="row"><span class="label">Order Id</span><span class="value">${transaction.custom_str2}</span></div>`
+								: ""
+						}
+						${
+							transaction.custom_str1
+								? `<div class="row"><span class="label">User Id</span><span class="value">${transaction.custom_str1}</span></div>`
+								: ""
+						}
+						${
+							transaction.item_description
+								? `<div class="row"><span class="label">Description</span><span class="value">${transaction.item_description}</span></div>`
+								: ""
+						}
+						<div class="divider"></div>
+						<div class="row"><span class="label bold">Net Amount</span><span class="value bold">R ${
+							transaction.amount_net !== undefined
+								? Number(transaction.amount_net).toFixed(2)
+								: ""
+						}</span></div>
+						<div class="row"><span class="label">+ Fees</span><span class="value">R ${
+							transaction.amount_fee !== undefined
+								? Math.abs(Number(transaction.amount_fee)).toFixed(2)
+								: ""
+						}</span></div>
+						<div class="row"><span class="label bold">Total Paid</span><span class="value bold">R ${
+							transaction.amount_gross !== undefined
+								? Number(transaction.amount_gross).toFixed(2)
+								: ""
+						}</span></div>
+						<div class="divider"></div>
+						<div class="thank">Thank you for shopping with us!</div>
+						<div class="powered">Powered by Auction Market SA</div>
+					</div>
+				</body>
+				</html>
+			`;
+
+			const { uri } = await Print.printToFileAsync({ html, base64: false });
+			if (Platform.OS === "ios" || Platform.OS === "android") {
+				await Sharing.shareAsync(uri, {
+					UTI: "com.adobe.pdf",
+					mimeType: "application/pdf",
+				});
+			} else {
+				Alert.alert("PDF Generated", "PDF saved to: " + uri);
+			}
+		} catch (err: any) {
+			Alert.alert("Error", err?.message || "Failed to generate PDF.");
+		}
+		setDownloading(false);
+	};
+
 	return (
 		<Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
 			<View style={styles.overlay}>
-				<View style={styles.modal}>
+				<View style={styles.receiptPaper} ref={receiptRef}>
+					{/* Close button at top right */}
+					<TouchableOpacity
+						style={styles.closeBtnTop}
+						onPress={onClose}
+						accessibilityLabel="Close">
+						<X size={22} color={Colors.light.textMutedForeground} />
+					</TouchableOpacity>
 					<ScrollView contentContainerStyle={styles.scrollContent}>
+						<View style={styles.receiptHeader}>
+							<ThemedText style={styles.receiptLogo}>AUCTION MARKET SA</ThemedText>
+							<ThemedText style={styles.receiptTitle}>Transaction Receipt</ThemedText>
+						</View>
+						<View style={styles.dashedDivider} />
 						{!showFull ? (
 							<>
 								<View style={styles.row}>
@@ -75,15 +199,34 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 									</ThemedText>
 								</View>
 								<View style={[styles.row, styles.boldRow]}>
-									<ThemedText style={[styles.label, { fontWeight: "700" }]}>
+									<ThemedText style={[styles.label, styles.bold]}>
 										Total Paid
 									</ThemedText>
-									<ThemedText style={[styles.value, { fontWeight: "700" }]}>
+									<ThemedText style={[styles.value, styles.bold]}>
 										R{" "}
 										{transaction.amount_gross !== undefined
 											? Number(transaction.amount_gross).toFixed(2)
 											: ""}
 									</ThemedText>
+								</View>
+								<View style={styles.actionsRow}>
+									<TouchableOpacity
+										style={styles.actionBtn}
+										onPress={handleCopyReceipt}
+										accessibilityLabel="Copy receipt">
+										<Copy size={18} color={Colors.light.tint} />
+										<ThemedText style={styles.actionBtnText}>Copy</ThemedText>
+									</TouchableOpacity>
+									<TouchableOpacity
+										style={styles.actionBtn}
+										onPress={handleDownloadPDF}
+										disabled={downloading}
+										accessibilityLabel="Download as PDF">
+										<Download size={18} color={Colors.light.tint} />
+										<ThemedText style={styles.actionBtnText}>
+											{downloading ? "Downloading..." : "PDF"}
+										</ThemedText>
+									</TouchableOpacity>
 								</View>
 								<TouchableOpacity
 									style={styles.toggleBtn}
@@ -94,12 +237,6 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 							</>
 						) : (
 							<>
-								<ThemedText style={styles.receiptTitle}>
-									AUCTION MARKET SA
-								</ThemedText>
-								<ThemedText style={styles.receiptSubtitle}>
-									Transaction Receipt
-								</ThemedText>
 								<View style={styles.row}>
 									<ThemedText style={styles.label}>Date</ThemedText>
 									<ThemedText style={styles.value}>
@@ -116,7 +253,22 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 								</View>
 								<View style={styles.row}>
 									<ThemedText style={styles.label}>Status</ThemedText>
-									<ThemedText style={[styles.value, { color: "#22c55e" }]}>
+									<ThemedText
+										style={[
+											styles.value,
+											{
+												color:
+													transaction.payment_status?.toLowerCase() ===
+														"complete" ||
+													transaction.payment_status?.toLowerCase() ===
+														"completed"
+														? "#22c55e"
+														: transaction.payment_status?.toLowerCase() ===
+														  "cancelled"
+														? "#c90000"
+														: Colors.light.textPrimaryForeground,
+											},
+										]}>
 										{transaction.payment_status}
 									</ThemedText>
 								</View>
@@ -142,12 +294,20 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 										</ThemedText>
 									</View>
 								)}
-								<View style={styles.divider} />
+								{transaction.item_description && (
+									<View style={styles.row}>
+										<ThemedText style={styles.label}>Description</ThemedText>
+										<ThemedText style={styles.value} numberOfLines={2}>
+											{transaction.item_description}
+										</ThemedText>
+									</View>
+								)}
+								<View style={styles.dashedDivider} />
 								<View style={[styles.row, styles.boldRow]}>
-									<ThemedText style={[styles.label, { fontWeight: "700" }]}>
+									<ThemedText style={[styles.label, styles.bold]}>
 										Net Amount
 									</ThemedText>
-									<ThemedText style={[styles.value, { fontWeight: "700" }]}>
+									<ThemedText style={[styles.value, styles.bold]}>
 										R{" "}
 										{transaction.amount_net !== undefined
 											? Number(transaction.amount_net).toFixed(2)
@@ -164,15 +324,17 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 									</ThemedText>
 								</View>
 								<View style={[styles.row, styles.boldRow]}>
-									<ThemedText style={styles.label}>Total Paid</ThemedText>
-									<ThemedText style={styles.value}>
+									<ThemedText style={[styles.label, styles.bold]}>
+										Total Paid
+									</ThemedText>
+									<ThemedText style={[styles.value, styles.bold]}>
 										R{" "}
 										{transaction.amount_gross !== undefined
 											? Number(transaction.amount_gross).toFixed(2)
 											: ""}
 									</ThemedText>
 								</View>
-								<View style={styles.divider} />
+								<View style={styles.dashedDivider} />
 								<ThemedText style={styles.thankYou}>
 									Thank you for shopping with us!
 								</ThemedText>
@@ -187,6 +349,16 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 										<Copy size={18} color={Colors.light.tint} />
 										<ThemedText style={styles.actionBtnText}>Copy</ThemedText>
 									</TouchableOpacity>
+									<TouchableOpacity
+										style={styles.actionBtn}
+										onPress={handleDownloadPDF}
+										disabled={downloading}
+										accessibilityLabel="Download as PDF">
+										<Download size={18} color={Colors.light.tint} />
+										<ThemedText style={styles.actionBtnText}>
+											{downloading ? "Downloading..." : "PDF"}
+										</ThemedText>
+									</TouchableOpacity>
 								</View>
 								<TouchableOpacity
 									style={styles.toggleBtn}
@@ -196,10 +368,8 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 								</TouchableOpacity>
 							</>
 						)}
-						<TouchableOpacity style={styles.closeBtn} onPress={onClose}>
-							<ThemedText style={styles.closeBtnText}>Close</ThemedText>
-						</TouchableOpacity>
 					</ScrollView>
+					<View style={styles.paperTear} />
 				</View>
 			</View>
 		</Modal>
@@ -209,21 +379,66 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 const styles = StyleSheet.create({
 	overlay: {
 		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.25)",
+		backgroundColor: Colors.light.overlay,
 		justifyContent: "center",
 		alignItems: "center",
+		minHeight: "100%",
+		backdropFilter: "blur(5px)",
 	},
-	modal: {
-		width: "90%",
-		backgroundColor: "#fff",
+	receiptPaper: {
+		width: "92%",
+		backgroundColor: "#f6faff",
 		borderRadius: 18,
-		padding: 20,
+		padding: 0,
 		alignItems: "center",
-		boxShadow: "0 2px 12px rgba(1,75,139,0.13)",
+		overflow: "hidden",
+		borderWidth: 1,
+		borderColor: "#e0eaff",
+		shadowColor: "#014b8b",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		elevation: 6,
+		position: "relative",
+		backdropFilter: "blur(5px)",
+	},
+	closeBtnTop: {
+		position: "absolute",
+		top: 12,
+		right: 12,
+		zIndex: 10,
+		backgroundColor: Colors.light.muted,
+		borderRadius: 20,
+		padding: 6,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	receiptHeader: {
+		alignItems: "center",
+		paddingTop: 32,
+		paddingBottom: 8,
+		backgroundColor: "#f6faff",
+		width: "100%",
+		borderTopLeftRadius: 18,
+		borderTopRightRadius: 18,
+	},
+	receiptLogo: {
+		fontWeight: "bold",
+		fontSize: 20,
+		letterSpacing: 1.2,
+		color: Colors.light.tint,
+		marginBottom: 2,
+	},
+	receiptTitle: {
+		fontSize: 14,
+		color: Colors.light.textMutedForeground,
+		marginBottom: 2,
 	},
 	scrollContent: {
-		width: "100%",
+		minWidth: "100%",
+		paddingHorizontal: 22,
 		paddingBottom: 18,
+		paddingTop: 12,
 	},
 	row: {
 		flexDirection: "row",
@@ -244,34 +459,26 @@ const styles = StyleSheet.create({
 		flex: 1,
 		marginLeft: 8,
 	},
-	boldRow: {
-		// fontWeight removed because it's not valid for View
+	bold: {
+		fontWeight: "700",
 	},
-	divider: {
-		height: 1,
-		backgroundColor: "#e0eaff",
+	boldRow: {
+		// fontWeight handled in text
+	},
+	dashedDivider: {
+		borderStyle: "dashed",
+		borderBottomWidth: 1,
+		borderColor: "#e0eaff",
+		width: "100%",
 		marginVertical: 10,
 		opacity: 0.7,
-	},
-	receiptTitle: {
-		textAlign: "center",
-		fontWeight: "bold",
-		fontSize: 18,
-		letterSpacing: 1.2,
-		marginBottom: 2,
-		color: Colors.light.textPrimaryForeground,
-	},
-	receiptSubtitle: {
-		textAlign: "center",
-		fontSize: 13,
-		color: Colors.light.textMutedForeground,
-		marginBottom: 10,
 	},
 	thankYou: {
 		textAlign: "center",
 		color: Colors.light.textMutedForeground,
 		fontSize: 13,
 		marginBottom: 2,
+		marginTop: 10,
 	},
 	poweredBy: {
 		textAlign: "center",
@@ -307,17 +514,22 @@ const styles = StyleSheet.create({
 		marginBottom: 2,
 	},
 	closeBtn: {
-		backgroundColor: Colors.light.tint,
-		paddingVertical: 12,
-		paddingHorizontal: 32,
-		borderRadius: 8,
-		alignItems: "center",
-		marginTop: 8,
+		// not used, keep for compatibility
 	},
 	closeBtnText: {
 		color: "#fff",
 		fontWeight: "700",
 		fontSize: 16,
+	},
+	paperTear: {
+		width: "100%",
+		height: 16,
+		backgroundColor: "#f6faff",
+		borderBottomLeftRadius: 18,
+		borderBottomRightRadius: 18,
+		borderTopWidth: 1,
+		borderColor: "#e0eaff",
+		marginTop: -8,
 	},
 });
 
