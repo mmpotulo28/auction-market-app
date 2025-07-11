@@ -68,7 +68,7 @@ const UpcomingAuctions: React.FC = () => {
 										label: "Preview Auction",
 										click: () =>
 											router.push({
-												pathname: "/support",
+												pathname: `/(auctions)/[name]`,
 												params: { name: item.name },
 											}),
 									},
