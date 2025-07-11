@@ -1,14 +1,14 @@
 import { Colors } from "@/constants/Colors";
 import { iSize } from "@/lib/types";
-import React, { useEffect, useState } from "react";
-import { StyleSheet, Text, View, ViewStyle } from "react-native";
+import React, { useEffect, useRef, useState } from "react";
+import { Animated, Easing, StyleSheet, Text, View, ViewStyle } from "react-native";
 
 interface TimerProps {
-	targetDate: string; // Target date in string format
+	targetDate: string;
 	size?: iSize;
 	onExpire?: () => void;
 	style?: ViewStyle;
-	minimized?: boolean; // New prop to control minimized/maximized state
+	minimized?: boolean;
 }
 
 interface TimeState {
@@ -19,23 +19,49 @@ interface TimeState {
 	seconds: number;
 }
 
+const pad = (n: number) => n.toString().padStart(2, "0");
+
 const NumberBox = ({
 	num,
 	unit,
+	animatedValue,
+	highlight,
 	hideUnit = false,
 }: {
 	num: string | number;
 	unit: string;
+	animatedValue?: Animated.Value;
+	highlight?: boolean;
 	hideUnit?: boolean;
 }) => (
-	<View style={styles.numberBox}>
+	<Animated.View
+		style={[
+			styles.numberBox,
+			highlight && styles.numberBoxHighlight,
+			animatedValue && {
+				transform: [
+					{
+						scale: animatedValue.interpolate({
+							inputRange: [0, 1],
+							outputRange: [1, 1.18],
+						}),
+					},
+				],
+				shadowOpacity: animatedValue
+					? animatedValue.interpolate({
+							inputRange: [0, 1],
+							outputRange: [0.08, 0.22],
+					  })
+					: 0.08,
+			},
+		]}>
 		<View style={styles.numberBoxInner}>
 			<View style={styles.numberBoxTop} />
-			<Text style={styles.numberBoxNum}>{num}</Text>
+			<Text style={styles.numberBoxNum}>{pad(Number(num))}</Text>
 			<View style={styles.numberBoxBottom} />
 		</View>
 		{!hideUnit && <Text style={styles.numberBoxUnit}>{unit}</Text>}
-	</View>
+	</Animated.View>
 );
 
 export const CountdownTimer: React.FC<TimerProps> = ({
@@ -53,6 +79,15 @@ export const CountdownTimer: React.FC<TimerProps> = ({
 		seconds: 0,
 	});
 	const [expired, setExpired] = useState(false);
+
+	// Animation refs for each unit
+	const secAnim = useRef(new Animated.Value(0)).current;
+	const minAnim = useRef(new Animated.Value(0)).current;
+	const hourAnim = useRef(new Animated.Value(0)).current;
+
+	const prevSeconds = useRef<number>(0);
+	const prevMinutes = useRef<number>(0);
+	const prevHours = useRef<number>(0);
 
 	useEffect(() => {
 		if (expired && onExpire) {
@@ -108,17 +143,77 @@ export const CountdownTimer: React.FC<TimerProps> = ({
 		return () => clearInterval(interval);
 	}, [targetDate]);
 
+	// Animate on value change
+	useEffect(() => {
+		if (prevSeconds.current !== time.seconds) {
+			Animated.sequence([
+				Animated.timing(secAnim, {
+					toValue: 1,
+					duration: 180,
+					easing: Easing.out(Easing.ease),
+					useNativeDriver: true,
+				}),
+				Animated.timing(secAnim, {
+					toValue: 0,
+					duration: 180,
+					easing: Easing.in(Easing.ease),
+					useNativeDriver: true,
+				}),
+			]).start();
+			prevSeconds.current = time.seconds;
+		}
+		if (prevMinutes.current !== time.minutes) {
+			Animated.sequence([
+				Animated.timing(minAnim, {
+					toValue: 1,
+					duration: 200,
+					easing: Easing.out(Easing.ease),
+					useNativeDriver: true,
+				}),
+				Animated.timing(minAnim, {
+					toValue: 0,
+					duration: 200,
+					easing: Easing.in(Easing.ease),
+					useNativeDriver: true,
+				}),
+			]).start();
+			prevMinutes.current = time.minutes;
+		}
+		if (prevHours.current !== time.hours) {
+			Animated.sequence([
+				Animated.timing(hourAnim, {
+					toValue: 1,
+					duration: 220,
+					easing: Easing.out(Easing.ease),
+					useNativeDriver: true,
+				}),
+				Animated.timing(hourAnim, {
+					toValue: 0,
+					duration: 220,
+					easing: Easing.in(Easing.ease),
+					useNativeDriver: true,
+				}),
+			]).start();
+			prevHours.current = time.hours;
+		}
+	}, [time.seconds, time.minutes, time.hours, secAnim, minAnim, hourAnim]);
+
 	const { months, days, hours, minutes, seconds } = time;
 
 	const sizeStyle =
 		size === iSize.Small ? styles.sm : size === iSize.Large ? styles.lg : styles.md;
 
 	if (minimized) {
-		// Only show seconds in minimized mode
 		return (
 			<View style={[styles.timerContainer, sizeStyle, style]}>
 				<View style={styles.timerGridMin}>
-					<NumberBox num={seconds} unit="Sec" hideUnit />
+					<NumberBox
+						num={seconds}
+						unit="Sec"
+						hideUnit
+						animatedValue={secAnim}
+						highlight
+					/>
 				</View>
 			</View>
 		);
@@ -131,11 +226,11 @@ export const CountdownTimer: React.FC<TimerProps> = ({
 				<Text style={styles.colon}>:</Text>
 				<NumberBox num={days} unit="Dys" />
 				<Text style={styles.colon}>:</Text>
-				<NumberBox num={hours} unit="Hrs" />
+				<NumberBox num={hours} unit="Hrs" animatedValue={hourAnim} highlight />
 				<Text style={styles.colon}>:</Text>
-				<NumberBox num={minutes} unit="Min" />
+				<NumberBox num={minutes} unit="Min" animatedValue={minAnim} highlight />
 				<Text style={styles.colon}>:</Text>
-				<NumberBox num={seconds} unit="Sec" />
+				<NumberBox num={seconds} unit="Sec" animatedValue={secAnim} highlight />
 			</View>
 		</View>
 	);
@@ -147,6 +242,7 @@ const styles = StyleSheet.create({
 		borderRadius: 16,
 		width: "100%",
 		alignItems: "center",
+		backgroundColor: "transparent",
 	},
 	sm: {
 		transform: [{ scale: 0.6 }],
@@ -164,12 +260,15 @@ const styles = StyleSheet.create({
 		gap: 4,
 		paddingHorizontal: 10,
 		borderRadius: 16,
+		paddingInline: 20,
 	},
 	timerGridMin: {
 		flexDirection: "row",
 		alignItems: "center",
 		justifyContent: "center",
 		paddingHorizontal: 4,
+		backgroundColor: "rgba(1,75,139,0.07)",
+		borderRadius: 12,
 	},
 	colon: {
 		color: Colors.light.accent,
@@ -183,6 +282,18 @@ const styles = StyleSheet.create({
 		marginTop: 0,
 		paddingLeft: 0,
 		paddingRight: 0,
+		shadowColor: "#1976c5",
+		shadowOffset: { width: 0, height: 2 },
+		shadowRadius: 8,
+		elevation: 2,
+		backgroundColor: "#eaf3fb",
+		borderRadius: 10,
+		shadowOpacity: 0.18,
+	},
+	numberBoxHighlight: {
+		backgroundColor: "#eaf3fb",
+		borderRadius: 10,
+		shadowOpacity: 0.18,
 	},
 	numberBoxInner: {
 		position: "relative",
@@ -193,6 +304,7 @@ const styles = StyleSheet.create({
 		width: 48,
 		height: 48,
 		marginTop: 8,
+		overflow: "hidden",
 	},
 	numberBoxTop: {
 		borderTopLeftRadius: 8,
@@ -203,6 +315,7 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		top: 0,
 		left: 0,
+		opacity: 0.92,
 	},
 	numberBoxNum: {
 		color: Colors.light.background,
@@ -213,6 +326,7 @@ const styles = StyleSheet.create({
 		fontFamily: "monospace",
 		alignSelf: "center",
 		top: 8,
+		letterSpacing: 1.2,
 	},
 	numberBoxBottom: {
 		borderBottomLeftRadius: 8,
@@ -223,12 +337,14 @@ const styles = StyleSheet.create({
 		position: "absolute",
 		bottom: 0,
 		left: 0,
+		opacity: 0.85,
 	},
 	numberBoxUnit: {
 		color: Colors.light.foreground,
 		fontSize: 16,
 		marginTop: 8,
 		fontWeight: "600",
+		letterSpacing: 0.5,
 	},
 });
 
