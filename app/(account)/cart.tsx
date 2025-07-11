@@ -1,3 +1,4 @@
+import PopupModal from "@/components/PopupModal";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
@@ -10,6 +11,7 @@ import {
 	ActivityIndicator,
 	Alert,
 	Image,
+	Linking,
 	Modal,
 	ScrollView,
 	StyleSheet,
@@ -32,6 +34,7 @@ const CartScreen = () => {
 	const [wonItems, setWonItems] = useState<iAuctionItem[]>([]);
 	const [isLoading, setIsLoading] = useState(false);
 	const [previewItem, setPreviewItem] = useState<iAuctionItem | null>(null);
+	const [showConsent, setShowConsent] = useState(false);
 
 	// Compute won items from websocket context
 	useEffect(() => {
@@ -66,15 +69,19 @@ const CartScreen = () => {
 	}, [secondsLeft, expired]);
 
 	const handleCheckout = async () => {
-		if (wonItems.length === 0) return;
+		setShowConsent(true);
+	};
+
+	const handleConsentConfirm = async () => {
+		setShowConsent(false);
 		setPayfastLoading(true);
-		setIsLoading(true);
-		// Simulate checkout
-		setTimeout(() => {
-			Alert.alert("Checkout", "Redirecting to payment gateway...");
-			setPayfastLoading(false);
-			setIsLoading(false);
-		}, 1200);
+		try {
+			// Redirect to web cart page for payment
+			await Linking.openURL("https://auctionmarket.tech/cart");
+		} catch (e: any) {
+			Alert.alert("Error", e?.message || "Failed to open payment page. Please try again.");
+		}
+		setPayfastLoading(false);
 	};
 
 	const formatTime = (secs: number) => {
@@ -189,6 +196,16 @@ const CartScreen = () => {
 					</View>
 				</View>
 			</Modal>
+			{/* Consent Popup */}
+			<PopupModal
+				visible={showConsent}
+				title="Complete Payment on Web"
+				message="To complete your purchase, you will be redirected to our secure web checkout. Do you want to continue?"
+				onConfirm={handleConsentConfirm}
+				onCancel={() => setShowConsent(false)}
+				confirmText="Continue"
+				cancelText="Cancel"
+			/>
 		</ThemedView>
 	);
 };
