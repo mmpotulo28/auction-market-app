@@ -2,20 +2,22 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useWebSocket } from "@/context/WebSocketProvider";
-import { iAuction, iBid } from "@/lib/types";
+import { iAuction, iBid, iSize } from "@/lib/types";
 import { useUser } from "@clerk/clerk-expo";
-import { Minus, Plus, UserCheck } from "lucide-react-native";
+import { Filter, Minus, Plus, UserCheck, X } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
 	Alert,
 	FlatList,
 	Image,
+	Modal,
 	StyleSheet,
 	Text,
 	TouchableOpacity,
 	View,
 } from "react-native";
+import CountdownTimer from "./CountdownTimer";
 
 interface AuctionItemListProps {
 	auction?: iAuction;
@@ -34,6 +36,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 	const [auctionClosed, setAuctionClosed] = useState(false);
 	const [auctionEndTime, setAuctionEndTime] = useState<Date>(new Date());
 	const [selected, setSelected] = useState<string | null>(null);
+	const [showFilterModal, setShowFilterModal] = useState(false);
 
 	useEffect(() => {
 		if (auction) {
@@ -48,10 +51,12 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 
 	const filteredItems = useMemo(
 		() =>
-			items.filter((item) =>
-				selectedCategories.length > 0 ? selectedCategories.includes(item.category) : true,
+			items.filter(
+				(item) =>
+					(!auction || (item.auction && item.auction.id === auction.id)) &&
+					(selectedCategories.length === 0 || selectedCategories.includes(item.category)),
 			),
-		[items, selectedCategories],
+		[items, selectedCategories, auction],
 	);
 
 	const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
@@ -140,6 +145,23 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 
 	return (
 		<ThemedView style={styles.container}>
+			{/* Modern header with filter and timer */}
+			<View style={styles.headerRow}>
+				<View style={styles.headerLeft}>
+					<ThemedText style={styles.heading}>{auction.name}</ThemedText>
+					<ThemedText style={styles.subheading}>
+						{auctionNotStarted
+							? "Auction not started"
+							: `Auction is live! Ends at: ${auctionEndTime.toLocaleString()}`}
+					</ThemedText>
+				</View>
+				<TouchableOpacity
+					style={styles.filterBtn}
+					onPress={() => setShowFilterModal(true)}
+					accessibilityLabel="Show filters">
+					<Filter size={22} color={Colors.light.tint} />
+				</TouchableOpacity>
+			</View>
 			{isLoading && (
 				<View style={styles.loadingRow}>
 					<ActivityIndicator size="large" color={Colors.light.tint} />
@@ -155,20 +177,38 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 					))}
 				</View>
 			)}
+			{/* Divider with floating timer */}
+			<View style={styles.dividerContainer}>
+				<View style={styles.divider} />
+				<View style={styles.timerPopup}>
+					{auctionNotStarted ? (
+						<>
+							<ThemedText style={styles.timerLabel}>Starts in</ThemedText>
+							<CountdownTimer
+								targetDate={auction.start_time}
+								size={iSize.Small}
+								onExpire={() => setAuctionNotStarted(false)}
+							/>
+						</>
+					) : (
+						<>
+							<ThemedText style={styles.timerLabel}>Ends in</ThemedText>
+							<CountdownTimer
+								targetDate={auctionEndTime.toISOString()}
+								size={iSize.Small}
+								onExpire={() => setAuctionClosed(true)}
+							/>
+						</>
+					)}
+				</View>
+			</View>
+			{/* All items grid */}
 			<FlatList
-				data={paginatedItems}
+				data={filteredItems}
 				keyExtractor={(item) => item.id}
 				contentContainerStyle={styles.listContent}
-				ListHeaderComponent={
-					<View style={styles.header}>
-						<ThemedText style={styles.heading}>{auction.name}</ThemedText>
-						<ThemedText style={styles.subheading}>
-							{auctionNotStarted
-								? "Auction not started"
-								: `Auction is live! Ends at: ${auctionEndTime.toLocaleString()}`}
-						</ThemedText>
-					</View>
-				}
+				numColumns={2}
+				columnWrapperStyle={styles.gridRow}
 				renderItem={({ item }) => {
 					const highestBid = highestBids[item.id];
 					const currentBid =
@@ -287,6 +327,58 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 					</View>
 				}
 			/>
+			{/* Filter Modal */}
+			<Modal
+				visible={showFilterModal}
+				transparent
+				animationType="slide"
+				onRequestClose={() => setShowFilterModal(false)}>
+				<View style={styles.filterModalOverlay}>
+					<View style={styles.filterModal}>
+						<View style={styles.filterModalHeader}>
+							<ThemedText style={styles.filterModalTitle}>Filters</ThemedText>
+							<TouchableOpacity onPress={() => setShowFilterModal(false)}>
+								<X size={22} color={Colors.light.textMutedForeground} />
+							</TouchableOpacity>
+						</View>
+						<View style={styles.filterSection}>
+							<ThemedText style={styles.filterLabel}>Categories</ThemedText>
+							<View style={styles.filterChipsRow}>
+								{categories.map((cat) => (
+									<TouchableOpacity
+										key={cat}
+										style={[
+											styles.filterChip,
+											selectedCategories.includes(cat) &&
+												styles.filterChipActive,
+										]}
+										onPress={() => {
+											setSelectedCategories((prev) =>
+												prev.includes(cat)
+													? prev.filter((c) => c !== cat)
+													: [...prev, cat],
+											);
+										}}>
+										<ThemedText
+											style={[
+												styles.filterChipText,
+												selectedCategories.includes(cat) &&
+													styles.filterChipTextActive,
+											]}>
+											{cat}
+										</ThemedText>
+									</TouchableOpacity>
+								))}
+							</View>
+						</View>
+						<TouchableOpacity
+							style={styles.filterApplyBtn}
+							onPress={() => setShowFilterModal(false)}>
+							<ThemedText style={styles.filterApplyBtnText}>Apply</ThemedText>
+						</TouchableOpacity>
+					</View>
+				</View>
+			</Modal>
 		</ThemedView>
 	);
 };
@@ -296,6 +388,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		padding: 12,
 		backgroundColor: Colors.light.background,
+		position: "relative",
 	},
 	center: {
 		flex: 1,
@@ -303,36 +396,83 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		padding: 32,
 	},
-	errorCard: {
-		backgroundColor: "#ffeaea",
-		borderRadius: 10,
-		padding: 12,
-		marginBottom: 10,
-	},
-	errorText: {
-		color: Colors.light.destructive,
-		fontWeight: "600",
-		fontSize: 15,
-	},
-	header: {
-		marginBottom: 18,
+	headerRow: {
+		flexDirection: "row",
 		alignItems: "center",
+		justifyContent: "space-between",
+		marginBottom: 8,
+		marginTop: 8,
+		paddingHorizontal: 2,
+	},
+	headerLeft: {
+		flex: 1,
 	},
 	heading: {
 		fontSize: 24,
 		fontWeight: "bold",
 		color: Colors.light.textPrimaryForeground,
-		marginBottom: 4,
+		marginBottom: 2,
 	},
 	subheading: {
 		color: Colors.light.textMutedForeground,
 		fontSize: 15,
+	},
+	filterBtn: {
+		backgroundColor: Colors.light.muted,
+		borderRadius: 8,
+		padding: 10,
+		alignItems: "center",
+		justifyContent: "center",
+		marginLeft: 8,
+	},
+	dividerContainer: {
+		position: "relative",
+		marginBottom: 18,
+		marginTop: 8,
+	},
+	divider: {
+		height: 1,
+		width: "100%",
+		alignSelf: "center",
+		backgroundColor: "#e0eaff",
+		opacity: 0.7,
+	},
+	timerPopup: {
+		display: "none",
+		position: "absolute",
+		right: 10,
+		top: 0,
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		paddingVertical: 6,
+		paddingHorizontal: 14,
+		flexDirection: "row",
+		alignItems: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		elevation: 4,
+		gap: 8,
+	},
+	timerLabel: {
+		color: Colors.light.textMutedForeground,
+		fontSize: 14,
+		marginRight: 4,
+		fontWeight: "600",
+	},
+	gridRow: {
+		flexDirection: "column",
+		justifyContent: "space-between",
+		gap: 12,
 	},
 	card: {
 		backgroundColor: Colors.light.card,
 		borderRadius: 16,
 		padding: 16,
 		marginBottom: 18,
+
+		marginHorizontal: 6,
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.08,
@@ -372,14 +512,14 @@ const styles = StyleSheet.create({
 	},
 	image: {
 		width: "100%",
-		height: 180,
+		height: 120,
 		borderRadius: 12,
 		marginBottom: 8,
 		backgroundColor: Colors.light.muted,
 	},
 	imagePlaceholder: {
 		width: "100%",
-		height: 180,
+		height: 120,
 		borderRadius: 12,
 		marginBottom: 8,
 		backgroundColor: Colors.light.muted,
@@ -400,7 +540,7 @@ const styles = StyleSheet.create({
 		backgroundColor: Colors.light.muted,
 		borderRadius: 8,
 		paddingVertical: 8,
-		paddingHorizontal: 18,
+		paddingHorizontal: 12,
 		alignItems: "center",
 		justifyContent: "center",
 		marginHorizontal: 2,
@@ -490,6 +630,91 @@ const styles = StyleSheet.create({
 		marginLeft: 10,
 		color: Colors.light.textMutedForeground,
 		fontSize: 16,
+	},
+	errorCard: {
+		backgroundColor: "#ffeaea",
+		borderRadius: 10,
+		padding: 12,
+		marginBottom: 10,
+	},
+	// Filter Modal styles
+	filterModalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.25)",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	filterModal: {
+		width: "90%",
+		backgroundColor: "#fff",
+		borderRadius: 18,
+		padding: 24,
+		alignItems: "center",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.12,
+		shadowRadius: 8,
+		elevation: 6,
+	},
+	filterModalHeader: {
+		width: "100%",
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		marginBottom: 18,
+	},
+	filterModalTitle: {
+		fontWeight: "bold",
+		fontSize: 20,
+		color: Colors.light.textPrimaryForeground,
+	},
+	filterSection: {
+		width: "100%",
+		marginBottom: 18,
+	},
+	filterLabel: {
+		fontWeight: "600",
+		fontSize: 16,
+		marginBottom: 8,
+		color: Colors.light.textMutedForeground,
+	},
+	filterChipsRow: {
+		flexDirection: "row",
+		flexWrap: "wrap",
+		gap: 8,
+	},
+	filterChip: {
+		backgroundColor: Colors.light.muted,
+		borderRadius: 16,
+		paddingVertical: 8,
+		paddingHorizontal: 16,
+		marginBottom: 8,
+	},
+	filterChipActive: {
+		backgroundColor: Colors.light.tint,
+	},
+	filterChipText: {
+		color: Colors.light.textMutedForeground,
+		fontWeight: "600",
+	},
+	filterChipTextActive: {
+		color: "#fff",
+	},
+	filterApplyBtn: {
+		backgroundColor: Colors.light.tint,
+		paddingVertical: 12,
+		paddingHorizontal: 32,
+		borderRadius: 8,
+		alignItems: "center",
+		marginTop: 8,
+	},
+	filterApplyBtnText: {
+		color: "#fff",
+		fontWeight: "700",
+		fontSize: 16,
+	},
+	errorText: {
+		color: Colors.light.destructive,
 	},
 });
 
