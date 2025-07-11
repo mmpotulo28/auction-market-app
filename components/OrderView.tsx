@@ -178,7 +178,7 @@ const styles = StyleSheet.create({
 	scrollContent: {
 		paddingBottom: 24,
 		paddingHorizontal: 18,
-		width: "100%",
+		minWidth: "100%",
 	},
 	infoCard: {
 		backgroundColor: Colors.light.secondary,
