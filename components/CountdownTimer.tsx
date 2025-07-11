@@ -8,6 +8,7 @@ interface TimerProps {
 	size?: iSize;
 	onExpire?: () => void;
 	style?: ViewStyle;
+	minimized?: boolean; // New prop to control minimized/maximized state
 }
 
 interface TimeState {
@@ -18,14 +19,22 @@ interface TimeState {
 	seconds: number;
 }
 
-const NumberBox = ({ num, unit }: { num: string | number; unit: string }) => (
+const NumberBox = ({
+	num,
+	unit,
+	hideUnit = false,
+}: {
+	num: string | number;
+	unit: string;
+	hideUnit?: boolean;
+}) => (
 	<View style={styles.numberBox}>
 		<View style={styles.numberBoxInner}>
 			<View style={styles.numberBoxTop} />
 			<Text style={styles.numberBoxNum}>{num}</Text>
 			<View style={styles.numberBoxBottom} />
 		</View>
-		<Text style={styles.numberBoxUnit}>{unit}</Text>
+		{!hideUnit && <Text style={styles.numberBoxUnit}>{unit}</Text>}
 	</View>
 );
 
@@ -34,6 +43,7 @@ export const CountdownTimer: React.FC<TimerProps> = ({
 	size = iSize.Medium,
 	onExpire,
 	style,
+	minimized = false,
 }) => {
 	const [time, setTime] = useState<TimeState>({
 		months: 0,
@@ -103,6 +113,17 @@ export const CountdownTimer: React.FC<TimerProps> = ({
 	const sizeStyle =
 		size === iSize.Small ? styles.sm : size === iSize.Large ? styles.lg : styles.md;
 
+	if (minimized) {
+		// Only show seconds in minimized mode
+		return (
+			<View style={[styles.timerContainer, sizeStyle, style]}>
+				<View style={styles.timerGridMin}>
+					<NumberBox num={seconds} unit="Sec" hideUnit />
+				</View>
+			</View>
+		);
+	}
+
 	return (
 		<View style={[styles.timerContainer, sizeStyle, style]}>
 			<View style={styles.timerGrid}>
@@ -143,6 +164,12 @@ const styles = StyleSheet.create({
 		gap: 4,
 		paddingHorizontal: 10,
 		borderRadius: 16,
+	},
+	timerGridMin: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "center",
+		paddingHorizontal: 4,
 	},
 	colon: {
 		color: Colors.light.accent,

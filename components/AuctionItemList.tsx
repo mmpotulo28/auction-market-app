@@ -4,11 +4,11 @@ import { Colors } from "@/constants/Colors";
 import { useWebSocket } from "@/context/WebSocketProvider";
 import { iAuction, iBid, iSize } from "@/lib/types";
 import { useUser } from "@clerk/clerk-expo";
-import { Filter, Minus, Plus, UserCheck, X } from "lucide-react-native";
+import { useRouter } from "expo-router";
+import { ChevronDown, ChevronUp, Filter, Minus, Plus, UserCheck, X } from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
-	Alert,
 	FlatList,
 	Image,
 	Modal,
@@ -17,6 +17,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { toast } from "sonner-native";
 import CountdownTimer from "./CountdownTimer";
 
 interface AuctionItemListProps {
@@ -26,44 +27,91 @@ interface AuctionItemListProps {
 
 const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage = 10 }) => {
 	const { user } = useUser();
+	const router = useRouter();
+	const [showFilterModal, setShowFilterModal] = useState(false);
+	const [selected, setSelected] = useState<string | null>(null);
+
 	const { placeBid, highestBids, items, isLoading, error, categories } = useWebSocket();
 
 	const [proposedBids, setProposedBids] = useState<iBid[]>([]);
+
 	const [currentPage, setCurrentPage] = useState(1);
 	const [selectedCategories, setSelectedCategories] = useState<string[]>(categories);
+	const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
+	const [selectedConditions, setSelectedConditions] = useState<Set<string>>(
+		new Set(["new", "used"]),
+	);
 	const [pendingBids, setPendingBids] = useState<string[]>([]);
+	const [showBidHistory, setShowBidHistory] = useState(false);
 	const [auctionNotStarted, setAuctionNotStarted] = useState(false);
 	const [auctionClosed, setAuctionClosed] = useState(false);
 	const [auctionEndTime, setAuctionEndTime] = useState<Date>(new Date());
-	const [selected, setSelected] = useState<string | null>(null);
-	const [showFilterModal, setShowFilterModal] = useState(false);
+	const [showTimerPopup, setShowTimerPopup] = useState(true);
+	const [timerMinimized, setTimerMinimized] = useState(false);
 
 	useEffect(() => {
 		if (auction) {
 			const auctionStart = new Date(auction.start_time).getTime();
 			const auctionEnd = auctionStart + (auction.duration || 0) * 60 * 1000;
 			const now = Date.now();
+
 			setAuctionNotStarted(now < auctionStart);
 			setAuctionClosed(now > auctionEnd);
 			setAuctionEndTime(new Date(auctionEnd));
 		}
 	}, [auction]);
 
+	// User bid history
+	const userBids = useMemo(() => {
+		if (!user) return [];
+		const allBids = Object.values(highestBids)
+			.filter((bid) => bid.userId === user.id)
+			.map((bid) => ({
+				...bid,
+				item: items.find((item) => item.id === bid.itemId),
+			}))
+			.filter((b) => b.item);
+		return allBids;
+	}, [highestBids, user, items]);
+
 	const filteredItems = useMemo(
 		() =>
 			items.filter(
 				(item) =>
-					(!auction || (item.auction && item.auction.id === auction.id)) &&
-					(selectedCategories.length === 0 || selectedCategories.includes(item.category)),
+					selectedCategories.includes(item.category) &&
+					item.price >= priceRange[0] &&
+					item.price <= priceRange[1] &&
+					selectedConditions.has(item.condition),
 			),
-		[items, selectedCategories, auction],
+		[items, selectedCategories, priceRange, selectedConditions],
 	);
 
-	const totalPages = Math.max(1, Math.ceil(filteredItems.length / itemsPerPage));
-	const paginatedItems = filteredItems.slice(
-		(currentPage - 1) * itemsPerPage,
-		currentPage * itemsPerPage,
+	const totalPages = useMemo(
+		() => Math.ceil(filteredItems.length / itemsPerPage),
+		[filteredItems, itemsPerPage],
 	);
+	const paginatedItems = useMemo(
+		() => filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+		[filteredItems, currentPage, itemsPerPage],
+	);
+
+	const toggleCategory = useCallback((category: string) => {
+		setSelectedCategories((prev) =>
+			prev.includes(category) ? prev.filter((cat) => cat !== category) : [...prev, category],
+		);
+	}, []);
+
+	const toggleCondition = useCallback((condition: string) => {
+		setSelectedConditions((prev) => {
+			const newConditions = new Set(prev);
+			if (newConditions.has(condition)) {
+				newConditions.delete(condition);
+			} else {
+				newConditions.add(condition);
+			}
+			return newConditions;
+		});
+	}, []);
 
 	const adjustBid = useCallback(
 		(id: string, delta: number) => {
@@ -102,21 +150,85 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 	const submitBid = useCallback(
 		async (itemId: string) => {
 			if (!user) {
-				Alert.alert("Login required", "Please log in to place a bid.");
+				toast("Login first to submit your bid", {
+					description: "Please log in to place a bid.",
+					action: {
+						label: "Login",
+						onClick: () => router.push("/auth?type=login&after_auth_return_to=/"),
+					},
+				});
 				return;
 			}
+
 			const currentBid = proposedBids.find((bid) => bid.itemId === itemId)?.amount || 0;
+
 			setPendingBids((prev) => [...prev, itemId]);
 			await placeBid(itemId, currentBid, user.id);
+
+			const highestBid = highestBids[itemId];
+			if (highestBid?.userId === user.id) {
+				toast("Congratulations, you now own this item!", {
+					description: "You are the current owner of this item.",
+					richColors: true,
+				});
+			}
+
 			setPendingBids((prev) => prev.filter((bid) => bid !== itemId));
 		},
-		[proposedBids, user, placeBid],
+		[proposedBids, user, placeBid, highestBids, router],
 	);
 
 	const ownedCount = useMemo(() => {
 		if (!user) return 0;
 		return Object.values(highestBids).filter((bid) => bid.userId === user.id).length;
 	}, [highestBids, user]);
+
+	// Only show timer popup if not closed and auction is not closed
+	const renderTimerPopup = () => {
+		if (auctionClosed) return null;
+		if (!showTimerPopup) return null;
+
+		const TimerContent = () => {
+			const timeProps = auctionNotStarted
+				? { label: "Starts in", date: auction?.start_time }
+				: { label: "Ends in", date: auctionEndTime.toISOString() };
+
+			return (
+				<View style={styles.timerPopup}>
+					<ThemedText style={styles.timerLabel}>{timeProps.label}</ThemedText>
+					{timeProps.date && (
+						<CountdownTimer
+							minimized={timerMinimized}
+							targetDate={timeProps.date}
+							size={iSize.Small}
+							onExpire={() => {
+								if (auctionNotStarted) setAuctionNotStarted(false);
+								else setAuctionClosed(true);
+							}}
+						/>
+					)}
+					<TouchableOpacity
+						style={styles.timerPopupClose}
+						onPress={() => {
+							setTimerMinimized(!timerMinimized);
+						}}
+						accessibilityLabel="Minimize timer">
+						{timerMinimized ? (
+							<ChevronDown size={16} color={Colors.light.textMutedForeground} />
+						) : (
+							<ChevronUp size={16} color={Colors.light.textMutedForeground} />
+						)}
+					</TouchableOpacity>
+				</View>
+			);
+		};
+
+		return (
+			<View style={styles.floatingTimer}>
+				<TimerContent />
+			</View>
+		);
+	};
 
 	if (!auction) {
 		return (
@@ -152,7 +264,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 					<ThemedText style={styles.subheading}>
 						{auctionNotStarted
 							? "Auction not started"
-							: `Auction is live! Ends at: ${auctionEndTime.toLocaleString()}`}
+							: `Auction is live! Ends at: ${auction.start_time.toLocaleString()}`}
 					</ThemedText>
 				</View>
 				<TouchableOpacity
@@ -177,31 +289,12 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 					))}
 				</View>
 			)}
-			{/* Divider with floating timer */}
+			{/* Divider */}
 			<View style={styles.dividerContainer}>
 				<View style={styles.divider} />
-				<View style={styles.timerPopup}>
-					{auctionNotStarted ? (
-						<>
-							<ThemedText style={styles.timerLabel}>Starts in</ThemedText>
-							<CountdownTimer
-								targetDate={auction.start_time}
-								size={iSize.Small}
-								onExpire={() => setAuctionNotStarted(false)}
-							/>
-						</>
-					) : (
-						<>
-							<ThemedText style={styles.timerLabel}>Ends in</ThemedText>
-							<CountdownTimer
-								targetDate={auctionEndTime.toISOString()}
-								size={iSize.Small}
-								onExpire={() => setAuctionClosed(true)}
-							/>
-						</>
-					)}
-				</View>
 			</View>
+			{/* Timer Popup (only one at a time) */}
+			{renderTimerPopup()}
 			{/* All items grid */}
 			<FlatList
 				data={filteredItems}
@@ -388,7 +481,7 @@ const styles = StyleSheet.create({
 		flex: 1,
 		padding: 12,
 		backgroundColor: Colors.light.background,
-		position: "relative",
+		position: "relative", // ensure relative for absolute children
 	},
 	center: {
 		flex: 1,
@@ -426,7 +519,6 @@ const styles = StyleSheet.create({
 		marginLeft: 8,
 	},
 	dividerContainer: {
-		position: "relative",
 		marginBottom: 18,
 		marginTop: 8,
 	},
@@ -437,29 +529,81 @@ const styles = StyleSheet.create({
 		backgroundColor: "#e0eaff",
 		opacity: 0.7,
 	},
-	timerPopup: {
-		display: "none",
+	floatingTimer: {
 		position: "absolute",
-		right: 10,
-		top: 0,
+		bottom: 24,
+		right: 18,
+		zIndex: 100,
+	},
+	timerPopup: {
+		display: "flex",
+		flexDirection: "column",
 		backgroundColor: "#fff",
 		borderRadius: 16,
 		paddingVertical: 6,
 		paddingHorizontal: 14,
-		flexDirection: "row",
 		alignItems: "center",
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.1,
 		shadowRadius: 8,
 		elevation: 4,
-		gap: 8,
+		gap: 2,
+		maxWidth: "90%",
+		minWidth: 110,
+	},
+	timerPopupMin: {
+		display: "flex",
+		flexDirection: "row",
+		alignItems: "center",
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		paddingVertical: 4,
+		paddingHorizontal: 10,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		elevation: 4,
+		gap: 6,
+		minWidth: 90,
+	},
+	timerPopupClose: {
+		marginLeft: 8,
+		padding: 2,
+		borderRadius: 8,
+		backgroundColor: Colors.light.muted,
+		alignItems: "center",
+		justifyContent: "center",
+		position: "absolute",
+		top: 6,
+		right: 6,
+		zIndex: 1,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 2,
+	},
+	timerPopupExpand: {
+		marginLeft: 6,
+		padding: 2,
+		borderRadius: 8,
+		backgroundColor: Colors.light.muted,
+		alignItems: "center",
+		justifyContent: "center",
 	},
 	timerLabel: {
 		color: Colors.light.textMutedForeground,
 		fontSize: 14,
 		marginRight: 4,
 		fontWeight: "600",
+		position: "absolute",
+		top: 1,
+		left: 10,
+	},
+	timerSecondsOnly: {
+		// Optionally, you can add a style to shrink/hide all but seconds in CountdownTimer
 	},
 	gridRow: {
 		flexDirection: "column",
