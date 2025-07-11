@@ -7,7 +7,10 @@ import * as Sentry from "@sentry/react-native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
+import { SafeAreaProvider } from "react-native-safe-area-context";
+import { Toaster } from "sonner-native";
 
 Sentry.init({
 	dsn: "https://0f044f521bd4c303808e24dade031e6d@o4509553467064320.ingest.us.sentry.io/4509650432753664",
@@ -36,26 +39,31 @@ export default Sentry.wrap(function RootLayout() {
 	}
 
 	return (
-		<ClerkProvider
-			publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
-			tokenCache={tokenCache}>
-			<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-				<WebSocketProvider>
-					<Stack>
-						<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-						<Stack.Screen name="(support)" options={{ headerShown: false }} />
-						<Stack.Screen name="(auth)" options={{ headerShown: false }} />
-						<Stack.Screen
-							name="oauth-native-callback"
-							options={{ headerShown: false }}
-						/>
-						<Stack.Screen name="(account)" options={{ headerShown: false }} />
-						<Stack.Screen name="(auctions)" options={{ headerShown: false }} />
-						<Stack.Screen name="+not-found" />
-					</Stack>
+		<SafeAreaProvider>
+			<ClerkProvider
+				publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
+				tokenCache={tokenCache}>
+				<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+					<Toaster />
+					<GestureHandlerRootView>
+						<WebSocketProvider>
+							<Stack>
+								<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+								<Stack.Screen name="(support)" options={{ headerShown: false }} />
+								<Stack.Screen name="(auth)" options={{ headerShown: false }} />
+								<Stack.Screen
+									name="oauth-native-callback"
+									options={{ headerShown: false }}
+								/>
+								<Stack.Screen name="(account)" options={{ headerShown: false }} />
+								<Stack.Screen name="(auctions)" options={{ headerShown: false }} />
+								<Stack.Screen name="+not-found" />
+							</Stack>
+						</WebSocketProvider>
+					</GestureHandlerRootView>
 					<StatusBar style="auto" />
-				</WebSocketProvider>
-			</ThemeProvider>
-		</ClerkProvider>
+				</ThemeProvider>
+			</ClerkProvider>
+		</SafeAreaProvider>
 	);
 });

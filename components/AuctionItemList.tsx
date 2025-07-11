@@ -247,7 +247,11 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 						You have <Text style={styles.bold}>{ownedCount}</Text> item
 						{ownedCount !== 1 && "s"} in your cart.
 					</ThemedText>
-					<TouchableOpacity style={styles.cartBtn} onPress={() => {}}>
+					<TouchableOpacity
+						style={styles.cartBtn}
+						onPress={() => {
+							router.push("/(account)/cart");
+						}}>
 						<ThemedText style={styles.cartBtnText}>Go to Cart</ThemedText>
 					</TouchableOpacity>
 				</View>

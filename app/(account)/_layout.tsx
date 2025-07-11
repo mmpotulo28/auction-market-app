@@ -13,6 +13,7 @@ const SupportLayout = () => {
 				options={{ headerShown: false, title: "Transactions" }}
 			/>
 			<Stack.Screen name="profile" options={{ headerShown: false, title: "Profile" }} />
+			<Stack.Screen name="cart" options={{ headerShown: false, title: "Cart" }} />
 		</Stack>
 	);
 };
