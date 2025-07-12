@@ -60,7 +60,7 @@ export const Colors = {
 		tabIconDefault: "#f6faff",
 		tabIconSelected: tintColorDark,
 		foreground: "#c1e3fc",
-		card: "#00132d",
+		card: "#001b42ff",
 		cardForeground: "#b7d2e6",
 		popover: "rgb(0, 19, 45)",
 		popoverForeground: "#b7d2e6",

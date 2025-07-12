@@ -260,87 +260,91 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 				return (
 					<TouchableOpacity
 						style={[
-							styles.card,
+							styles.touchableCard,
 							isSelected && { borderColor: Colors.light.tint, borderWidth: 2 },
 						]}
 						activeOpacity={0.96}
 						onPress={() => setSelected(item.id)}>
-						{isOwner && (
-							<View style={styles.ownerIcon}>
-								<UserCheck size={18} color={Colors.light.tint} />
-							</View>
-						)}
-						<View style={styles.cardHeader}>
-							<ThemedText style={styles.title}>{item.title}</ThemedText>
-							<View style={styles.tagsRow}>
-								<View style={styles.badge}>
-									<ThemedText style={styles.badgeText}>
-										Highest Bid: R{" "}
-										{Number(highestBid?.amount || item.price).toFixed(2)}
-									</ThemedText>
-								</View>
-								<View style={[styles.badge, styles.badgeSecondary]}>
-									<ThemedText style={styles.badgeText}>
-										{item.condition?.toUpperCase()}
-									</ThemedText>
-								</View>
-							</View>
-						</View>
-						<View style={styles.cardContent}>
-							{item.image ? (
-								<Image
-									source={{ uri: item.image }}
-									style={styles.image}
-									resizeMode="cover"
-								/>
-							) : (
-								<View style={styles.imagePlaceholder}>
-									<ThemedText>No Image</ThemedText>
+						<ThemedView type="card" style={styles.card}>
+							{isOwner && (
+								<View style={styles.ownerIcon}>
+									<UserCheck size={18} color={Colors.light.tint} />
 								</View>
 							)}
-							<ThemedText style={styles.description}>{item.description}</ThemedText>
-						</View>
-						<View style={styles.cardFooter}>
-							<TouchableOpacity
-								style={styles.bidBtn}
-								onPress={() => adjustBid(item.id, -10)}
-								disabled={
-									currentBid <= (highestBid?.amount || item.price) ||
-									auctionClosed ||
-									auctionNotStarted
-								}>
-								<Minus size={18} color={Colors.light.tint} />
-							</TouchableOpacity>
-							<TouchableOpacity
-								style={[styles.bidBtn, styles.bidBtnMain]}
-								onPress={() => submitBid(item.id)}
-								disabled={
-									currentBid <= (highestBid?.amount || item.price) ||
-									pendingBids.includes(item.id) ||
-									auctionClosed ||
-									auctionNotStarted
-								}>
-								<ThemedText style={styles.bidBtnText}>
-									{currentBid > (highestBid?.amount || item.price) &&
-										!pendingBids.includes(item.id) &&
-										"Submit "}
-									R {Number(currentBid).toFixed(2)}
-								</ThemedText>
-								{pendingBids.includes(item.id) && (
-									<ActivityIndicator
-										size="small"
-										color="#fff"
-										style={{ marginLeft: 6 }}
+							<View style={styles.cardHeader}>
+								<ThemedText style={styles.title}>{item.title}</ThemedText>
+								<View style={styles.tagsRow}>
+									<View style={styles.badge}>
+										<ThemedText style={styles.badgeText}>
+											Highest Bid: R{" "}
+											{Number(highestBid?.amount || item.price).toFixed(2)}
+										</ThemedText>
+									</View>
+									<View style={[styles.badge, styles.badgeSecondary]}>
+										<ThemedText style={styles.badgeText}>
+											{item.condition?.toUpperCase()}
+										</ThemedText>
+									</View>
+								</View>
+							</View>
+							<View style={styles.cardContent}>
+								{item.image ? (
+									<Image
+										source={{ uri: item.image }}
+										style={styles.image}
+										resizeMode="cover"
 									/>
+								) : (
+									<View style={styles.imagePlaceholder}>
+										<ThemedText>No Image</ThemedText>
+									</View>
 								)}
-							</TouchableOpacity>
-							<TouchableOpacity
-								style={styles.bidBtn}
-								onPress={() => adjustBid(item.id, 10)}
-								disabled={auctionClosed || auctionNotStarted}>
-								<Plus size={18} color={Colors.light.tint} />
-							</TouchableOpacity>
-						</View>
+								<ThemedText style={styles.description}>
+									{item.description}
+								</ThemedText>
+							</View>
+							<View style={styles.cardFooter}>
+								<TouchableOpacity
+									style={styles.bidBtn}
+									onPress={() => adjustBid(item.id, -10)}
+									disabled={
+										currentBid <= (highestBid?.amount || item.price) ||
+										auctionClosed ||
+										auctionNotStarted
+									}>
+									<Minus size={18} color={Colors.light.tint} />
+								</TouchableOpacity>
+								<TouchableOpacity
+									style={[styles.bidBtn, styles.bidBtnMain]}
+									onPress={() => submitBid(item.id)}
+									disabled={
+										currentBid <= (highestBid?.amount || item.price) ||
+										pendingBids.includes(item.id) ||
+										auctionClosed ||
+										auctionNotStarted
+									}>
+									<ThemedText style={styles.bidBtnText}>
+										{currentBid > (highestBid?.amount || item.price) &&
+											!pendingBids.includes(item.id) &&
+											"Submit "}
+										R {Number(currentBid).toFixed(2)}
+									</ThemedText>
+									{pendingBids.includes(item.id) && (
+										<ActivityIndicator
+											size="small"
+											color="#fff"
+											style={{ marginLeft: 6 }}
+										/>
+									)}
+								</TouchableOpacity>
+								<TouchableOpacity
+									style={styles.bidBtn}
+									onPress={() => adjustBid(item.id, 10)}
+									disabled={auctionClosed || auctionNotStarted}>
+									<Plus size={18} color={Colors.light.tint} />
+								</TouchableOpacity>
+							</View>
+						</ThemedView>
 					</TouchableOpacity>
 				);
 			},
@@ -392,8 +396,8 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 		return (
 			<ThemedView style={styles.container}>
 				{/* Modern header with filter and timer */}
-				<View style={styles.headerRow}>
-					<View style={styles.headerLeft}>
+				<ThemedView style={styles.headerRow}>
+					<ThemedView style={styles.headerLeft}>
 						<ThemedText style={styles.heading}>{auction.name}</ThemedText>
 						<ThemedText style={styles.subheading}>
 							{auctionNotStarted
@@ -402,7 +406,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 										auction.start_time,
 								  ).toLocaleString()}`}
 						</ThemedText>
-					</View>
+					</ThemedView>
 					<TouchableOpacity
 						style={styles.filterBtn}
 						onPress={() => setShowFilterModal(true)}
@@ -415,12 +419,12 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 						accessibilityLabel="Show bid history">
 						<TimerIcon size={22} color={Colors.light.tint} />
 					</TouchableOpacity>
-				</View>
+				</ThemedView>
 				{isLoading && (
-					<View style={styles.loadingRow}>
+					<ThemedView style={styles.loadingRow}>
 						<ActivityIndicator size="large" color={Colors.light.tint} />
 						<ThemedText style={styles.loadingText}>Loading auction items...</ThemedText>
-					</View>
+					</ThemedView>
 				)}
 				{error && error.length > 0 && (
 					<View style={styles.errorCard}>
@@ -450,7 +454,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 					maxToRenderPerBatch={8}
 					windowSize={11}
 					ListFooterComponent={
-						<View style={styles.paginationRow}>
+						<ThemedView style={styles.paginationRow}>
 							<TouchableOpacity
 								style={[
 									styles.pageBtn,
@@ -470,7 +474,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 								disabled={currentPage === totalPages}>
 								<ThemedText style={styles.pageBtnText}>Next</ThemedText>
 							</TouchableOpacity>
-						</View>
+						</ThemedView>
 					}
 				/>
 				{/* Filter Modal */}
@@ -479,8 +483,8 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 					transparent
 					animationType="slide"
 					onRequestClose={() => setShowFilterModal(false)}>
-					<View style={styles.filterModalOverlay}>
-						<View style={styles.filterModal}>
+					<ThemedView style={styles.filterModalOverlay}>
+						<ThemedView type="modal" style={styles.filterModal}>
 							<View style={styles.filterModalHeader}>
 								<ThemedText style={styles.filterModalTitle}>Filters</ThemedText>
 								<TouchableOpacity onPress={() => setShowFilterModal(false)}>
@@ -569,8 +573,8 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 									))}
 								</View>
 							</View>
-						</View>
-					</View>
+						</ThemedView>
+					</ThemedView>
 				</Modal>
 
 				{/* user bid history modal */}
@@ -580,7 +584,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 					animationType="slide"
 					onRequestClose={() => setShowBidHistory(false)}>
 					<View style={styles.modalOverlay}>
-						<View style={styles.modalContent}>
+						<ThemedView type="modal" style={styles.modalContent}>
 							<ThemedText style={styles.modalTitle}>Your Bid History</ThemedText>
 							<FlatList
 								data={userBids}
@@ -600,7 +604,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 									<X size={22} color={Colors.light.textMutedForeground} />
 								</ThemedText>
 							</TouchableOpacity>
-						</View>
+						</ThemedView>
 					</View>
 				</Modal>
 			</ThemedView>
@@ -615,7 +619,6 @@ const styles = StyleSheet.create({
 	container: {
 		flex: 1,
 		padding: 12,
-		backgroundColor: Colors.light.background,
 		position: "relative", // ensure relative for absolute children
 	},
 	center: {
@@ -745,13 +748,18 @@ const styles = StyleSheet.create({
 		justifyContent: "space-between",
 		gap: 12,
 	},
+	touchableCard: {
+		flex: 1,
+		borderRadius: 16,
+		borderWidth: 1,
+		borderColor: "transparent",
+		marginHorizontal: 6,
+		marginBottom: 12,
+	},
 	card: {
-		backgroundColor: Colors.light.card,
 		borderRadius: 16,
 		padding: 16,
-		marginBottom: 18,
 
-		marginHorizontal: 6,
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 2 },
 		shadowOpacity: 0.08,
@@ -850,7 +858,6 @@ const styles = StyleSheet.create({
 		gap: 16,
 	},
 	pageBtn: {
-		backgroundColor: Colors.light.tint,
 		paddingVertical: 8,
 		paddingHorizontal: 18,
 		borderRadius: 8,
@@ -919,13 +926,12 @@ const styles = StyleSheet.create({
 	// Filter Modal styles
 	filterModalOverlay: {
 		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.25)",
+		backgroundColor: "rgba(0,0,0,0.85)",
 		justifyContent: "center",
 		alignItems: "center",
 	},
 	filterModal: {
 		width: "90%",
-		backgroundColor: "#fff",
 		borderRadius: 18,
 		padding: 24,
 		alignItems: "center",
@@ -997,13 +1003,12 @@ const styles = StyleSheet.create({
 	},
 	modalOverlay: {
 		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.5)",
+		backgroundColor: "rgba(0,0,0,0.8)",
 		justifyContent: "center",
 		alignItems: "center",
 	},
 	modalContent: {
 		width: "90%",
-		backgroundColor: "#fff",
 		borderRadius: 16,
 		padding: 24,
 		shadowColor: "#000",
@@ -1025,7 +1030,6 @@ const styles = StyleSheet.create({
 		borderBottomColor: Colors.light.muted,
 	},
 	bidItemText: {
-		color: Colors.light.textPrimaryForeground,
 		fontSize: 16,
 	},
 	modalCloseBtn: {
