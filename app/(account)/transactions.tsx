@@ -1,7 +1,9 @@
+import CopyElement from "@/components/CopyElement";
 import ReceiptModal from "@/components/Receipt";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
+import { fetchTransactions } from "@/lib/helpers";
 import { iTransaction } from "@/lib/types";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye, Receipt, RotateCcw } from "lucide-react-native";
@@ -77,10 +79,20 @@ export default function TransactionsScreen() {
 	const fetchData = useCallback(async () => {
 		setLoading(true);
 		setError(null);
-		setTimeout(() => {
-			setTransactions(DUMMY_TRANSACTIONS);
+		try {
+			// Simulate fetching data
+			const res = await fetchTransactions({ page: 1, pageSize: 20 });
+			if (res.error) {
+				setError(res.error);
+			} else {
+				setTransactions(res.transactions);
+			}
+		} catch (err) {
+			console.error("Error fetching transactions:", err);
+			setError("Failed to load transactions. Please try again later.");
+		} finally {
 			setLoading(false);
-		}, 800);
+		}
 	}, []);
 
 	useEffect(() => {
@@ -135,7 +147,13 @@ export default function TransactionsScreen() {
 												<View style={styles.txHeaderLeft}>
 													<Receipt size={22} color={Colors.light.tint} />
 													<ThemedText style={styles.txIdText}>
-														{item.m_payment_id || item.pf_payment_id}
+														<CopyElement
+															truncate
+															content={
+																item.m_payment_id ||
+																item.pf_payment_id
+															}
+														/>
 													</ThemedText>
 												</View>
 												<TouchableOpacity
@@ -178,27 +196,10 @@ export default function TransactionsScreen() {
 													Item:
 												</ThemedText>
 												<ThemedText style={styles.txValue}>
-													{item.item_name}
-												</ThemedText>
-											</View>
-											<View style={styles.txDetailsRow}>
-												<ThemedText style={styles.txLabel}>Net:</ThemedText>
-												<ThemedText style={styles.txValue}>
-													R {Number(item.amount_net).toFixed(2)}
-												</ThemedText>
-											</View>
-											<View style={styles.txDetailsRow}>
-												<ThemedText style={styles.txLabel}>Fee:</ThemedText>
-												<ThemedText style={styles.txValue}>
-													R {Math.abs(Number(item.amount_fee)).toFixed(2)}
-												</ThemedText>
-											</View>
-											<View style={styles.txDetailsRow}>
-												<ThemedText style={styles.txLabel}>
-													Total:
-												</ThemedText>
-												<ThemedText style={styles.txValue}>
-													R {Number(item.amount_gross).toFixed(2)}
+													<CopyElement
+														truncate
+														content={item.item_name || "N/A"}
+													/>
 												</ThemedText>
 											</View>
 										</View>
@@ -246,7 +247,7 @@ const styles = StyleSheet.create({
 		boxShadow: "0 1px 4px rgba(1,75,139,0.07)",
 	},
 	card: {
-		backgroundColor: Colors.light.background,
+		backgroundColor: Colors.light.secondary,
 		borderRadius: 22,
 		marginHorizontal: 12,
 		padding: 6,

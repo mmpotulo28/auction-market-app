@@ -3,6 +3,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useUser } from "@clerk/clerk-expo";
 import * as ImagePicker from "expo-image-picker";
+import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
 	ActivityIndicator,
@@ -17,6 +18,10 @@ import {
 
 export default function ProfileScreen() {
 	const { user, isLoaded } = useUser();
+	const router = useRouter();
+
+	// Redirect to sign-in if not logged in
+
 	const [editing, setEditing] = useState(false);
 	const [form, setForm] = useState({
 		firstName: user?.firstName || "",
@@ -28,6 +33,11 @@ export default function ProfileScreen() {
 	const [newEmail, setNewEmail] = useState("");
 	const [newPhone, setNewPhone] = useState("");
 	const [loading, setLoading] = useState(false);
+
+	if (isLoaded && !user) {
+		router.replace("/(auth)/sign-in");
+		return null;
+	}
 
 	const handleChange = (key: string, value: string) => {
 		setForm((prev) => ({ ...prev, [key]: value }));
@@ -49,11 +59,16 @@ export default function ProfileScreen() {
 		setLoading(false);
 	};
 
-	const setProfileImage = async (image: { uri: string; type: string; name: string }) => {
+	const setProfileImage = async (image: {
+		uri: string;
+		type: string;
+		name: string;
+		file: any;
+	}) => {
 		if (!user) return;
 		setLoading(true);
 		try {
-			await user.update({});
+			await user.setProfileImage(image);
 			setForm((prev) => ({ ...prev, profileImageUrl: image.uri }));
 		} catch (err: any) {
 			Alert.alert("Error", err?.message || "Failed to update profile picture.");
@@ -87,6 +102,7 @@ export default function ProfileScreen() {
 			setLoading(true);
 			try {
 				await setProfileImage({
+					file: result.assets[0],
 					uri: result.assets[0].uri,
 					type: "image/jpeg",
 					name: "profile.jpg",

@@ -15,6 +15,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import CopyElement from "./CopyElement";
 
 interface ReceiptProps {
 	transaction: iTransaction;
@@ -189,13 +190,19 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 								<View style={styles.row}>
 									<ThemedText style={styles.label}>Item</ThemedText>
 									<ThemedText style={styles.value} numberOfLines={1}>
-										{transaction.item_name}
+										<CopyElement truncate content={transaction.item_name} />
 									</ThemedText>
 								</View>
 								<View style={styles.row}>
 									<ThemedText style={styles.label}>Ref</ThemedText>
 									<ThemedText style={styles.value}>
-										{transaction.m_payment_id || transaction.pf_payment_id}
+										<CopyElement
+											truncate
+											content={
+												transaction.m_payment_id ||
+												transaction.pf_payment_id
+											}
+										/>
 									</ThemedText>
 								</View>
 								<View style={[styles.row, styles.boldRow]}>
@@ -248,7 +255,13 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 								<View style={styles.row}>
 									<ThemedText style={styles.label}>Ref</ThemedText>
 									<ThemedText style={styles.value}>
-										{transaction.m_payment_id || transaction.pf_payment_id}
+										<CopyElement
+											truncate
+											content={
+												transaction.m_payment_id ||
+												transaction.pf_payment_id
+											}
+										/>
 									</ThemedText>
 								</View>
 								<View style={styles.row}>
@@ -275,14 +288,17 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 								<View style={styles.row}>
 									<ThemedText style={styles.label}>Item</ThemedText>
 									<ThemedText style={styles.value} numberOfLines={1}>
-										{transaction?.item_name}
+										<CopyElement truncate content={transaction?.item_name} />
 									</ThemedText>
 								</View>
 								{transaction.custom_str2 && (
 									<View style={styles.row}>
 										<ThemedText style={styles.label}>Order Id</ThemedText>
 										<ThemedText style={styles.value} numberOfLines={1}>
-											{transaction?.custom_str2}
+											<CopyElement
+												truncate
+												content={transaction?.custom_str2}
+											/>
 										</ThemedText>
 									</View>
 								)}
@@ -290,7 +306,10 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 									<View style={styles.row}>
 										<ThemedText style={styles.label}>User Id</ThemedText>
 										<ThemedText style={styles.value} numberOfLines={1}>
-											{transaction?.custom_str1}
+											<CopyElement
+												truncate
+												content={transaction?.custom_str1}
+											/>
 										</ThemedText>
 									</View>
 								)}
@@ -298,7 +317,10 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 									<View style={styles.row}>
 										<ThemedText style={styles.label}>Description</ThemedText>
 										<ThemedText style={styles.value} numberOfLines={2}>
-											{transaction.item_description}
+											<CopyElement
+												truncate
+												content={transaction.item_description}
+											/>
 										</ThemedText>
 									</View>
 								)}

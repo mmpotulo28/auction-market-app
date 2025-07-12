@@ -1,5 +1,5 @@
 import axios from "axios";
-import { iAuction, iGroupedOrder, iOrder, iOrderStatus } from "./types";
+import { iAuction, iGroupedOrder, iOrder, iOrderStatus, iTransaction } from "./types";
 
 /**
  * Converts a given string into a URL-friendly format.
@@ -152,7 +152,7 @@ export const sendNotification = async (
 	type: string = "info",
 ): Promise<{ success: boolean; error?: string }> => {
 	try {
-		const res = await axios.post("/api/admin/notifications", {
+		const res = await axios.post("https://auctionmarket.tech/api/admin/notifications", {
 			user_id: userId || "All",
 			message,
 			type,
@@ -243,19 +243,51 @@ export async function fetchOrders({
 	pageSize?: number;
 }): Promise<iFetchOrdersResponse> {
 	try {
-		const res = await axios.get(`/api/admin/orders?page=${page}&pageSize=${pageSize}`);
+		const res = await axios.get(
+			`https://auctionmarket.tech/api/admin/orders?page=${page}&pageSize=${pageSize}`,
+		);
 		if (res.data && Array.isArray(res.data.orders)) {
 			// Group orders by order_id
 			const grouped = groupOrdersByOrderId(res.data.orders);
+
+			console.log("Fetched orders:", res.data.orders);
+			console.log("Grouped orders:", grouped);
 
 			return { orders: res.data.orders, groupedOrders: grouped, error: null };
 		} else {
 			return { orders: [], groupedOrders: [], error: "Invalid response from server." };
 		}
 	} catch (e: any) {
+		console.error("Error fetching orders:", e);
 		let msg = "Failed to fetch orders.";
 		if (e?.response?.data?.error) msg = e.response.data.error;
 		else if (e?.message) msg = e.message;
 		return { orders: [], groupedOrders: [], error: msg };
+	}
+}
+
+export async function fetchTransactions({
+	page,
+	pageSize = 15,
+}: {
+	page: number;
+	pageSize?: number;
+}): Promise<{ transactions: iTransaction[]; error: string | null }> {
+	try {
+		const res = await axios.get(
+			`https://auctionmarket.tech/api/admin/transactions?page=${page}&pageSize=${pageSize}`,
+		);
+		if (res.data && Array.isArray(res.data.transactions)) {
+			console.log("Fetched transactions:", res.data.transactions);
+			return { transactions: res.data.transactions, error: null };
+		} else {
+			return { transactions: [], error: "Invalid response from server." };
+		}
+	} catch (e: any) {
+		console.error("Error fetching transactions:", e);
+		let msg = "Failed to fetch transactions.";
+		if (e?.response?.data?.error) msg = e.response.data.error;
+		else if (e?.message) msg = e.message;
+		return { transactions: [], error: msg };
 	}
 }

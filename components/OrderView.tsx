@@ -1,24 +1,25 @@
 import { ThemedText } from "@/components/ThemedText";
 import { Colors } from "@/constants/Colors";
-import { iGroupedOrder, iOrder } from "@/lib/types";
+import { iGroupedOrder, iOrder, iOrderStatus } from "@/lib/types";
 import { Receipt, X } from "lucide-react-native";
 import React from "react";
 import { Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import CopyElement from "./CopyElement";
 
 interface OrderViewProps {
 	group: iGroupedOrder;
 	onClose: () => void;
 }
 
-const statusBadgeColor = (status: string) => {
-	switch (status.toLowerCase()) {
-		case "completed":
-		case "complete":
+const statusBadgeColor = (status: iOrderStatus) => {
+	switch (status) {
+		case iOrderStatus.Completed:
 			return { backgroundColor: "#e0ffe6", color: "#22c55e" };
-		case "pending":
+		case iOrderStatus.Pending:
+		case iOrderStatus.Processing:
 			return { backgroundColor: "#fffbe6", color: "#eab308" };
-		case "failed":
-		case "cancelled":
+		case iOrderStatus.Failed:
+		case iOrderStatus.Cancelled:
 			return { backgroundColor: "#ffeaea", color: "#c90000" };
 		default:
 			return { backgroundColor: "#e0eaff", color: Colors.light.textMutedForeground };
@@ -35,7 +36,9 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 					<View style={styles.header}>
 						<View style={styles.headerLeft}>
 							<Receipt size={22} color={Colors.light.tint} />
-							<ThemedText style={styles.headerTitle}>{group.order_id}</ThemedText>
+							<ThemedText style={styles.headerTitle}>
+								<CopyElement truncate content={group.order_id} />
+							</ThemedText>
 						</View>
 						<TouchableOpacity onPress={onClose} style={styles.closeBtn}>
 							<X size={22} color={Colors.light.textMutedForeground} />
@@ -54,7 +57,9 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 							</View>
 							<View style={styles.infoRow}>
 								<ThemedText style={styles.infoLabel}>Email:</ThemedText>
-								<ThemedText style={styles.infoValue}>{group.user_email}</ThemedText>
+								<ThemedText style={styles.infoValue}>
+									<CopyElement truncate content={group.user_email} />
+								</ThemedText>
 							</View>
 							<View style={styles.infoRow}>
 								<ThemedText style={styles.infoLabel}>Created At:</ThemedText>
@@ -65,8 +70,10 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 								</ThemedText>
 							</View>
 							<View style={styles.infoRow}>
-								<ThemedText style={styles.infoLabel}>Payment Ref:</ThemedText>
-								<ThemedText style={styles.infoValue}>{group.payment_id}</ThemedText>
+								<ThemedText style={styles.infoLabel}>Txn Ref: </ThemedText>
+								<ThemedText style={styles.infoValue}>
+									<CopyElement truncate content={group.payment_id} />
+								</ThemedText>
 							</View>
 							<View style={styles.infoRow}>
 								<ThemedText style={styles.infoLabel}>Items Count:</ThemedText>
@@ -81,7 +88,7 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 								</ThemedText>
 							</View>
 						</View>
-						<View style={styles.itemsSection}>
+						<ScrollView style={styles.itemsSection}>
 							<ThemedText style={styles.itemsTitle}>Order Items</ThemedText>
 							{group.orders && group.orders.length > 0 ? (
 								group.orders.map((order: iOrder) => (
@@ -106,7 +113,7 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 									No items found for this order.
 								</ThemedText>
 							)}
-						</View>
+						</ScrollView>
 					</ScrollView>
 				</View>
 			</View>

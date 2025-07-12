@@ -9,7 +9,16 @@ import * as ClerckTypes from "@clerk/types";
 import { makeRedirectUri } from "expo-auth-session";
 import { router } from "expo-router";
 import React, { useState } from "react";
-import { Image, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import {
+	Image,
+	KeyboardAvoidingView,
+	Platform,
+	StyleSheet,
+	TextInput,
+	TouchableOpacity,
+	View,
+} from "react-native";
+import { ScrollView } from "react-native-gesture-handler";
 
 const SignInScreen = () => {
 	const { signIn, setActive, isLoaded } = useSignIn();
@@ -48,7 +57,7 @@ const SignInScreen = () => {
 							password: form.password,
 					  });
 
-			console.log("Sign in attempt result:", signInAttempt);
+			console.log("Sign in attempt result:", signInAttempt.userData.firstName);
 			if (signInAttempt.status === "complete") {
 				if (!useLocal) {
 					await setCredentials({
@@ -94,104 +103,116 @@ const SignInScreen = () => {
 	};
 
 	return (
-		<ThemedView style={styles.container}>
-			<View style={styles.logoContainer}>
-				<Image
-					source={require("@/assets/images/amsa-logo.png")}
-					style={styles.logo}
-					resizeMode="contain"
-				/>
-			</View>
-			<View style={styles.formCard}>
-				<ThemedText type="title" style={styles.heading}>
-					Sign In
-				</ThemedText>
-				{hasCredentials && biometricType && (
-					<TouchableOpacity
-						style={[styles.button, { backgroundColor: "#1976c5", marginBottom: 10 }]}
-						onPress={() => onSignInPress(true)}
-						disabled={loading}>
-						<ThemedText style={styles.buttonText}>
-							{loading
-								? "Authenticating..."
-								: biometricType === "face-recognition"
-								? "Sign in with Face ID"
-								: "Sign in with Touch ID"}
+		<KeyboardAvoidingView
+			style={styles.container}
+			behavior={Platform.OS === "ios" ? "padding" : "height"}>
+			<ScrollView>
+				<ThemedView style={styles.container}>
+					<View style={styles.logoContainer}>
+						<Image
+							source={require("@/assets/images/amsa-logo.png")}
+							style={styles.logo}
+							resizeMode="contain"
+						/>
+					</View>
+					<View style={styles.formCard}>
+						<ThemedText type="title" style={styles.heading}>
+							Sign In
 						</ThemedText>
-					</TouchableOpacity>
-				)}
-				{hasCredentials && userOwnsCredentials && (
-					<TouchableOpacity
-						style={[styles.button, { backgroundColor: "#c90000", marginBottom: 10 }]}
-						onPress={handleClearCredentials}
-						disabled={loading}>
-						<ThemedText style={styles.buttonText}>
-							Remove Biometric Credentials
-						</ThemedText>
-					</TouchableOpacity>
-				)}
-				<View style={styles.socialCol}>
-					{SOCIAL_PROVIDERS.map((provider) => (
-						<TouchableOpacity
-							key={provider.key}
-							style={styles.socialBtn}
-							onPress={() => handleSocialSignIn(provider.key)}
-							disabled={loading}>
-							{provider.icon}
-							<ThemedText style={styles.socialBtnText}>
-								Sign in with {provider.name}
-							</ThemedText>
-						</TouchableOpacity>
-					))}
-				</View>
-				<View style={styles.dividerRow}>
-					<View style={styles.divider} />
-					<ThemedText style={styles.dividerText}>or</ThemedText>
-					<View style={styles.divider} />
-				</View>
-				<View style={styles.form}>
-					<TextInput
-						style={styles.input}
-						placeholder="Email"
-						autoCapitalize="none"
-						keyboardType="email-address"
-						value={form.email}
-						onChangeText={(v) => handleChange("email", v)}
-						placeholderTextColor={Colors.light.textMutedForeground}
+						{hasCredentials && biometricType && (
+							<TouchableOpacity
+								style={[
+									styles.button,
+									{ backgroundColor: "#1976c5", marginBottom: 10 },
+								]}
+								onPress={() => onSignInPress(true)}
+								disabled={loading}>
+								<ThemedText style={styles.buttonText}>
+									{loading
+										? "Authenticating..."
+										: biometricType === "face-recognition"
+										? "Sign in with Face ID"
+										: "Sign in with Touch ID"}
+								</ThemedText>
+							</TouchableOpacity>
+						)}
+						{hasCredentials && userOwnsCredentials && (
+							<TouchableOpacity
+								style={[
+									styles.button,
+									{ backgroundColor: "#c90000", marginBottom: 10 },
+								]}
+								onPress={handleClearCredentials}
+								disabled={loading}>
+								<ThemedText style={styles.buttonText}>
+									Remove Biometric Credentials
+								</ThemedText>
+							</TouchableOpacity>
+						)}
+						<View style={styles.socialCol}>
+							{SOCIAL_PROVIDERS.map((provider) => (
+								<TouchableOpacity
+									key={provider.key}
+									style={styles.socialBtn}
+									onPress={() => handleSocialSignIn(provider.key)}
+									disabled={loading}>
+									{provider.icon}
+									<ThemedText style={styles.socialBtnText}>
+										Sign in with {provider.name}
+									</ThemedText>
+								</TouchableOpacity>
+							))}
+						</View>
+						<View style={styles.dividerRow}>
+							<View style={styles.divider} />
+							<ThemedText style={styles.dividerText}>or</ThemedText>
+							<View style={styles.divider} />
+						</View>
+						<View style={styles.form}>
+							<TextInput
+								style={styles.input}
+								placeholder="Email"
+								autoCapitalize="none"
+								keyboardType="email-address"
+								value={form.email}
+								onChangeText={(v) => handleChange("email", v)}
+								placeholderTextColor={Colors.light.textMutedForeground}
+							/>
+							<TextInput
+								style={styles.input}
+								placeholder="Password"
+								secureTextEntry
+								value={form.password}
+								onChangeText={(v) => handleChange("password", v)}
+								placeholderTextColor={Colors.light.textMutedForeground}
+							/>
+							<TouchableOpacity
+								style={styles.button}
+								onPress={() => onSignInPress(false)}
+								disabled={loading}>
+								<ThemedText style={styles.buttonText}>
+									{loading ? "Signing In..." : "Sign In"}
+								</ThemedText>
+							</TouchableOpacity>
+							<TouchableOpacity onPress={() => router.push("/(auth)/sign-up")}>
+								<ThemedText style={styles.link}>
+									Don&apos;t have an account? Sign Up
+								</ThemedText>
+							</TouchableOpacity>
+						</View>
+					</View>
+					<PopupModal
+						visible={errorModal.visible}
+						title="Error"
+						message={errorModal.message}
+						onCancel={() => setErrorModal({ visible: false, message: "" })}
+						onConfirm={() => setErrorModal({ visible: false, message: "" })}
+						confirmText="OK"
+						cancelText="Close"
 					/>
-					<TextInput
-						style={styles.input}
-						placeholder="Password"
-						secureTextEntry
-						value={form.password}
-						onChangeText={(v) => handleChange("password", v)}
-						placeholderTextColor={Colors.light.textMutedForeground}
-					/>
-					<TouchableOpacity
-						style={styles.button}
-						onPress={() => onSignInPress(false)}
-						disabled={loading}>
-						<ThemedText style={styles.buttonText}>
-							{loading ? "Signing In..." : "Sign In"}
-						</ThemedText>
-					</TouchableOpacity>
-					<TouchableOpacity onPress={() => router.push("/(auth)/sign-up")}>
-						<ThemedText style={styles.link}>
-							Don&apos;t have an account? Sign Up
-						</ThemedText>
-					</TouchableOpacity>
-				</View>
-			</View>
-			<PopupModal
-				visible={errorModal.visible}
-				title="Error"
-				message={errorModal.message}
-				onCancel={() => setErrorModal({ visible: false, message: "" })}
-				onConfirm={() => setErrorModal({ visible: false, message: "" })}
-				confirmText="OK"
-				cancelText="Close"
-			/>
-		</ThemedView>
+				</ThemedView>
+			</ScrollView>
+		</KeyboardAvoidingView>
 	);
 };
 
@@ -201,6 +222,7 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		padding: 24,
 		backgroundColor: Colors.light.background,
+		minWidth: "100%", // Ensure full width on small screens
 	},
 	logoContainer: {
 		alignItems: "center",
@@ -227,6 +249,7 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.08,
 		shadowRadius: 8,
 		elevation: 2,
+		minWidth: "100%",
 	},
 	heading: {
 		fontSize: 28,

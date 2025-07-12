@@ -1,4 +1,5 @@
 import { useColorScheme } from "@//hooks/useColorScheme";
+import AccessControlProvider from "@/context/AccessControlProvider";
 import { WebSocketProvider } from "@/context/WebSocketProvider";
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
@@ -46,20 +47,31 @@ export default Sentry.wrap(function RootLayout() {
 				<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
 					<Toaster />
 					<GestureHandlerRootView>
-						<WebSocketProvider>
-							<Stack>
-								<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-								<Stack.Screen name="(support)" options={{ headerShown: false }} />
-								<Stack.Screen name="(auth)" options={{ headerShown: false }} />
-								<Stack.Screen
-									name="oauth-native-callback"
-									options={{ headerShown: false }}
-								/>
-								<Stack.Screen name="(account)" options={{ headerShown: false }} />
-								<Stack.Screen name="(auctions)" options={{ headerShown: false }} />
-								<Stack.Screen name="+not-found" />
-							</Stack>
-						</WebSocketProvider>
+						<AccessControlProvider>
+							<WebSocketProvider>
+								<Stack>
+									<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
+									<Stack.Screen
+										name="(support)"
+										options={{ headerShown: false }}
+									/>
+									<Stack.Screen name="(auth)" options={{ headerShown: false }} />
+									<Stack.Screen
+										name="oauth-native-callback"
+										options={{ headerShown: false }}
+									/>
+									<Stack.Screen
+										name="(account)"
+										options={{ headerShown: false }}
+									/>
+									<Stack.Screen
+										name="(auctions)"
+										options={{ headerShown: false }}
+									/>
+									<Stack.Screen name="+not-found" />
+								</Stack>
+							</WebSocketProvider>
+						</AccessControlProvider>
 					</GestureHandlerRootView>
 					<StatusBar style="auto" />
 				</ThemeProvider>

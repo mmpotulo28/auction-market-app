@@ -5,7 +5,16 @@ import { useWebSocket } from "@/context/WebSocketProvider";
 import { iAuction, iBid, iSize } from "@/lib/types";
 import { useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
-import { ChevronDown, ChevronUp, Filter, Minus, Plus, UserCheck, X } from "lucide-react-native";
+import {
+	ChevronDown,
+	ChevronUp,
+	Filter,
+	Minus,
+	Plus,
+	TimerIcon,
+	UserCheck,
+	X,
+} from "lucide-react-native";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
@@ -277,6 +286,12 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 					accessibilityLabel="Show filters">
 					<Filter size={22} color={Colors.light.tint} />
 				</TouchableOpacity>
+				<TouchableOpacity
+					style={styles.filterBtn}
+					onPress={() => setShowBidHistory(true)}
+					accessibilityLabel="Show bid history">
+					<TimerIcon size={22} color={Colors.light.tint} />
+				</TouchableOpacity>
 			</View>
 			{isLoading && (
 				<View style={styles.loadingRow}>
@@ -450,11 +465,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 												styles.filterChipActive,
 										]}
 										onPress={() => {
-											setSelectedCategories((prev) =>
-												prev.includes(cat)
-													? prev.filter((c) => c !== cat)
-													: [...prev, cat],
-											);
+											toggleCategory(cat);
 										}}>
 										<ThemedText
 											style={[
@@ -468,10 +479,90 @@ const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage
 								))}
 							</View>
 						</View>
+						<View style={styles.filterSection}>
+							<ThemedText style={styles.filterLabel}>Price Range</ThemedText>
+							<View style={styles.priceRangeRow}>
+								<TouchableOpacity
+									style={styles.priceRangeBtn}
+									onPress={() =>
+										setPriceRange([priceRange[0] - 1000, priceRange[1]])
+									}
+									disabled={auctionClosed || auctionNotStarted}>
+									<Minus size={18} color={Colors.light.tint} />
+								</TouchableOpacity>
+								<ThemedText style={styles.priceRangeText}>
+									R {priceRange[0]} - R {priceRange[1]}
+								</ThemedText>
+								<TouchableOpacity
+									style={styles.priceRangeBtn}
+									onPress={() =>
+										setPriceRange([priceRange[0] + 1000, priceRange[1]])
+									}
+									disabled={auctionClosed || auctionNotStarted}>
+									<Plus size={18} color={Colors.light.tint} />
+								</TouchableOpacity>
+							</View>
+							<TouchableOpacity
+								style={styles.filterApplyBtn}
+								onPress={() => setShowFilterModal(false)}>
+								<ThemedText style={styles.filterApplyBtnText}>Apply</ThemedText>
+							</TouchableOpacity>
+						</View>
+						{/* item condition filter */}
+						<View style={styles.filterSection}>
+							<ThemedText style={styles.filterLabel}>Item Condition</ThemedText>
+							<View style={styles.filterChipsRow}>
+								{["New", "Used", "Refurbished"].map((condition) => (
+									<TouchableOpacity
+										key={condition}
+										style={[
+											styles.filterChip,
+											selectedConditions.has(condition) &&
+												styles.filterChipActive,
+										]}
+										onPress={() => {
+											toggleCondition(condition);
+										}}>
+										<ThemedText
+											style={[
+												styles.filterChipText,
+												selectedConditions.has(condition) &&
+													styles.filterChipTextActive,
+											]}>
+											{condition}
+										</ThemedText>
+									</TouchableOpacity>
+								))}
+							</View>
+						</View>
+					</View>
+				</View>
+			</Modal>
+
+			{/* user bid history modal */}
+			<Modal
+				visible={showBidHistory}
+				transparent
+				animationType="slide"
+				onRequestClose={() => setShowBidHistory(false)}>
+				<View style={styles.modalOverlay}>
+					<View style={styles.modalContent}>
+						<ThemedText style={styles.modalTitle}>Your Bid History</ThemedText>
+						<FlatList
+							data={userBids}
+							keyExtractor={(item) => item.itemId}
+							renderItem={({ item }) => (
+								<View style={styles.bidItem}>
+									<ThemedText style={styles.bidItemText}>
+										{item.item?.title} - R{item.amount}
+									</ThemedText>
+								</View>
+							)}
+						/>
 						<TouchableOpacity
-							style={styles.filterApplyBtn}
-							onPress={() => setShowFilterModal(false)}>
-							<ThemedText style={styles.filterApplyBtnText}>Apply</ThemedText>
+							style={styles.modalCloseBtn}
+							onPress={() => setShowBidHistory(false)}>
+							<ThemedText style={styles.modalCloseBtnText}>Close</ThemedText>
 						</TouchableOpacity>
 					</View>
 				</View>
@@ -641,19 +732,19 @@ const styles = StyleSheet.create({
 		marginTop: 4,
 	},
 	badge: {
-		backgroundColor: "#e0eaff",
+		backgroundColor: Colors.light.destructive,
 		borderRadius: 8,
 		paddingHorizontal: 10,
 		paddingVertical: 4,
 		marginRight: 6,
 	},
 	badgeSecondary: {
-		backgroundColor: Colors.light.secondary,
+		backgroundColor: Colors.light.chart2,
 	},
 	badgeText: {
 		fontWeight: "600",
 		fontSize: 13,
-		color: Colors.light.textMutedForeground,
+		color: "#fff",
 	},
 	cardContent: {
 		marginBottom: 8,
@@ -863,6 +954,73 @@ const styles = StyleSheet.create({
 	},
 	errorText: {
 		color: Colors.light.destructive,
+	},
+	modalOverlay: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.5)",
+		justifyContent: "center",
+		alignItems: "center",
+	},
+	modalContent: {
+		width: "90%",
+		backgroundColor: "#fff",
+		borderRadius: 16,
+		padding: 24,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 8,
+		elevation: 4,
+	},
+	modalTitle: {
+		fontWeight: "bold",
+		fontSize: 20,
+		color: Colors.light.textPrimaryForeground,
+		marginBottom: 16,
+	},
+	bidItem: {
+		paddingVertical: 12,
+		borderBottomWidth: 1,
+		borderBottomColor: Colors.light.muted,
+	},
+	bidItemText: {
+		color: Colors.light.textPrimaryForeground,
+		fontSize: 16,
+	},
+	modalCloseBtn: {
+		backgroundColor: Colors.light.tint,
+		paddingVertical: 10,
+		paddingHorizontal: 24,
+		borderRadius: 8,
+		alignItems: "center",
+		marginTop: 16,
+	},
+	modalCloseBtnText: {
+		color: "#fff",
+		fontWeight: "700",
+		fontSize: 16,
+	},
+	priceRangeRow: {
+		flexDirection: "row",
+		alignItems: "center",
+		justifyContent: "space-between",
+		paddingVertical: 12,
+		borderBottomWidth: 1,
+		borderBottomColor: Colors.light.muted,
+	},
+	priceRangeBtn: {
+		backgroundColor: Colors.light.muted,
+		borderRadius: 8,
+		padding: 8,
+		alignItems: "center",
+		justifyContent: "center",
+	},
+	priceRangeText: {
+		color: Colors.light.textPrimaryForeground,
+		fontSize: 16,
+		fontWeight: "600",
+		flex: 1,
+		textAlign: "center",
 	},
 });
 

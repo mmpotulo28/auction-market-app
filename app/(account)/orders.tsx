@@ -1,7 +1,9 @@
+import CopyElement from "@/components/CopyElement";
 import OrderView from "@/components/OrderView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
+import { fetchOrders } from "@/lib/helpers";
 import { iGroupedOrder, iOrderStatus } from "@/lib/types";
 import { LinearGradient } from "expo-linear-gradient";
 import { ChevronRight, Receipt, RotateCcw } from "lucide-react-native";
@@ -71,17 +73,21 @@ export default function OrdersScreen() {
 	const fetchData = useCallback(async () => {
 		setLoading(true);
 		setError(null);
-		// Replace with real fetchOrders({ page, pageSize: PAGE_SIZE }) if backend is ready
-		setTimeout(() => {
-			setOrders(DUMMY_ORDERS);
-			setLoading(false);
-		}, 800);
-		// Example for real API:
-		// const { groupedOrders, error } = await fetchOrders({ page, pageSize: PAGE_SIZE });
-		// if (error) setError(error);
-		// else setOrders(groupedOrders);
-		// setLoading(false);
-	}, []);
+		fetchOrders({ page, pageSize: 10 })
+			.then((data) => {
+				const { orders: fetchedOrders, groupedOrders } = data;
+				if (data.error) {
+					setError(data.error);
+				}
+				setOrders(groupedOrders);
+				setLoading(false);
+			})
+			.catch((err) => {
+				console.error("Error fetching orders:", err);
+				setError("Failed to fetch orders.");
+				setLoading(false);
+			});
+	}, [page]);
 
 	useEffect(() => {
 		fetchData();
@@ -139,7 +145,7 @@ export default function OrdersScreen() {
 											<View style={styles.orderHeaderLeft}>
 												<Receipt size={22} color={Colors.light.tint} />
 												<ThemedText style={styles.orderIdText}>
-													{item.order_id}
+													<CopyElement truncate content={item.order_id} />
 												</ThemedText>
 											</View>
 											<ChevronRight
@@ -149,10 +155,10 @@ export default function OrdersScreen() {
 										</View>
 										<View style={styles.orderDetailsRow}>
 											<ThemedText style={styles.orderLabel}>
-												Payment Ref:
+												Payment Ref:{" "}
 											</ThemedText>
 											<ThemedText style={styles.orderValue}>
-												{item.payment_id}
+												<CopyElement truncate content={item.payment_id} />
 											</ThemedText>
 										</View>
 										<View style={styles.orderDetailsRow}>
@@ -166,7 +172,7 @@ export default function OrdersScreen() {
 												Email:
 											</ThemedText>
 											<ThemedText style={styles.orderValue}>
-												{item.user_email}
+												<CopyElement truncate content={item.user_email} />
 											</ThemedText>
 										</View>
 										<View style={styles.orderDetailsRow}>
@@ -239,7 +245,7 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		paddingTop: 24,
+		paddingTop: 44,
 		backgroundColor: Colors.light.background,
 	},
 	headerRow: {

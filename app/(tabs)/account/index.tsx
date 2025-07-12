@@ -1,15 +1,27 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
-import { useUser } from "@clerk/clerk-expo";
+import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import { Bell, CreditCard, LogOut, Receipt, User2 } from "lucide-react-native";
 import React from "react";
-import { Image, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Alert, Image, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
 const AccountScreen = () => {
 	const { user } = useUser();
+
+	const { signOut } = useAuth();
 	const router = useRouter();
+
+	const handleLogout = async () => {
+		try {
+			await signOut();
+			// Optionally clear AsyncStorage or any other app state here
+			router.replace("/(auth)/sign-in");
+		} catch (e) {
+			Alert.alert("Error", "Failed to log out.");
+		}
+	};
 
 	return (
 		<ThemedView style={styles.container}>
@@ -113,7 +125,10 @@ const AccountScreen = () => {
 
 				{/* Log Out */}
 				<View style={styles.section}>
-					<TouchableOpacity style={styles.logoutBtn} activeOpacity={0.8}>
+					<TouchableOpacity
+						style={styles.logoutBtn}
+						activeOpacity={0.8}
+						onPress={handleLogout}>
 						<LogOut size={20} color="#fff" style={{ marginRight: 8 }} />
 						<ThemedText style={styles.logoutText}>Log Out</ThemedText>
 					</TouchableOpacity>

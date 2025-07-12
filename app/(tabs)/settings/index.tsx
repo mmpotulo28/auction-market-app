@@ -5,8 +5,10 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { setColorScheme, useColorScheme } from "@/hooks/useColorScheme";
+import { useAuth } from "@clerk/clerk-expo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
+import { router } from "expo-router";
 import { Bell, Info, Lock, LogOut, Moon, Sun } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from "react-native";
@@ -32,6 +34,8 @@ const SettingsScreen = () => {
 		})();
 	}, []);
 
+	const { signOut } = useAuth();
+
 	const handleThemeChange = (isDark: boolean) => {
 		setDarkModeState(isDark);
 		setColorScheme(isDark ? "dark" : "light");
@@ -56,6 +60,16 @@ const SettingsScreen = () => {
 		} else {
 			// No direct way to revoke permission, so just update UI state
 			setLocationAccess(false);
+		}
+	};
+
+	const handleLogout = async () => {
+		try {
+			await signOut();
+			// Optionally clear AsyncStorage or any other app state here
+			router.replace("/(auth)/sign-in");
+		} catch (e) {
+			Alert.alert("Error", "Failed to log out.");
 		}
 	};
 
@@ -199,7 +213,10 @@ const SettingsScreen = () => {
 				</View>
 
 				<View style={styles.section}>
-					<TouchableOpacity style={styles.logoutBtn} activeOpacity={0.8}>
+					<TouchableOpacity
+						style={styles.logoutBtn}
+						activeOpacity={0.8}
+						onPress={handleLogout}>
 						<LogOut size={20} color="#fff" style={{ marginRight: 8 }} />
 						<ThemedText style={styles.logoutText}>Log Out</ThemedText>
 					</TouchableOpacity>
