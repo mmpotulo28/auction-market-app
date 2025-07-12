@@ -34,42 +34,6 @@ const statusBadgeColor = (status: string) => {
 	}
 };
 
-const DUMMY_TRANSACTIONS: iTransaction[] = [
-	{
-		pf_payment_id: "PF-1001",
-		m_payment_id: "M-2001",
-		created_at: new Date().toISOString(),
-		payment_status: "CANCELLED",
-		merchant_id: "M-2001",
-		item_name: "Vintage Watch",
-		amount_net: 120,
-		amount_fee: 5,
-		amount_gross: 125,
-	},
-	{
-		pf_payment_id: "PF-1002",
-		m_payment_id: "M-2002",
-		created_at: new Date(Date.now() - 86400000).toISOString(),
-		payment_status: "COMPLETE",
-		item_name: "Antique Vase",
-		amount_net: 80,
-		amount_fee: 3,
-		amount_gross: 83,
-		merchant_id: "M-2002",
-	},
-	{
-		pf_payment_id: "PF-1003",
-		m_payment_id: "M-2003",
-		created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-		payment_status: "CANCELLED",
-		item_name: "Rare Coin",
-		amount_net: 0,
-		amount_fee: 0,
-		amount_gross: 0,
-		merchant_id: "M-2003",
-	},
-];
-
 export default function TransactionsScreen() {
 	const [transactions, setTransactions] = useState<iTransaction[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -111,7 +75,7 @@ export default function TransactionsScreen() {
 						onPress={fetchData}
 						disabled={loading}
 						accessibilityLabel="Refresh transactions">
-						<RotateCcw size={22} color={Colors.light.tint} />
+						<RotateCcw size={22} color={"#fff"} />
 					</TouchableOpacity>
 				</View>
 				{error && (
@@ -223,7 +187,7 @@ export default function TransactionsScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: Colors.light.background,
+		backgroundColor: Colors.light.border,
 		paddingTop: 24,
 	},
 	headerRow: {
@@ -241,13 +205,13 @@ const styles = StyleSheet.create({
 	refreshBtn: {
 		padding: 8,
 		borderRadius: 8,
-		backgroundColor: Colors.light.muted,
+		backgroundColor: Colors.light.accent,
 		alignItems: "center",
 		justifyContent: "center",
 		boxShadow: "0 1px 4px rgba(1,75,139,0.07)",
 	},
 	card: {
-		backgroundColor: Colors.light.secondary,
+		backgroundColor: Colors.light.background,
 		borderRadius: 22,
 		marginHorizontal: 12,
 		padding: 6,
@@ -261,7 +225,7 @@ const styles = StyleSheet.create({
 		boxShadow: "0 2px 8px rgba(1,75,139,0.07)",
 	},
 	txItem: {
-		backgroundColor: "transparent",
+		backgroundColor: Colors.light.card,
 		borderRadius: 18,
 		padding: 18,
 		boxShadow: "0 1px 4px rgba(1,75,139,0.06)",

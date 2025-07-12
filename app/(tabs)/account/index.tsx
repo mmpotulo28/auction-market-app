@@ -141,7 +141,7 @@ const AccountScreen = () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		paddingTop: 24,
+		paddingTop: 44,
 	},
 	scrollContent: {
 		paddingBottom: 32,

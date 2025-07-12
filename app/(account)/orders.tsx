@@ -24,45 +24,6 @@ const statusBadgeColor = (status: iOrderStatus) => {
 	}
 };
 
-const DUMMY_ORDERS: iGroupedOrder[] = [
-	{
-		order_id: "ORD-1234",
-		payment_id: "PAY-5678",
-		user_name: "John Doe",
-		user_email: "john@example.com",
-		created_at: new Date().toISOString(),
-		items_count: 2,
-		total_amount: 150,
-		order_status: iOrderStatus.Completed,
-		orders: [],
-		user_id: "user_1234",
-	},
-	{
-		order_id: "ORD-1235",
-		payment_id: "PAY-5679",
-		user_name: "Jane Smith",
-		user_email: "jane@example.com",
-		created_at: new Date(Date.now() - 86400000).toISOString(),
-		items_count: 1,
-		total_amount: 80,
-		order_status: iOrderStatus.Pending,
-		orders: [],
-		user_id: "user_1234",
-	},
-	{
-		order_id: "ORD-1236",
-		payment_id: "PAY-5680",
-		user_name: "Alice Lee",
-		user_email: "alice@example.com",
-		created_at: new Date(Date.now() - 2 * 86400000).toISOString(),
-		items_count: 3,
-		total_amount: 200,
-		order_status: iOrderStatus.Failed,
-		orders: [],
-		user_id: "user_1236",
-	},
-];
-
 export default function OrdersScreen() {
 	const [orders, setOrders] = useState<iGroupedOrder[]>([]);
 	const [loading, setLoading] = useState(true);
@@ -75,7 +36,7 @@ export default function OrdersScreen() {
 		setError(null);
 		fetchOrders({ page, pageSize: 10 })
 			.then((data) => {
-				const { orders: fetchedOrders, groupedOrders } = data;
+				const { groupedOrders } = data;
 				if (data.error) {
 					setError(data.error);
 				}
@@ -106,7 +67,7 @@ export default function OrdersScreen() {
 					onPress={fetchData}
 					disabled={loading}
 					accessibilityLabel="Refresh orders">
-					<RotateCcw size={22} color={Colors.light.tint} />
+					<RotateCcw size={22} color={"#fff"} />
 				</TouchableOpacity>
 			</View>
 			{error && (
@@ -155,7 +116,7 @@ export default function OrdersScreen() {
 										</View>
 										<View style={styles.orderDetailsRow}>
 											<ThemedText style={styles.orderLabel}>
-												Payment Ref:{" "}
+												Txn Ref:{" "}
 											</ThemedText>
 											<ThemedText style={styles.orderValue}>
 												<CopyElement truncate content={item.payment_id} />
@@ -167,14 +128,7 @@ export default function OrdersScreen() {
 												{item.user_name}
 											</ThemedText>
 										</View>
-										<View style={styles.orderDetailsRow}>
-											<ThemedText style={styles.orderLabel}>
-												Email:
-											</ThemedText>
-											<ThemedText style={styles.orderValue}>
-												<CopyElement truncate content={item.user_email} />
-											</ThemedText>
-										</View>
+
 										<View style={styles.orderDetailsRow}>
 											<ThemedText style={styles.orderLabel}>
 												Order Date:
@@ -185,14 +139,7 @@ export default function OrdersScreen() {
 													: "-"}
 											</ThemedText>
 										</View>
-										<View style={styles.orderDetailsRow}>
-											<ThemedText style={styles.orderLabel}>
-												Items:
-											</ThemedText>
-											<ThemedText style={styles.orderValue}>
-												{item.items_count}
-											</ThemedText>
-										</View>
+
 										<View style={styles.orderDetailsRow}>
 											<ThemedText style={styles.orderLabel}>
 												Status:
@@ -245,8 +192,9 @@ export default function OrdersScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		paddingTop: 44,
-		backgroundColor: Colors.light.background,
+		paddingVertical: 44,
+		paddingBottom: 22,
+		backgroundColor: Colors.light.border,
 	},
 	headerRow: {
 		flexDirection: "row",
@@ -263,11 +211,12 @@ const styles = StyleSheet.create({
 	refreshBtn: {
 		padding: 8,
 		borderRadius: 8,
-		backgroundColor: Colors.light.muted,
+		backgroundColor: Colors.light.accent,
 		alignItems: "center",
 		justifyContent: "center",
 		// boxShadow replaces shadow* props
 		boxShadow: "0 1px 4px rgba(1,75,139,0.07)",
+		color: Colors.light.textPrimaryForeground,
 	},
 	card: {
 		backgroundColor: Colors.light.background,
@@ -286,7 +235,7 @@ const styles = StyleSheet.create({
 		boxShadow: "0 2px 8px rgba(1,75,139,0.07)",
 	},
 	orderItem: {
-		backgroundColor: "transparent",
+		backgroundColor: Colors.light.card,
 		borderRadius: 18,
 		padding: 18,
 		// boxShadow replaces shadow* props
@@ -372,7 +321,7 @@ const styles = StyleSheet.create({
 		gap: 16,
 	},
 	pageBtn: {
-		backgroundColor: Colors.light.tint,
+		backgroundColor: Colors.light.accent,
 		paddingVertical: 8,
 		paddingHorizontal: 18,
 		borderRadius: 8,
@@ -381,7 +330,7 @@ const styles = StyleSheet.create({
 		backgroundColor: Colors.light.muted,
 	},
 	pageBtnText: {
-		color: "#fff",
+		color: Colors.light.textPrimaryForeground,
 		fontWeight: "600",
 		fontSize: 15,
 	},
