@@ -27,549 +27,589 @@ import {
 	View,
 } from "react-native";
 import { toast } from "sonner-native";
-import CountdownTimer from "./CountdownTimer";
+import { CountdownTimer } from "./CountdownTimer";
 
 interface AuctionItemListProps {
 	auction?: iAuction;
 	itemsPerPage?: number;
 }
 
-const AuctionItemList: React.FC<AuctionItemListProps> = ({ auction, itemsPerPage = 10 }) => {
-	const { user } = useUser();
-	const router = useRouter();
-	const [showFilterModal, setShowFilterModal] = useState(false);
-	const [selected, setSelected] = useState<string | null>(null);
+// Move static data outside component
+const CONDITION_OPTIONS = ["New", "Used", "Refurbished"];
 
-	const { placeBid, highestBids, items, isLoading, error, categories } = useWebSocket();
+const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
+	({ auction, itemsPerPage = 10 }) => {
+		const { user } = useUser();
+		const router = useRouter();
+		const [showFilterModal, setShowFilterModal] = useState(false);
+		const [selected, setSelected] = useState<string | null>(null);
 
-	const [proposedBids, setProposedBids] = useState<iBid[]>([]);
+		const { placeBid, highestBids, items, isLoading, error, categories } = useWebSocket();
 
-	const [currentPage, setCurrentPage] = useState(1);
-	const [selectedCategories, setSelectedCategories] = useState<string[]>(categories);
-	const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
-	const [selectedConditions, setSelectedConditions] = useState<Set<string>>(
-		new Set(["new", "used"]),
-	);
-	const [pendingBids, setPendingBids] = useState<string[]>([]);
-	const [showBidHistory, setShowBidHistory] = useState(false);
-	const [auctionNotStarted, setAuctionNotStarted] = useState(false);
-	const [auctionClosed, setAuctionClosed] = useState(false);
-	const [auctionEndTime, setAuctionEndTime] = useState<Date>(new Date());
-	const [showTimerPopup, setShowTimerPopup] = useState(true);
-	const [timerMinimized, setTimerMinimized] = useState(false);
+		const [proposedBids, setProposedBids] = useState<iBid[]>([]);
+		const [currentPage, setCurrentPage] = useState(1);
+		const [selectedCategories, setSelectedCategories] = useState<string[]>(categories);
+		const [priceRange, setPriceRange] = useState<[number, number]>([0, 20000]);
+		const [selectedConditions, setSelectedConditions] = useState<Set<string>>(
+			new Set(["new", "used"]),
+		);
+		const [pendingBids, setPendingBids] = useState<string[]>([]);
+		const [showBidHistory, setShowBidHistory] = useState(false);
+		const [auctionNotStarted, setAuctionNotStarted] = useState(false);
+		const [auctionClosed, setAuctionClosed] = useState(false);
+		const [auctionEndTime, setAuctionEndTime] = useState<Date>(new Date());
+		const [showTimerPopup] = useState(true);
+		const [timerMinimized, setTimerMinimized] = useState(false);
 
-	useEffect(() => {
-		if (auction) {
-			const auctionStart = new Date(auction.start_time).getTime();
-			const auctionEnd = auctionStart + (auction.duration || 0) * 60 * 1000;
-			const now = Date.now();
+		// Memoize auction times
+		useEffect(() => {
+			if (auction) {
+				const auctionStart = new Date(auction.start_time).getTime();
+				const auctionEnd = auctionStart + (auction.duration || 0) * 60 * 1000;
+				const now = Date.now();
 
-			setAuctionNotStarted(now < auctionStart);
-			setAuctionClosed(now > auctionEnd);
-			setAuctionEndTime(new Date(auctionEnd));
-		}
-	}, [auction]);
+				setAuctionNotStarted(now < auctionStart);
+				setAuctionClosed(now > auctionEnd);
+				setAuctionEndTime(new Date(auctionEnd));
+			}
+		}, [auction]);
 
-	// User bid history
-	const userBids = useMemo(() => {
-		if (!user) return [];
-		const allBids = Object.values(highestBids)
-			.filter((bid) => bid.userId === user.id)
-			.map((bid) => ({
-				...bid,
-				item: items.find((item) => item.id === bid.itemId),
-			}))
-			.filter((b) => b.item);
-		return allBids;
-	}, [highestBids, user, items]);
+		// Memoize user bids
+		const userBids = useMemo(() => {
+			if (!user) return [];
+			const allBids = Object.values(highestBids)
+				.filter((bid) => bid.userId === user.id)
+				.map((bid) => ({
+					...bid,
+					item: items.find((item) => item.id === bid.itemId),
+				}))
+				.filter((b) => b.item);
+			return allBids;
+		}, [highestBids, user, items]);
 
-	const filteredItems = useMemo(
-		() =>
-			items.filter(
+		// Memoize filtered items
+		const filteredItems = useMemo(() => {
+			const catSet = new Set(selectedCategories);
+			const condSet = new Set(Array.from(selectedConditions, (c) => c.toLowerCase()));
+			return items.filter(
 				(item) =>
-					selectedCategories.includes(item.category) &&
+					catSet.has(item.category) &&
 					item.price >= priceRange[0] &&
 					item.price <= priceRange[1] &&
-					selectedConditions.has(item.condition),
-			),
-		[items, selectedCategories, priceRange, selectedConditions],
-	);
+					condSet.has(item.condition?.toLowerCase()),
+			);
+		}, [items, selectedCategories, priceRange, selectedConditions]);
 
-	const totalPages = useMemo(
-		() => Math.ceil(filteredItems.length / itemsPerPage),
-		[filteredItems, itemsPerPage],
-	);
-	const paginatedItems = useMemo(
-		() => filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
-		[filteredItems, currentPage, itemsPerPage],
-	);
-
-	const toggleCategory = useCallback((category: string) => {
-		setSelectedCategories((prev) =>
-			prev.includes(category) ? prev.filter((cat) => cat !== category) : [...prev, category],
+		const totalPages = useMemo(
+			() => Math.ceil(filteredItems.length / itemsPerPage),
+			[filteredItems.length, itemsPerPage],
 		);
-	}, []);
 
-	const toggleCondition = useCallback((condition: string) => {
-		setSelectedConditions((prev) => {
-			const newConditions = new Set(prev);
-			if (newConditions.has(condition)) {
-				newConditions.delete(condition);
-			} else {
-				newConditions.add(condition);
-			}
-			return newConditions;
-		});
-	}, []);
+		const paginatedItems = useMemo(
+			() => filteredItems.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+			[filteredItems, currentPage, itemsPerPage],
+		);
 
-	const adjustBid = useCallback(
-		(id: string, delta: number) => {
-			setProposedBids((prevBids) => {
-				const existingBid = prevBids.find((bid) => bid.itemId === id);
-				if (existingBid) {
-					return prevBids.map((bid) =>
-						bid.itemId === id
-							? {
-									...bid,
-									amount: Math.max(
-										bid.amount + delta,
-										items.find((item) => item.id === id)?.price || 0,
-									),
-							  }
-							: bid,
-					);
+		// Memoize toggleCategory
+		const toggleCategory = useCallback((category: string) => {
+			setSelectedCategories((prev) =>
+				prev.includes(category)
+					? prev.filter((cat) => cat !== category)
+					: [...prev, category],
+			);
+		}, []);
+
+		// Memoize toggleCondition
+		const toggleCondition = useCallback((condition: string) => {
+			setSelectedConditions((prev) => {
+				const newConditions = new Set(prev);
+				const cond = condition.toLowerCase();
+				if (newConditions.has(cond)) {
+					newConditions.delete(cond);
 				} else {
-					const highestBidAmount = highestBids[id]?.amount || 0;
-					const itemPrice = items.find((item) => item.id === id)?.price || 0;
-					return [
-						...prevBids,
-						{
-							itemId: id,
-							amount: Math.max(highestBidAmount, itemPrice) + delta,
-							userId: user?.id || "",
-							timestamp: new Date().toISOString(),
-						},
-					];
+					newConditions.add(cond);
 				}
+				return newConditions;
 			});
-		},
-		[items, highestBids, user],
-	);
+		}, []);
 
-	const submitBid = useCallback(
-		async (itemId: string) => {
-			if (!user) {
-				toast("Login first to submit your bid", {
-					description: "Please log in to place a bid.",
-					action: {
-						label: "Login",
-						onClick: () => router.push("/auth?type=login&after_auth_return_to=/"),
-					},
+		// Memoize adjustBid
+		const adjustBid = useCallback(
+			(id: string, delta: number) => {
+				setProposedBids((prevBids) => {
+					const existingBid = prevBids.find((bid) => bid.itemId === id);
+					const item = items.find((item) => item.id === id);
+					if (!item) return prevBids;
+					const minBid = Math.max(highestBids[id]?.amount || 0, item.price);
+					if (existingBid) {
+						const newAmount = Math.max(existingBid.amount + delta, minBid);
+						if (newAmount === existingBid.amount) return prevBids; // no change
+						return prevBids.map((bid) =>
+							bid.itemId === id ? { ...bid, amount: newAmount } : bid,
+						);
+					} else {
+						return [
+							...prevBids,
+							{
+								itemId: id,
+								amount: minBid + delta,
+								userId: user?.id || "",
+								timestamp: new Date().toISOString(),
+							},
+						];
+					}
 				});
-				return;
-			}
+			},
+			[items, highestBids, user],
+		);
 
-			const currentBid = proposedBids.find((bid) => bid.itemId === itemId)?.amount || 0;
+		// Memoize submitBid
+		const submitBid = useCallback(
+			async (itemId: string) => {
+				if (!user) {
+					toast("Login first to submit your bid", {
+						description: "Please log in to place a bid.",
+						action: {
+							label: "Login",
+							onClick: () => router.push("/auth?type=login&after_auth_return_to=/"),
+						},
+					});
+					return;
+				}
+				const currentBid = proposedBids.find((bid) => bid.itemId === itemId)?.amount || 0;
+				if (pendingBids.includes(itemId)) return; // avoid double submit
 
-			setPendingBids((prev) => [...prev, itemId]);
-			await placeBid(itemId, currentBid, user.id);
+				setPendingBids((prev) => [...prev, itemId]);
+				await placeBid(itemId, currentBid, user.id);
 
-			const highestBid = highestBids[itemId];
-			if (highestBid?.userId === user.id) {
-				toast("Congratulations, you now own this item!", {
-					description: "You are the current owner of this item.",
-					richColors: true,
-				});
-			}
+				const highestBid = highestBids[itemId];
+				if (highestBid?.userId === user.id) {
+					toast("Congratulations, you now own this item!", {
+						description: "You are the current owner of this item.",
+						richColors: true,
+					});
+				}
+				setPendingBids((prev) => prev.filter((bid) => bid !== itemId));
+			},
+			[proposedBids, user, placeBid, highestBids, router, pendingBids],
+		);
 
-			setPendingBids((prev) => prev.filter((bid) => bid !== itemId));
-		},
-		[proposedBids, user, placeBid, highestBids, router],
-	);
+		const ownedCount = useMemo(() => {
+			if (!user) return 0;
+			return Object.values(highestBids).filter((bid) => bid.userId === user.id).length;
+		}, [highestBids, user]);
 
-	const ownedCount = useMemo(() => {
-		if (!user) return 0;
-		return Object.values(highestBids).filter((bid) => bid.userId === user.id).length;
-	}, [highestBids, user]);
-
-	// Only show timer popup if not closed and auction is not closed
-	const renderTimerPopup = () => {
-		if (auctionClosed) return null;
-		if (!showTimerPopup) return null;
-
-		const TimerContent = () => {
-			const timeProps = auctionNotStarted
-				? { label: "Starts in", date: auction?.start_time }
-				: { label: "Ends in", date: auctionEndTime.toISOString() };
-
-			return (
-				<View style={styles.timerPopup}>
-					<ThemedText style={styles.timerLabel}>{timeProps.label}</ThemedText>
-					{timeProps.date && (
-						<CountdownTimer
-							minimized={timerMinimized}
-							targetDate={timeProps.date}
-							size={iSize.Small}
-							onExpire={() => {
-								if (auctionNotStarted) setAuctionNotStarted(false);
-								else setAuctionClosed(true);
-							}}
-						/>
-					)}
-					<TouchableOpacity
-						style={styles.timerPopupClose}
-						onPress={() => {
-							setTimerMinimized(!timerMinimized);
-						}}
-						accessibilityLabel="Minimize timer">
-						{timerMinimized ? (
-							<ChevronDown size={16} color={Colors.light.textMutedForeground} />
-						) : (
-							<ChevronUp size={16} color={Colors.light.textMutedForeground} />
+		// Timer popup logic
+		const renderTimerPopup = useCallback(() => {
+			if (auctionClosed || !showTimerPopup) return null;
+			const TimerContent = () => {
+				const timeProps = auctionNotStarted
+					? { label: "Starts in", date: auction?.start_time }
+					: { label: "Ends in", date: auctionEndTime.toISOString() };
+				return (
+					<View style={styles.timerPopup}>
+						<ThemedText style={styles.timerLabel}>{timeProps.label}</ThemedText>
+						{timeProps.date && (
+							<CountdownTimer
+								minimized={timerMinimized}
+								targetDate={timeProps.date}
+								size={iSize.Small}
+								onExpire={() => {
+									if (auctionNotStarted) setAuctionNotStarted(false);
+									else setAuctionClosed(true);
+								}}
+							/>
 						)}
-					</TouchableOpacity>
+						<TouchableOpacity
+							style={styles.timerPopupClose}
+							onPress={() => setTimerMinimized(!timerMinimized)}
+							accessibilityLabel="Minimize timer">
+							{timerMinimized ? (
+								<ChevronDown size={16} color={Colors.light.textMutedForeground} />
+							) : (
+								<ChevronUp size={16} color={Colors.light.textMutedForeground} />
+							)}
+						</TouchableOpacity>
+					</View>
+				);
+			};
+			return (
+				<View style={styles.floatingTimer}>
+					<TimerContent />
 				</View>
 			);
-		};
+		}, [
+			auctionClosed,
+			showTimerPopup,
+			auctionNotStarted,
+			auction,
+			auctionEndTime,
+			timerMinimized,
+		]);
 
-		return (
-			<View style={styles.floatingTimer}>
-				<TimerContent />
-			</View>
-		);
-	};
-
-	if (!auction) {
-		return (
-			<ThemedView style={styles.center}>
-				<ThemedText style={styles.errorText}>No auction data available.</ThemedText>
-			</ThemedView>
-		);
-	}
-
-	if (auctionClosed) {
-		return (
-			<ThemedView style={styles.center}>
-				<View style={styles.closedCard}>
-					<ThemedText style={styles.closedTitle}>Auction Closed</ThemedText>
-					<ThemedText>
-						You have <Text style={styles.bold}>{ownedCount}</Text> item
-						{ownedCount !== 1 && "s"} in your cart.
-					</ThemedText>
+		// Memoize FlatList renderItem
+		const renderItem = useCallback(
+			({ item }: { item: (typeof items)[0] }) => {
+				const highestBid = highestBids[item.id];
+				const currentBid =
+					proposedBids.find((bid) => bid.itemId === item.id)?.amount ||
+					highestBid?.amount ||
+					item.price;
+				const isOwner = highestBid?.userId === user?.id;
+				const isSelected = selected === item.id;
+				return (
 					<TouchableOpacity
-						style={styles.cartBtn}
-						onPress={() => {
-							router.push("/(account)/cart");
-						}}>
-						<ThemedText style={styles.cartBtnText}>Go to Cart</ThemedText>
+						style={[
+							styles.card,
+							isSelected && { borderColor: Colors.light.tint, borderWidth: 2 },
+						]}
+						activeOpacity={0.96}
+						onPress={() => setSelected(item.id)}>
+						{isOwner && (
+							<View style={styles.ownerIcon}>
+								<UserCheck size={18} color={Colors.light.tint} />
+							</View>
+						)}
+						<View style={styles.cardHeader}>
+							<ThemedText style={styles.title}>{item.title}</ThemedText>
+							<View style={styles.tagsRow}>
+								<View style={styles.badge}>
+									<ThemedText style={styles.badgeText}>
+										Highest Bid: R{" "}
+										{Number(highestBid?.amount || item.price).toFixed(2)}
+									</ThemedText>
+								</View>
+								<View style={[styles.badge, styles.badgeSecondary]}>
+									<ThemedText style={styles.badgeText}>
+										{item.condition?.toUpperCase()}
+									</ThemedText>
+								</View>
+							</View>
+						</View>
+						<View style={styles.cardContent}>
+							{item.image ? (
+								<Image
+									source={{ uri: item.image }}
+									style={styles.image}
+									resizeMode="cover"
+								/>
+							) : (
+								<View style={styles.imagePlaceholder}>
+									<ThemedText>No Image</ThemedText>
+								</View>
+							)}
+							<ThemedText style={styles.description}>{item.description}</ThemedText>
+						</View>
+						<View style={styles.cardFooter}>
+							<TouchableOpacity
+								style={styles.bidBtn}
+								onPress={() => adjustBid(item.id, -10)}
+								disabled={
+									currentBid <= (highestBid?.amount || item.price) ||
+									auctionClosed ||
+									auctionNotStarted
+								}>
+								<Minus size={18} color={Colors.light.tint} />
+							</TouchableOpacity>
+							<TouchableOpacity
+								style={[styles.bidBtn, styles.bidBtnMain]}
+								onPress={() => submitBid(item.id)}
+								disabled={
+									currentBid <= (highestBid?.amount || item.price) ||
+									pendingBids.includes(item.id) ||
+									auctionClosed ||
+									auctionNotStarted
+								}>
+								<ThemedText style={styles.bidBtnText}>
+									{currentBid > (highestBid?.amount || item.price) &&
+										!pendingBids.includes(item.id) &&
+										"Submit "}
+									R {Number(currentBid).toFixed(2)}
+								</ThemedText>
+								{pendingBids.includes(item.id) && (
+									<ActivityIndicator
+										size="small"
+										color="#fff"
+										style={{ marginLeft: 6 }}
+									/>
+								)}
+							</TouchableOpacity>
+							<TouchableOpacity
+								style={styles.bidBtn}
+								onPress={() => adjustBid(item.id, 10)}
+								disabled={auctionClosed || auctionNotStarted}>
+								<Plus size={18} color={Colors.light.tint} />
+							</TouchableOpacity>
+						</View>
+					</TouchableOpacity>
+				);
+			},
+			[
+				highestBids,
+				proposedBids,
+				user,
+				selected,
+				adjustBid,
+				submitBid,
+				pendingBids,
+				auctionClosed,
+				auctionNotStarted,
+			],
+		);
+
+		// Memoize FlatList keyExtractor
+		const keyExtractor = useCallback((item: (typeof items)[0]) => item.id, []);
+
+		if (!auction) {
+			return (
+				<ThemedView style={styles.center}>
+					<ThemedText style={styles.errorText}>No auction data available.</ThemedText>
+				</ThemedView>
+			);
+		}
+
+		if (auctionClosed) {
+			return (
+				<ThemedView style={styles.center}>
+					<View style={styles.closedCard}>
+						<ThemedText style={styles.closedTitle}>Auction Closed</ThemedText>
+						<ThemedText>
+							You have <Text style={styles.bold}>{ownedCount}</Text> item
+							{ownedCount !== 1 && "s"} in your cart.
+						</ThemedText>
+						<TouchableOpacity
+							style={styles.cartBtn}
+							onPress={() => {
+								router.push("/(account)/cart");
+							}}>
+							<ThemedText style={styles.cartBtnText}>Go to Cart</ThemedText>
+						</TouchableOpacity>
+					</View>
+				</ThemedView>
+			);
+		}
+
+		return (
+			<ThemedView style={styles.container}>
+				{/* Modern header with filter and timer */}
+				<View style={styles.headerRow}>
+					<View style={styles.headerLeft}>
+						<ThemedText style={styles.heading}>{auction.name}</ThemedText>
+						<ThemedText style={styles.subheading}>
+							{auctionNotStarted
+								? "Auction not started"
+								: `Auction is live! Ends at: ${new Date(
+										auction.start_time,
+								  ).toLocaleString()}`}
+						</ThemedText>
+					</View>
+					<TouchableOpacity
+						style={styles.filterBtn}
+						onPress={() => setShowFilterModal(true)}
+						accessibilityLabel="Show filters">
+						<Filter size={22} color={Colors.light.tint} />
+					</TouchableOpacity>
+					<TouchableOpacity
+						style={styles.filterBtn}
+						onPress={() => setShowBidHistory(true)}
+						accessibilityLabel="Show bid history">
+						<TimerIcon size={22} color={Colors.light.tint} />
 					</TouchableOpacity>
 				</View>
-			</ThemedView>
-		);
-	}
-
-	return (
-		<ThemedView style={styles.container}>
-			{/* Modern header with filter and timer */}
-			<View style={styles.headerRow}>
-				<View style={styles.headerLeft}>
-					<ThemedText style={styles.heading}>{auction.name}</ThemedText>
-					<ThemedText style={styles.subheading}>
-						{auctionNotStarted
-							? "Auction not started"
-							: `Auction is live! Ends at: ${auction.start_time.toLocaleString()}`}
-					</ThemedText>
+				{isLoading && (
+					<View style={styles.loadingRow}>
+						<ActivityIndicator size="large" color={Colors.light.tint} />
+						<ThemedText style={styles.loadingText}>Loading auction items...</ThemedText>
+					</View>
+				)}
+				{error && error.length > 0 && (
+					<View style={styles.errorCard}>
+						{error.map((err, idx) => (
+							<ThemedText key={idx} style={styles.errorText}>
+								{err}
+							</ThemedText>
+						))}
+					</View>
+				)}
+				{/* Divider */}
+				<View style={styles.dividerContainer}>
+					<View style={styles.divider} />
 				</View>
-				<TouchableOpacity
-					style={styles.filterBtn}
-					onPress={() => setShowFilterModal(true)}
-					accessibilityLabel="Show filters">
-					<Filter size={22} color={Colors.light.tint} />
-				</TouchableOpacity>
-				<TouchableOpacity
-					style={styles.filterBtn}
-					onPress={() => setShowBidHistory(true)}
-					accessibilityLabel="Show bid history">
-					<TimerIcon size={22} color={Colors.light.tint} />
-				</TouchableOpacity>
-			</View>
-			{isLoading && (
-				<View style={styles.loadingRow}>
-					<ActivityIndicator size="large" color={Colors.light.tint} />
-					<ThemedText style={styles.loadingText}>Loading auction items...</ThemedText>
-				</View>
-			)}
-			{error && error.length > 0 && (
-				<View style={styles.errorCard}>
-					{error.map((err, idx) => (
-						<ThemedText key={idx} style={styles.errorText}>
-							{err}
-						</ThemedText>
-					))}
-				</View>
-			)}
-			{/* Divider */}
-			<View style={styles.dividerContainer}>
-				<View style={styles.divider} />
-			</View>
-			{/* Timer Popup (only one at a time) */}
-			{renderTimerPopup()}
-			{/* All items grid */}
-			<FlatList
-				data={filteredItems}
-				keyExtractor={(item) => item.id}
-				contentContainerStyle={styles.listContent}
-				numColumns={2}
-				columnWrapperStyle={styles.gridRow}
-				renderItem={({ item }) => {
-					const highestBid = highestBids[item.id];
-					const currentBid =
-						proposedBids.find((bid) => bid.itemId === item.id)?.amount ||
-						highestBid?.amount ||
-						item.price;
-					const isOwner = highestBid?.userId === user?.id;
-					const isSelected = selected === item.id;
-					return (
-						<TouchableOpacity
-							style={[
-								styles.card,
-								isSelected && { borderColor: Colors.light.tint, borderWidth: 2 },
-							]}
-							activeOpacity={0.96}
-							onPress={() => setSelected(item.id)}>
-							{isOwner && (
-								<View style={styles.ownerIcon}>
-									<UserCheck size={18} color={Colors.light.tint} />
-								</View>
-							)}
-							<View style={styles.cardHeader}>
-								<ThemedText style={styles.title}>{item.title}</ThemedText>
-								<View style={styles.tagsRow}>
-									<View style={styles.badge}>
-										<ThemedText style={styles.badgeText}>
-											Highest Bid: R{" "}
-											{Number(highestBid?.amount || item.price).toFixed(2)}
-										</ThemedText>
-									</View>
-									<View style={[styles.badge, styles.badgeSecondary]}>
-										<ThemedText style={styles.badgeText}>
-											{item.condition?.toUpperCase()}
-										</ThemedText>
-									</View>
+				{/* Timer Popup (only one at a time) */}
+				{renderTimerPopup()}
+				{/* All items grid */}
+				<FlatList
+					data={paginatedItems}
+					keyExtractor={keyExtractor}
+					contentContainerStyle={styles.listContent}
+					numColumns={2}
+					columnWrapperStyle={styles.gridRow}
+					renderItem={renderItem}
+					removeClippedSubviews
+					initialNumToRender={6}
+					maxToRenderPerBatch={8}
+					windowSize={11}
+					ListFooterComponent={
+						<View style={styles.paginationRow}>
+							<TouchableOpacity
+								style={[
+									styles.pageBtn,
+									currentPage === 1 && styles.pageBtnDisabled,
+								]}
+								onPress={() => setCurrentPage((p) => Math.max(1, p - 1))}
+								disabled={currentPage === 1}>
+								<ThemedText style={styles.pageBtnText}>Previous</ThemedText>
+							</TouchableOpacity>
+							<ThemedText style={styles.pageNumText}>{currentPage}</ThemedText>
+							<TouchableOpacity
+								style={[
+									styles.pageBtn,
+									currentPage === totalPages && styles.pageBtnDisabled,
+								]}
+								onPress={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+								disabled={currentPage === totalPages}>
+								<ThemedText style={styles.pageBtnText}>Next</ThemedText>
+							</TouchableOpacity>
+						</View>
+					}
+				/>
+				{/* Filter Modal */}
+				<Modal
+					visible={showFilterModal}
+					transparent
+					animationType="slide"
+					onRequestClose={() => setShowFilterModal(false)}>
+					<View style={styles.filterModalOverlay}>
+						<View style={styles.filterModal}>
+							<View style={styles.filterModalHeader}>
+								<ThemedText style={styles.filterModalTitle}>Filters</ThemedText>
+								<TouchableOpacity onPress={() => setShowFilterModal(false)}>
+									<X size={22} color={Colors.light.textMutedForeground} />
+								</TouchableOpacity>
+							</View>
+							<View style={styles.filterSection}>
+								<ThemedText style={styles.filterLabel}>Categories</ThemedText>
+								<View style={styles.filterChipsRow}>
+									{categories.map((cat) => (
+										<TouchableOpacity
+											key={cat}
+											style={[
+												styles.filterChip,
+												selectedCategories.includes(cat) &&
+													styles.filterChipActive,
+											]}
+											onPress={() => toggleCategory(cat)}>
+											<ThemedText
+												style={[
+													styles.filterChipText,
+													selectedCategories.includes(cat) &&
+														styles.filterChipTextActive,
+												]}>
+												{cat}
+											</ThemedText>
+										</TouchableOpacity>
+									))}
 								</View>
 							</View>
-							<View style={styles.cardContent}>
-								{item.image ? (
-									<Image
-										source={{ uri: item.image }}
-										style={styles.image}
-										resizeMode="cover"
-									/>
-								) : (
-									<View style={styles.imagePlaceholder}>
-										<ThemedText>No Image</ThemedText>
+							<View style={styles.filterSection}>
+								<ThemedText style={styles.filterLabel}>Price Range</ThemedText>
+								<View style={styles.priceRangeRow}>
+									<TouchableOpacity
+										style={styles.priceRangeBtn}
+										onPress={() =>
+											setPriceRange(([min, max]) => [
+												Math.max(0, min - 1000),
+												max,
+											])
+										}
+										disabled={auctionClosed || auctionNotStarted}>
+										<Minus size={18} color={Colors.light.tint} />
+									</TouchableOpacity>
+									<ThemedText style={styles.priceRangeText}>
+										R {priceRange[0]} - R {priceRange[1]}
+									</ThemedText>
+									<TouchableOpacity
+										style={styles.priceRangeBtn}
+										onPress={() =>
+											setPriceRange(([min, max]) => [min + 1000, max])
+										}
+										disabled={auctionClosed || auctionNotStarted}>
+										<Plus size={18} color={Colors.light.tint} />
+									</TouchableOpacity>
+								</View>
+								<TouchableOpacity
+									style={styles.filterApplyBtn}
+									onPress={() => setShowFilterModal(false)}>
+									<ThemedText style={styles.filterApplyBtnText}>Apply</ThemedText>
+								</TouchableOpacity>
+							</View>
+							{/* item condition filter */}
+							<View style={styles.filterSection}>
+								<ThemedText style={styles.filterLabel}>Item Condition</ThemedText>
+								<View style={styles.filterChipsRow}>
+									{CONDITION_OPTIONS.map((condition) => (
+										<TouchableOpacity
+											key={condition}
+											style={[
+												styles.filterChip,
+												selectedConditions.has(condition.toLowerCase()) &&
+													styles.filterChipActive,
+											]}
+											onPress={() => toggleCondition(condition)}>
+											<ThemedText
+												style={[
+													styles.filterChipText,
+													selectedConditions.has(
+														condition.toLowerCase(),
+													) && styles.filterChipTextActive,
+												]}>
+												{condition}
+											</ThemedText>
+										</TouchableOpacity>
+									))}
+								</View>
+							</View>
+						</View>
+					</View>
+				</Modal>
+
+				{/* user bid history modal */}
+				<Modal
+					visible={showBidHistory}
+					transparent
+					animationType="slide"
+					onRequestClose={() => setShowBidHistory(false)}>
+					<View style={styles.modalOverlay}>
+						<View style={styles.modalContent}>
+							<ThemedText style={styles.modalTitle}>Your Bid History</ThemedText>
+							<FlatList
+								data={userBids}
+								keyExtractor={(item) => item.itemId}
+								renderItem={({ item }) => (
+									<View style={styles.bidItem}>
+										<ThemedText style={styles.bidItemText}>
+											{item.item?.title} - R{item.amount}
+										</ThemedText>
 									</View>
 								)}
-								<ThemedText style={styles.description}>
-									{item.description}
-								</ThemedText>
-							</View>
-							<View style={styles.cardFooter}>
-								<TouchableOpacity
-									style={styles.bidBtn}
-									onPress={() => adjustBid(item.id, -10)}
-									disabled={
-										currentBid <= (highestBid?.amount || item.price) ||
-										auctionClosed ||
-										auctionNotStarted
-									}>
-									<Minus size={18} color={Colors.light.tint} />
-								</TouchableOpacity>
-								<TouchableOpacity
-									style={[styles.bidBtn, styles.bidBtnMain]}
-									onPress={() => submitBid(item.id)}
-									disabled={
-										currentBid <= (highestBid?.amount || item.price) ||
-										pendingBids.includes(item.id) ||
-										auctionClosed ||
-										auctionNotStarted
-									}>
-									<ThemedText style={styles.bidBtnText}>
-										{currentBid > (highestBid?.amount || item.price) &&
-											!pendingBids.includes(item.id) &&
-											"Submit "}
-										R {Number(currentBid).toFixed(2)}
-									</ThemedText>
-									{pendingBids.includes(item.id) && (
-										<ActivityIndicator
-											size="small"
-											color="#fff"
-											style={{ marginLeft: 6 }}
-										/>
-									)}
-								</TouchableOpacity>
-								<TouchableOpacity
-									style={styles.bidBtn}
-									onPress={() => adjustBid(item.id, 10)}
-									disabled={auctionClosed || auctionNotStarted}>
-									<Plus size={18} color={Colors.light.tint} />
-								</TouchableOpacity>
-							</View>
-						</TouchableOpacity>
-					);
-				}}
-				ListFooterComponent={
-					<View style={styles.paginationRow}>
-						<TouchableOpacity
-							style={[styles.pageBtn, currentPage === 1 && styles.pageBtnDisabled]}
-							onPress={() => setCurrentPage((p) => Math.max(1, p - 1))}
-							disabled={currentPage === 1}>
-							<ThemedText style={styles.pageBtnText}>Previous</ThemedText>
-						</TouchableOpacity>
-						<ThemedText style={styles.pageNumText}>{currentPage}</ThemedText>
-						<TouchableOpacity
-							style={[
-								styles.pageBtn,
-								currentPage === totalPages && styles.pageBtnDisabled,
-							]}
-							onPress={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-							disabled={currentPage === totalPages}>
-							<ThemedText style={styles.pageBtnText}>Next</ThemedText>
-						</TouchableOpacity>
-					</View>
-				}
-			/>
-			{/* Filter Modal */}
-			<Modal
-				visible={showFilterModal}
-				transparent
-				animationType="slide"
-				onRequestClose={() => setShowFilterModal(false)}>
-				<View style={styles.filterModalOverlay}>
-					<View style={styles.filterModal}>
-						<View style={styles.filterModalHeader}>
-							<ThemedText style={styles.filterModalTitle}>Filters</ThemedText>
-							<TouchableOpacity onPress={() => setShowFilterModal(false)}>
-								<X size={22} color={Colors.light.textMutedForeground} />
-							</TouchableOpacity>
-						</View>
-						<View style={styles.filterSection}>
-							<ThemedText style={styles.filterLabel}>Categories</ThemedText>
-							<View style={styles.filterChipsRow}>
-								{categories.map((cat) => (
-									<TouchableOpacity
-										key={cat}
-										style={[
-											styles.filterChip,
-											selectedCategories.includes(cat) &&
-												styles.filterChipActive,
-										]}
-										onPress={() => {
-											toggleCategory(cat);
-										}}>
-										<ThemedText
-											style={[
-												styles.filterChipText,
-												selectedCategories.includes(cat) &&
-													styles.filterChipTextActive,
-											]}>
-											{cat}
-										</ThemedText>
-									</TouchableOpacity>
-								))}
-							</View>
-						</View>
-						<View style={styles.filterSection}>
-							<ThemedText style={styles.filterLabel}>Price Range</ThemedText>
-							<View style={styles.priceRangeRow}>
-								<TouchableOpacity
-									style={styles.priceRangeBtn}
-									onPress={() =>
-										setPriceRange([priceRange[0] - 1000, priceRange[1]])
-									}
-									disabled={auctionClosed || auctionNotStarted}>
-									<Minus size={18} color={Colors.light.tint} />
-								</TouchableOpacity>
-								<ThemedText style={styles.priceRangeText}>
-									R {priceRange[0]} - R {priceRange[1]}
-								</ThemedText>
-								<TouchableOpacity
-									style={styles.priceRangeBtn}
-									onPress={() =>
-										setPriceRange([priceRange[0] + 1000, priceRange[1]])
-									}
-									disabled={auctionClosed || auctionNotStarted}>
-									<Plus size={18} color={Colors.light.tint} />
-								</TouchableOpacity>
-							</View>
+							/>
 							<TouchableOpacity
-								style={styles.filterApplyBtn}
-								onPress={() => setShowFilterModal(false)}>
-								<ThemedText style={styles.filterApplyBtnText}>Apply</ThemedText>
+								style={styles.modalCloseBtn}
+								onPress={() => setShowBidHistory(false)}>
+								<ThemedText style={styles.modalCloseBtnText}>
+									<X size={22} color={Colors.light.textMutedForeground} />
+								</ThemedText>
 							</TouchableOpacity>
 						</View>
-						{/* item condition filter */}
-						<View style={styles.filterSection}>
-							<ThemedText style={styles.filterLabel}>Item Condition</ThemedText>
-							<View style={styles.filterChipsRow}>
-								{["New", "Used", "Refurbished"].map((condition) => (
-									<TouchableOpacity
-										key={condition}
-										style={[
-											styles.filterChip,
-											selectedConditions.has(condition) &&
-												styles.filterChipActive,
-										]}
-										onPress={() => {
-											toggleCondition(condition);
-										}}>
-										<ThemedText
-											style={[
-												styles.filterChipText,
-												selectedConditions.has(condition) &&
-													styles.filterChipTextActive,
-											]}>
-											{condition}
-										</ThemedText>
-									</TouchableOpacity>
-								))}
-							</View>
-						</View>
 					</View>
-				</View>
-			</Modal>
+				</Modal>
+			</ThemedView>
+		);
+	},
+);
 
-			{/* user bid history modal */}
-			<Modal
-				visible={showBidHistory}
-				transparent
-				animationType="slide"
-				onRequestClose={() => setShowBidHistory(false)}>
-				<View style={styles.modalOverlay}>
-					<View style={styles.modalContent}>
-						<ThemedText style={styles.modalTitle}>Your Bid History</ThemedText>
-						<FlatList
-							data={userBids}
-							keyExtractor={(item) => item.itemId}
-							renderItem={({ item }) => (
-								<View style={styles.bidItem}>
-									<ThemedText style={styles.bidItemText}>
-										{item.item?.title} - R{item.amount}
-									</ThemedText>
-								</View>
-							)}
-						/>
-						<TouchableOpacity
-							style={styles.modalCloseBtn}
-							onPress={() => setShowBidHistory(false)}>
-							<ThemedText style={styles.modalCloseBtnText}>Close</ThemedText>
-						</TouchableOpacity>
-					</View>
-				</View>
-			</Modal>
-		</ThemedView>
-	);
-};
+// Add display name for better debugging and to fix warning
+AuctionItemList.displayName = "AuctionItemList";
 
 const styles = StyleSheet.create({
 	container: {
@@ -971,6 +1011,7 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.1,
 		shadowRadius: 8,
 		elevation: 4,
+		position: "relative",
 	},
 	modalTitle: {
 		fontWeight: "bold",
@@ -988,12 +1029,23 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 	},
 	modalCloseBtn: {
-		backgroundColor: Colors.light.tint,
-		paddingVertical: 10,
-		paddingHorizontal: 24,
-		borderRadius: 8,
+		backgroundColor: Colors.light.muted,
+		paddingVertical: 5,
+		paddingHorizontal: 5,
+		borderRadius: 50,
 		alignItems: "center",
-		marginTop: 16,
+		position: "absolute",
+		right: 10,
+		top: 10,
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 2 },
+		shadowOpacity: 0.1,
+		shadowRadius: 4,
+		elevation: 2,
+		alignSelf: "flex-end",
+		justifyContent: "center",
+		width: 25,
+		height: 25,
 	},
 	modalCloseBtnText: {
 		color: "#fff",
