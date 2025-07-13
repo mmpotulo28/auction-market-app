@@ -73,13 +73,13 @@ const AccountCards = [
 const AccountScreen = () => {
 	const { user } = useUser();
 	const { orders, transactions } = useAccountContext();
-	const { bids } = useWebSocket();
+	const { bids, items } = useWebSocket();
 
 	const data: AccountData = {
 		bids:
 			bids?.map((bid) => ({
 				id: bid.itemId,
-				label: bid.userId,
+				label: items.find((item) => item.id === bid.itemId)?.title || "Unknown Item",
 				subLabel: `R ${bid.amount.toFixed(2)}`,
 				date: bid.timestamp ? new Date(bid.timestamp).toLocaleString() : "-",
 			})) || [],
