@@ -244,6 +244,7 @@ const styles = StyleSheet.create({
 		width: "100%",
 		alignItems: "center",
 		justifyContent: "center",
+		backgroundColor: "transparent",
 	},
 	sm: {
 		transform: [{ scale: 0.6 }],
@@ -262,6 +263,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 10,
 		borderRadius: 16,
 		paddingInline: 20,
+		backgroundColor: "transparent",
 	},
 	timerGridMin: {
 		flexDirection: "row",

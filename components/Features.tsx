@@ -3,6 +3,7 @@ import { Clock, ShieldCheck, Sparkles, User2 } from "lucide-react-native";
 import React from "react";
 import { StyleSheet, View } from "react-native";
 import { ThemedText } from "./ThemedText";
+import { ThemedView } from "./ThemedView";
 
 const styles = StyleSheet.create({
 	section: {
@@ -23,7 +24,6 @@ const styles = StyleSheet.create({
 		width: "90%",
 		maxWidth: 320,
 		alignItems: "center",
-		backgroundColor: Colors.light.secondary,
 		borderRadius: 16,
 		padding: 24,
 		margin: 8,
@@ -79,11 +79,11 @@ const Features = () => (
 		</ThemedText>
 		<View style={styles.grid}>
 			{features.map((feature, idx) => (
-				<View key={feature.title} style={styles.card}>
+				<ThemedView type="card" key={feature.title} style={styles.card}>
 					{feature.icon}
 					<ThemedText style={styles.cardTitle}>{feature.title}</ThemedText>
 					<ThemedText style={styles.cardDesc}>{feature.description}</ThemedText>
-				</View>
+				</ThemedView>
 			))}
 		</View>
 	</View>

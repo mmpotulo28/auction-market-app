@@ -3,6 +3,7 @@ import { Gavel, List, PlayCircle, User2 } from "lucide-react-native";
 import React from "react";
 import { Dimensions, Image, StyleSheet, View } from "react-native";
 import { ThemedText } from "./ThemedText";
+import { ThemedView } from "./ThemedView";
 
 const steps = [
 	{
@@ -30,35 +31,38 @@ const steps = [
 
 const HowItWorks: React.FC = () => {
 	return (
-		<View style={styles.section}>
+		<ThemedView style={styles.section}>
 			<ThemedText type="title" style={styles.heading}>
 				How It Works
 			</ThemedText>
-			<View style={styles.stepsContainer}>
+			<ThemedView style={styles.stepsContainer}>
 				{steps.map((step) => (
-					<View key={step.number} style={styles.step}>
-						<View style={styles.stepNumber}>
+					<ThemedView key={step.number} style={styles.step}>
+						<ThemedView style={styles.stepNumber}>
 							<ThemedText style={styles.stepNumberText}>{step.number}</ThemedText>
-						</View>
-						<View style={styles.card}>
-							<View style={styles.icon}>{step.icon}</View>
-							<ThemedText style={styles.cardTitle}>{step.title}</ThemedText>
+						</ThemedView>
+						<ThemedView type="card" style={styles.card}>
+							{/* header */}
+							<View style={styles.header}>
+								<View style={styles.icon}>{step.icon}</View>
+								<ThemedText style={styles.cardTitle}>{step.title}</ThemedText>
+							</View>
 							<ThemedText style={styles.cardDesc}>{step.description}</ThemedText>
-						</View>
-					</View>
+						</ThemedView>
+					</ThemedView>
 				))}
-			</View>
-			<View style={styles.tutorialVideo}>
+			</ThemedView>
+			<ThemedView style={styles.tutorialVideo}>
 				<Image
 					source={require("../assets/images/781c714b-26ca-4e22-8850-af2a12caabb0.jpeg")}
 					style={styles.video}
 					resizeMode="cover"
 				/>
-				<View style={styles.overlay}>
+				<ThemedView style={styles.overlay}>
 					<PlayCircle size={64} color="#fff" style={styles.playIcon} />
-				</View>
-			</View>
-		</View>
+				</ThemedView>
+			</ThemedView>
+		</ThemedView>
 	);
 };
 
@@ -87,7 +91,7 @@ const styles = StyleSheet.create({
 		width: 36,
 		height: 36,
 		borderRadius: 18,
-		backgroundColor: Colors.light.tint,
+		backgroundColor: Colors.light.accent,
 		justifyContent: "center",
 		alignItems: "center",
 		marginRight: 12,
@@ -100,7 +104,6 @@ const styles = StyleSheet.create({
 	},
 	card: {
 		flex: 1,
-		backgroundColor: Colors.light.secondary,
 		borderRadius: 14,
 		padding: 18,
 		shadowColor: "#000",
@@ -108,6 +111,12 @@ const styles = StyleSheet.create({
 		shadowOpacity: 0.08,
 		shadowRadius: 8,
 		elevation: 2,
+	},
+	header: {
+		flexDirection: "row",
+		alignItems: "center",
+		marginBottom: 12,
+		gap: 10,
 	},
 	icon: {
 		marginBottom: 8,

@@ -150,6 +150,7 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 14,
 		borderRadius: 8,
 		marginBottom: 2,
+		backgroundColor: Colors.light.secondary,
 	},
 	errorText: {
 		color: Colors.light.destructive,
