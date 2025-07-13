@@ -75,7 +75,7 @@ export default function OrdersScreen() {
 					<ThemedText style={styles.errorText}>{error}</ThemedText>
 				</View>
 			)}
-			<View style={styles.card}>
+			<ThemedView type="card" style={styles.card}>
 				{loading ? (
 					<ActivityIndicator
 						size="large"
@@ -98,10 +98,7 @@ export default function OrdersScreen() {
 									start={{ x: 0, y: 0 }}
 									end={{ x: 1, y: 1 }}
 									style={styles.orderCardGradient}>
-									<TouchableOpacity
-										activeOpacity={0.92}
-										onPress={() => setSelectedOrder(item)}
-										style={styles.orderItem}>
+									<ThemedView type="view" style={styles.orderItem}>
 										<View style={styles.orderHeader}>
 											<View style={styles.orderHeaderLeft}>
 												<Receipt size={22} color={Colors.light.tint} />
@@ -109,10 +106,14 @@ export default function OrdersScreen() {
 													<CopyElement truncate content={item.order_id} />
 												</ThemedText>
 											</View>
-											<ChevronRight
-												size={22}
-												color={Colors.light.textMutedForeground}
-											/>
+											<TouchableOpacity
+												activeOpacity={0.92}
+												onPress={() => setSelectedOrder(item)}>
+												<ChevronRight
+													size={22}
+													color={Colors.light.textMutedForeground}
+												/>
+											</TouchableOpacity>
 										</View>
 										<View style={styles.orderDetailsRow}>
 											<ThemedText style={styles.orderLabel}>
@@ -158,14 +159,14 @@ export default function OrdersScreen() {
 												</ThemedText>
 											</View>
 										</View>
-									</TouchableOpacity>
+									</ThemedView>
 								</LinearGradient>
 							);
 						}}
 						contentContainerStyle={{ paddingVertical: 8 }}
 					/>
 				)}
-			</View>
+			</ThemedView>
 			{/* Pagination (for real data, update totalPages and enable buttons) */}
 			<View style={styles.paginationRow}>
 				<TouchableOpacity
@@ -194,7 +195,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 		paddingVertical: 44,
 		paddingBottom: 22,
-		backgroundColor: Colors.light.border,
 	},
 	headerRow: {
 		flexDirection: "row",
@@ -219,7 +219,6 @@ const styles = StyleSheet.create({
 		color: Colors.light.textPrimaryForeground,
 	},
 	card: {
-		backgroundColor: Colors.light.background,
 		borderRadius: 22,
 		marginHorizontal: 12,
 		padding: 6,
@@ -235,7 +234,6 @@ const styles = StyleSheet.create({
 		boxShadow: "0 2px 8px rgba(1,75,139,0.07)",
 	},
 	orderItem: {
-		backgroundColor: Colors.light.card,
 		borderRadius: 18,
 		padding: 18,
 		// boxShadow replaces shadow* props
