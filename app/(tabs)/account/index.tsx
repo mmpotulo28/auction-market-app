@@ -7,6 +7,45 @@ import { Bell, CreditCard, LogOut, Receipt, User2 } from "lucide-react-native";
 import React from "react";
 import { Alert, Image, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 
+const QuickActions = [
+	{
+		icon: Receipt,
+		label: "Orders",
+		navigateTo: "/(account)/orders",
+	},
+	{
+		icon: CreditCard,
+		label: "Transactions",
+		navigateTo: "/(account)/transactions",
+	},
+	{
+		icon: Bell,
+		label: "Notifications",
+		navigateTo: "/(account)/notifications",
+	},
+];
+
+const AccountCards = [
+	{
+		icon: User2,
+		label: "Profile",
+		dataKey: "profile",
+		navigateTo: "/(account)/profile",
+	},
+	{
+		icon: Receipt,
+		label: "Orders",
+		dataKey: "orders",
+		navigateTo: "/(account)/orders",
+	},
+	{
+		icon: CreditCard,
+		label: "Transactions",
+		dataKey: "transactions",
+		navigateTo: "/(account)/transactions",
+	},
+];
+
 const AccountScreen = () => {
 	const { user } = useUser();
 
@@ -19,6 +58,7 @@ const AccountScreen = () => {
 			// Optionally clear AsyncStorage or any other app state here
 			router.replace("/(auth)/sign-in");
 		} catch (e) {
+			console.error("Logout error:", e);
 			Alert.alert("Error", "Failed to log out.");
 		}
 	};
@@ -27,7 +67,7 @@ const AccountScreen = () => {
 		<ThemedView style={styles.container}>
 			<ScrollView contentContainerStyle={styles.scrollContent}>
 				{/* Profile Card */}
-				<View style={styles.card}>
+				<ThemedView type="card" style={styles.card}>
 					<View style={styles.profileRow}>
 						{user?.imageUrl ? (
 							<Image source={{ uri: user.imageUrl }} style={styles.avatar} />
@@ -50,78 +90,42 @@ const AccountScreen = () => {
 						onPress={() => router.push("/(account)/profile")}>
 						<ThemedText style={styles.editProfileText}>Edit Profile</ThemedText>
 					</TouchableOpacity>
-				</View>
+				</ThemedView>
 
 				{/* Quick Actions */}
-				<View style={styles.quickActions}>
-					<TouchableOpacity
-						style={styles.actionCard}
-						onPress={() => router.push("/(account)/orders")}>
-						<Receipt size={28} color={Colors.light.tint} />
-						<ThemedText style={styles.actionLabel}>Orders</ThemedText>
-					</TouchableOpacity>
-					<TouchableOpacity
-						style={styles.actionCard}
-						onPress={() => router.push("/(account)/transactions")}>
-						<CreditCard size={28} color={Colors.light.tint} />
-						<ThemedText style={styles.actionLabel}>Transactions</ThemedText>
-					</TouchableOpacity>
-					<TouchableOpacity
-						style={styles.actionCard}
-						onPress={() => router.push("/(account)/notifications")}>
-						<Bell size={28} color={Colors.light.tint} />
-						<ThemedText style={styles.actionLabel}>Notifications</ThemedText>
-					</TouchableOpacity>
-				</View>
+				<ThemedView style={styles.quickActions}>
+					{QuickActions.map((action) => (
+						<ThemedView
+							key={action.label}
+							type="card"
+							style={{ flex: 1, borderRadius: 14 }}>
+							<TouchableOpacity
+								style={styles.actionCard}
+								onPress={() => router.push(action.navigateTo as any)}>
+								<action.icon size={28} color={Colors.light.background} />
+								<ThemedText style={styles.actionLabel}>{action.label}</ThemedText>
+							</TouchableOpacity>
+						</ThemedView>
+					))}
+				</ThemedView>
 
-				{/* Recent Orders */}
-				<View style={styles.section}>
-					<ThemedText style={styles.sectionTitle}>Recent Orders</ThemedText>
-					<View style={styles.placeholderCard}>
-						<ThemedText style={styles.placeholderText}>
-							Your recent orders will appear here.
-						</ThemedText>
-						<TouchableOpacity
-							onPress={() => router.push("/(account)/orders")}
-							style={styles.sectionBtn}>
-							<ThemedText style={styles.sectionBtnText}>View All Orders</ThemedText>
-						</TouchableOpacity>
-					</View>
-				</View>
-
-				{/* Recent Transactions */}
-				<View style={styles.section}>
-					<ThemedText style={styles.sectionTitle}>Recent Transactions</ThemedText>
-					<View style={styles.placeholderCard}>
-						<ThemedText style={styles.placeholderText}>
-							Your recent transactions will appear here.
-						</ThemedText>
-						<TouchableOpacity
-							onPress={() => router.push("/(account)/transactions")}
-							style={styles.sectionBtn}>
-							<ThemedText style={styles.sectionBtnText}>
-								View All Transactions
+				{AccountCards?.map((card) => (
+					<ThemedView type="card" key={card.dataKey} style={styles.section}>
+						<ThemedText style={styles.sectionTitle}>Recent {card.label}</ThemedText>
+						<View style={styles.placeholderCard}>
+							<ThemedText style={styles.placeholderText}>
+								Your recent {card.label.toLowerCase()} will appear here.
 							</ThemedText>
-						</TouchableOpacity>
-					</View>
-				</View>
-
-				{/* Notifications */}
-				<View style={styles.section}>
-					<ThemedText style={styles.sectionTitle}>Notifications</ThemedText>
-					<View style={styles.placeholderCard}>
-						<ThemedText style={styles.placeholderText}>
-							Your notifications will appear here.
-						</ThemedText>
-						<TouchableOpacity
-							onPress={() => router.push("/(account)/notifications")}
-							style={styles.sectionBtn}>
-							<ThemedText style={styles.sectionBtnText}>
-								View All Notifications
-							</ThemedText>
-						</TouchableOpacity>
-					</View>
-				</View>
+							<TouchableOpacity
+								onPress={() => router.push(card.navigateTo as any)}
+								style={styles.sectionBtn}>
+								<ThemedText style={styles.sectionBtnText}>
+									View All {card.label}
+								</ThemedText>
+							</TouchableOpacity>
+						</View>
+					</ThemedView>
+				))}
 
 				{/* Log Out */}
 				<View style={styles.section}>
@@ -147,7 +151,6 @@ const styles = StyleSheet.create({
 		paddingBottom: 32,
 	},
 	card: {
-		backgroundColor: Colors.light.card,
 		borderRadius: 18,
 		padding: 20,
 		marginHorizontal: 18,
@@ -206,23 +209,17 @@ const styles = StyleSheet.create({
 	},
 	quickActions: {
 		flexDirection: "row",
-		justifyContent: "space-between",
 		marginHorizontal: 18,
-		marginBottom: 18,
+		gap: 12,
+		marginBottom: 24,
 	},
 	actionCard: {
 		flex: 1,
-		backgroundColor: Colors.light.secondary,
 		borderRadius: 14,
 		alignItems: "center",
 		justifyContent: "center",
 		paddingVertical: 18,
-		marginHorizontal: 6,
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 1 },
-		shadowOpacity: 0.06,
-		shadowRadius: 4,
-		elevation: 1,
+		width: "100%",
 	},
 	actionLabel: {
 		marginTop: 8,
@@ -231,7 +228,6 @@ const styles = StyleSheet.create({
 		fontSize: 15,
 	},
 	section: {
-		backgroundColor: Colors.light.card,
 		borderRadius: 16,
 		marginHorizontal: 18,
 		marginBottom: 18,
@@ -249,7 +245,6 @@ const styles = StyleSheet.create({
 		color: Colors.light.textPrimaryForeground,
 	},
 	placeholderCard: {
-		backgroundColor: Colors.light.secondary,
 		borderRadius: 10,
 		padding: 16,
 		alignItems: "center",
