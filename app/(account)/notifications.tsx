@@ -95,7 +95,7 @@ export default function NotificationsScreen() {
 	});
 
 	return (
-		<SafeAreaView style={{ flex: 1, backgroundColor: Colors.light.background, paddingTop: 24 }}>
+		<SafeAreaView style={{ flex: 1, paddingTop: 24 }}>
 			<ThemedView style={styles.container}>
 				<View style={styles.headerRow}>
 					<View style={styles.headerLeft}>
@@ -131,7 +131,7 @@ export default function NotificationsScreen() {
 						<ThemedText style={styles.errorText}>{error}</ThemedText>
 					</View>
 				)}
-				<View style={styles.card}>
+				<ThemedView type="card" style={styles.card}>
 					{loading ? (
 						<ActivityIndicator
 							size="large"
@@ -193,7 +193,7 @@ export default function NotificationsScreen() {
 							contentContainerStyle={{ paddingVertical: 8 }}
 						/>
 					)}
-				</View>
+				</ThemedView>
 			</ThemedView>
 		</SafeAreaView>
 	);
@@ -202,8 +202,7 @@ export default function NotificationsScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		paddingTop: 24,
-		backgroundColor: Colors.light.background,
+		paddingVertical: 24,
 	},
 	headerRow: {
 		flexDirection: "row",
@@ -246,7 +245,6 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 	},
 	card: {
-		backgroundColor: Colors.light.card,
 		borderRadius: 18,
 		marginHorizontal: 18,
 		padding: 10,
@@ -264,7 +262,6 @@ const styles = StyleSheet.create({
 		paddingHorizontal: 8,
 		borderRadius: 12,
 		marginBottom: 8,
-		backgroundColor: Colors.light.secondary,
 		shadowColor: "#000",
 		shadowOffset: { width: 0, height: 1 },
 		shadowOpacity: 0.04,

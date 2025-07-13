@@ -9,7 +9,7 @@ import { useAuth } from "@clerk/clerk-expo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Location from "expo-location";
 import { router } from "expo-router";
-import { Bell, Info, Lock, LogOut, Moon, Sun } from "lucide-react-native";
+import { Bell, Info, Lock, LogOut, Moon } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from "react-native";
 
@@ -69,6 +69,7 @@ const SettingsScreen = () => {
 			// Optionally clear AsyncStorage or any other app state here
 			router.replace("/(auth)/sign-in");
 		} catch (e) {
+			console.error("Error logging out:", e);
 			Alert.alert("Error", "Failed to log out.");
 		}
 	};
@@ -91,28 +92,19 @@ const SettingsScreen = () => {
 	return (
 		<ThemedView style={styles.container}>
 			<ScrollView contentContainerStyle={styles.scrollContent}>
-				<View style={styles.section}>
+				<ThemedView type="card" style={styles.section}>
 					<ThemedText style={styles.sectionTitle}>Preferences</ThemedText>
-					<View style={styles.row}>
-						<View style={styles.rowLeft}>
-							<Sun size={22} color={Colors.light.tint} />
-							<ThemedText style={styles.rowLabel}>Light Mode</ThemedText>
-						</View>
-						<Switch
-							value={!darkMode}
-							onValueChange={() => handleThemeChange(false)}
-							thumbColor={Colors.light.tint}
-							trackColor={{ false: "#e0eaff", true: Colors.light.tint }}
-						/>
-					</View>
+
 					<View style={styles.row}>
 						<View style={styles.rowLeft}>
 							<Moon size={22} color={Colors.light.tint} />
-							<ThemedText style={styles.rowLabel}>Dark Mode</ThemedText>
+							<ThemedText style={styles.rowLabel}>
+								{darkMode ? "Dark Mode" : "Light Mode"}
+							</ThemedText>
 						</View>
 						<Switch
 							value={darkMode}
-							onValueChange={() => handleThemeChange(true)}
+							onValueChange={() => handleThemeChange(!darkMode)}
 							thumbColor={Colors.light.tint}
 							trackColor={{ false: "#e0eaff", true: Colors.light.tint }}
 						/>
@@ -141,9 +133,9 @@ const SettingsScreen = () => {
 							trackColor={{ false: "#e0eaff", true: Colors.light.tint }}
 						/>
 					</View>
-				</View>
+				</ThemedView>
 
-				<View style={styles.section}>
+				<ThemedView type="card" style={styles.section}>
 					<ThemedText style={styles.sectionTitle}>Privacy & Permissions</ThemedText>
 					<View style={styles.row}>
 						<View style={styles.rowLeft}>
@@ -181,9 +173,9 @@ const SettingsScreen = () => {
 							trackColor={{ false: "#e0eaff", true: Colors.light.tint }}
 						/>
 					</View>
-				</View>
+				</ThemedView>
 
-				<View style={styles.section}>
+				<ThemedView type="card" style={styles.section}>
 					<ThemedText style={styles.sectionTitle}>App</ThemedText>
 					{settingsOptions.map((option, idx) => (
 						<TouchableOpacity
@@ -203,16 +195,16 @@ const SettingsScreen = () => {
 							</View>
 						</TouchableOpacity>
 					))}
-				</View>
-				<View style={styles.section}>
+				</ThemedView>
+				<ThemedView type="card" style={styles.section}>
 					<ThemedText style={styles.sectionTitle}>Share the App</ThemedText>
 					<ThemedText style={styles.rowLabel}>
 						Help us spread the word! Share the app with your friends and family.
 					</ThemedText>
 					<ShareApp />
-				</View>
+				</ThemedView>
 
-				<View style={styles.section}>
+				<ThemedView type="card" style={styles.section}>
 					<TouchableOpacity
 						style={styles.logoutBtn}
 						activeOpacity={0.8}
@@ -220,7 +212,7 @@ const SettingsScreen = () => {
 						<LogOut size={20} color="#fff" style={{ marginRight: 8 }} />
 						<ThemedText style={styles.logoutText}>Log Out</ThemedText>
 					</TouchableOpacity>
-				</View>
+				</ThemedView>
 			</ScrollView>
 			<PopupModal
 				visible={showClearModal}
@@ -239,7 +231,7 @@ const SettingsScreen = () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		paddingTop: 24,
+		paddingTop: 44,
 	},
 	scrollContent: {
 		paddingBottom: 32,
@@ -252,7 +244,6 @@ const styles = StyleSheet.create({
 		letterSpacing: 0.2,
 	},
 	section: {
-		backgroundColor: Colors.light.card,
 		borderRadius: 16,
 		marginHorizontal: 18,
 		marginBottom: 24,
