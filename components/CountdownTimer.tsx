@@ -2,6 +2,7 @@ import { Colors } from "@/constants/Colors";
 import { iSize } from "@/lib/types";
 import React, { useEffect, useRef, useState } from "react";
 import { Animated, Easing, StyleSheet, Text, View, ViewStyle } from "react-native";
+import { ThemedView } from "./ThemedView";
 
 interface TimerProps {
 	targetDate: string;
@@ -220,7 +221,7 @@ export const CountdownTimer: React.FC<TimerProps> = ({
 	}
 
 	return (
-		<View style={[styles.timerContainer, sizeStyle, style]}>
+		<ThemedView type="modal" style={[styles.timerContainer, sizeStyle]}>
 			<View style={styles.timerGrid}>
 				<NumberBox num={months} unit="Mon" />
 				<Text style={styles.colon}>:</Text>
@@ -232,7 +233,7 @@ export const CountdownTimer: React.FC<TimerProps> = ({
 				<Text style={styles.colon}>:</Text>
 				<NumberBox num={seconds} unit="Sec" animatedValue={secAnim} highlight />
 			</View>
-		</View>
+		</ThemedView>
 	);
 };
 
@@ -242,7 +243,7 @@ const styles = StyleSheet.create({
 		borderRadius: 16,
 		width: "100%",
 		alignItems: "center",
-		backgroundColor: "transparent",
+		justifyContent: "center",
 	},
 	sm: {
 		transform: [{ scale: 0.6 }],
@@ -267,7 +268,6 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		paddingHorizontal: 4,
-		backgroundColor: "rgba(1,75,139,0.07)",
 		borderRadius: 12,
 	},
 	colon: {
@@ -288,6 +288,7 @@ const styles = StyleSheet.create({
 		elevation: 2,
 		backgroundColor: "#eaf3fb",
 		borderRadius: 10,
+		paddingHorizontal: 8,
 		shadowOpacity: 0.18,
 	},
 	numberBoxHighlight: {

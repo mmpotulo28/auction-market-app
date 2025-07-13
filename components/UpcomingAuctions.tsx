@@ -51,7 +51,7 @@ const UpcomingAuctions: React.FC = () => {
 				keyExtractor={(item) => item.id}
 				contentContainerStyle={styles.listContent}
 				renderItem={({ item }) => (
-					<ThemedView style={[styles.card, { backgroundColor: Colors.light.secondary }]}>
+					<ThemedView type="card" style={[styles.card]}>
 						<View style={styles.cardHeader}>
 							<LockUp title={item.name} centered bold />
 						</View>
@@ -59,9 +59,9 @@ const UpcomingAuctions: React.FC = () => {
 							<Text style={styles.itemsCount}>
 								{item.items_count} Items Available
 							</Text>
-							<View style={styles.timerRow}>
+							<ThemedView style={styles.timerRow}>
 								<CountdownTimer targetDate={item.start_time} />
-							</View>
+							</ThemedView>
 							<Actions
 								actions={[
 									{
@@ -144,22 +144,12 @@ const styles = StyleSheet.create({
 	timerRow: {
 		flexDirection: "row",
 		alignItems: "center",
+		justifyContent: "center",
 		gap: 6,
-		backgroundColor: Colors.light.muted,
 		paddingVertical: 6,
 		paddingHorizontal: 14,
 		borderRadius: 8,
 		marginBottom: 2,
-	},
-	timerLabel: {
-		color: Colors.light.textMutedForeground,
-		fontSize: 15,
-		marginRight: 4,
-	},
-	timerText: {
-		fontWeight: "bold",
-		color: Colors.light.tint,
-		fontSize: 15,
 	},
 	errorText: {
 		color: Colors.light.destructive,
