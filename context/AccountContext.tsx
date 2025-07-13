@@ -1,28 +1,36 @@
-import { fetchOrders, fetchTransactions } from "@/lib/helpers";
-import { iGroupedOrder, iTransaction } from "@/lib/types";
+import { fetchNotifications, fetchOrders, fetchTransactions } from "@/lib/helpers";
+import { iGroupedOrder, iNotification, iTransaction } from "@/lib/types";
 import { AxiosError } from "axios";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 interface AccountContextType {
 	orders: iGroupedOrder[];
 	transactions: iTransaction[];
+	notifications: iNotification[];
 	loadingOrders: boolean;
 	loadingTransactions: boolean;
+	loadingNotifications: boolean;
 	errorOrders: string | null;
 	errorTransactions: string | null;
+	errorNotifications: string | null;
 	fetchOrders: () => Promise<void>;
 	fetchTransactions: () => Promise<void>;
+	fetchNotifications: () => Promise<void>;
 }
 
 export const AccountContext = React.createContext<AccountContextType>({
 	orders: [],
 	transactions: [],
+	notifications: [],
 	loadingOrders: false,
 	loadingTransactions: false,
+	loadingNotifications: false,
 	errorOrders: null,
 	errorTransactions: null,
+	errorNotifications: null,
 	fetchOrders: async () => {},
 	fetchTransactions: async () => {},
+	fetchNotifications: async () => {},
 });
 
 export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -32,6 +40,9 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 	const [loadingTransactions, setLoadingTransactions] = useState(false);
 	const [errorOrders, setErrorOrders] = useState<string | null>(null);
 	const [errorTransactions, setErrorTransactions] = useState<string | null>(null);
+	const [notifications, setNotifications] = useState<iNotification[]>([]);
+	const [errorNotifications, setErrorNotifications] = useState<string | null>(null);
+	const [loadingNotifications, setLoadingNotifications] = useState(false);
 
 	const fetchOrdersData = useCallback(async () => {
 		setLoadingOrders(true);
@@ -69,31 +80,66 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 		}
 	}, []);
 
+	const fetchNotificationsData = useCallback(async () => {
+		try {
+			setLoadingNotifications(true);
+			setErrorNotifications(null);
+			const res = await fetchNotifications();
+			if (res.error) {
+				throw new Error(res.error);
+			}
+
+			setNotifications(res.notifications);
+		} catch (err) {
+			console.error("Error fetching notifications:", err);
+			if (err instanceof Error || err instanceof AxiosError) {
+				setErrorNotifications(err.message);
+			} else {
+				setErrorNotifications(
+					typeof err === "object" && err !== null && "toString" in err
+						? (err as { toString: () => string }).toString()
+						: String(err),
+				);
+			}
+		} finally {
+			setLoadingNotifications(false);
+		}
+	}, []);
+
 	useEffect(() => {
 		fetchOrdersData();
 		fetchTransactionsData();
-	}, [fetchOrdersData, fetchTransactionsData]);
+		fetchNotificationsData();
+	}, [fetchOrdersData, fetchTransactionsData, fetchNotificationsData]);
 
 	const contextValue = useMemo(
 		() => ({
 			orders,
 			transactions,
+			notifications,
 			loadingOrders,
 			loadingTransactions,
+			loadingNotifications,
 			errorOrders,
 			errorTransactions,
+			errorNotifications,
 			fetchOrders: fetchOrdersData,
 			fetchTransactions: fetchTransactionsData,
+			fetchNotifications: fetchNotificationsData,
 		}),
 		[
 			orders,
 			transactions,
+			notifications,
 			loadingOrders,
 			loadingTransactions,
+			loadingNotifications,
 			errorOrders,
 			errorTransactions,
+			errorNotifications,
 			fetchOrdersData,
 			fetchTransactionsData,
+			fetchNotificationsData,
 		],
 	);
 

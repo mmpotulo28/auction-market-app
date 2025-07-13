@@ -1,11 +1,13 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
+import { useAccountContext } from "@/context/AccountContext";
 import { AlertTriangle, Bell, CheckCircle2, Info, RotateCcw, XCircle } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
 	ActivityIndicator,
 	FlatList,
+	Modal,
 	SafeAreaView,
 	StyleSheet,
 	Switch,
@@ -31,56 +33,12 @@ const typeIcon = {
 	default: <Bell size={22} color={Colors.light.textMutedForeground} />,
 };
 
-const DUMMY_NOTIFICATIONS: Notification[] = [
-	{
-		id: "1",
-		message: "Your order #1234 has been shipped.",
-		type: "success",
-		read: false,
-		created_at: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
-	},
-	{
-		id: "2",
-		message: "Payment for order #1233 failed.",
-		type: "error",
-		read: false,
-		created_at: new Date(Date.now() - 10 * 60 * 1000).toISOString(),
-	},
-	{
-		id: "3",
-		message: "Welcome to Auction Market SA!",
-		type: "info",
-		read: true,
-		created_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(),
-	},
-	{
-		id: "4",
-		message: "Your bid was outbid on item #567.",
-		type: "warning",
-		read: true,
-		created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(),
-	},
-];
-
 export default function NotificationsScreen() {
-	const [notifications, setNotifications] = useState<Notification[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [error, setError] = useState<string | null>(null);
+	const [, setNotifications] = useState<Notification[]>([]);
+
 	const [showOld, setShowOld] = useState(false);
-
-	useEffect(() => {
-		fetchNotifications();
-	}, []);
-
-	const fetchNotifications = async () => {
-		setLoading(true);
-		setError(null);
-		// Simulate API call
-		setTimeout(() => {
-			setNotifications(DUMMY_NOTIFICATIONS);
-			setLoading(false);
-		}, 800);
-	};
+	const { notifications, loadingNotifications, errorNotifications, fetchNotifications } =
+		useAccountContext();
 
 	const markAsRead = (id: string) => {
 		setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
@@ -119,20 +77,22 @@ export default function NotificationsScreen() {
 						<TouchableOpacity
 							style={styles.refreshBtn}
 							onPress={fetchNotifications}
-							disabled={loading}
+							disabled={loadingNotifications}
 							accessibilityLabel="Refresh notifications">
 							<RotateCcw size={22} color={Colors.light.tint} />
 						</TouchableOpacity>
 					</View>
 				</View>
-				{error && (
-					<View style={styles.errorCard}>
-						<XCircle size={20} color={Colors.light.destructive} />
-						<ThemedText style={styles.errorText}>{error}</ThemedText>
-					</View>
+				{errorNotifications && (
+					<Modal transparent animationType="fade" visible={!!errorNotifications}>
+						<View style={styles.errorCard}>
+							<XCircle size={20} color={Colors.light.destructive} />
+							<ThemedText style={styles.errorText}>{errorNotifications}</ThemedText>
+						</View>
+					</Modal>
 				)}
 				<ThemedView type="card" style={styles.card}>
-					{loading ? (
+					{loadingNotifications ? (
 						<ActivityIndicator
 							size="large"
 							color={Colors.light.tint}
@@ -158,7 +118,8 @@ export default function NotificationsScreen() {
 											: styles.notificationUnread,
 									]}>
 									<View style={styles.notificationIcon}>
-										{typeIcon[item.type] || typeIcon.default}
+										{typeIcon[item.type as keyof typeof typeIcon] ||
+											typeIcon.default}
 									</View>
 									<View style={styles.notificationContent}>
 										<View style={styles.notificationMessageRow}>

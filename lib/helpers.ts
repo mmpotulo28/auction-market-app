@@ -1,5 +1,12 @@
-import axios from "axios";
-import { iAuction, iGroupedOrder, iOrder, iOrderStatus, iTransaction } from "./types";
+import axios, { isAxiosError } from "axios";
+import {
+	iAuction,
+	iGroupedOrder,
+	iNotification,
+	iOrder,
+	iOrderStatus,
+	iTransaction,
+} from "./types";
 
 /**
  * Converts a given string into a URL-friendly format.
@@ -289,5 +296,33 @@ export async function fetchTransactions({
 		if (e?.response?.data?.error) msg = e.response.data.error;
 		else if (e?.message) msg = e.message;
 		return { transactions: [], error: msg };
+	}
+}
+
+// fetch notifications
+export async function fetchNotifications(): Promise<{
+	notifications: iNotification[];
+	error?: string;
+}> {
+	try {
+		const res = await axios.get<{ notifications: iNotification[]; error?: string }>(
+			"https://auctionmarket.tech/api/admin/notifications",
+		);
+
+		const data = res.data;
+		if (data.notifications) {
+			return { notifications: data.notifications };
+		} else {
+			return { notifications: [], error: "No notifications found." };
+		}
+	} catch (e: unknown) {
+		if (isAxiosError(e)) {
+			return { notifications: [], error: e.response?.data?.error || e.message };
+		} else {
+			return {
+				notifications: [],
+				error: "An unexpected error occurred while fetching notifications.",
+			};
+		}
 	}
 }

@@ -246,3 +246,12 @@ export interface iGroupedOrder {
 	order_status: iOrderStatus;
 	orders: iOrder[];
 }
+
+export interface iNotification {
+	id: string;
+	message: string;
+	type: string;
+	read: boolean;
+	created_at?: string;
+	user_id?: string;
+}
