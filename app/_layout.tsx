@@ -81,7 +81,7 @@ export default Sentry.wrap(function RootLayout() {
 									</Stack>
 									<Toaster
 										theme="light"
-										richColors={false}
+										richColors={true}
 										loadingIcon
 										offset={50}
 										toastOptions={{
