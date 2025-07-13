@@ -273,7 +273,7 @@ const styles = StyleSheet.create({
 		color: Colors.light.textPrimaryForeground,
 	},
 	statusBadge: {
-		borderRadius: 8,
+		borderRadius: 50,
 		paddingVertical: 4,
 		paddingHorizontal: 14,
 		alignItems: "center",

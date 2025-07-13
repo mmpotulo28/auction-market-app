@@ -5,6 +5,7 @@ import { Receipt, X } from "lucide-react-native";
 import React from "react";
 import { Modal, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import CopyElement from "./CopyElement";
+import { ThemedView } from "./ThemedView";
 
 interface OrderViewProps {
 	group: iGroupedOrder;
@@ -32,8 +33,8 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 	return (
 		<Modal visible={true} transparent animationType="slide" onRequestClose={onClose}>
 			<View style={styles.overlay}>
-				<View style={styles.modal}>
-					<View style={styles.header}>
+				<ThemedView type="modal" style={styles.modal}>
+					<ThemedView type="card" style={styles.header}>
 						<View style={styles.headerLeft}>
 							<Receipt size={22} color={Colors.light.tint} />
 							<ThemedText style={styles.headerTitle}>
@@ -43,14 +44,14 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 						<TouchableOpacity onPress={onClose} style={styles.closeBtn}>
 							<X size={22} color={Colors.light.textMutedForeground} />
 						</TouchableOpacity>
-					</View>
+					</ThemedView>
 					<View style={[styles.statusBadge, { backgroundColor: badge.backgroundColor }]}>
 						<ThemedText style={[styles.statusBadgeText, { color: badge.color }]}>
 							{group.order_status}
 						</ThemedText>
 					</View>
 					<ScrollView contentContainerStyle={styles.scrollContent}>
-						<View style={styles.infoCard}>
+						<ThemedView type="card" style={styles.infoCard}>
 							<View style={styles.infoRow}>
 								<ThemedText style={styles.infoLabel}>Customer:</ThemedText>
 								<ThemedText style={styles.infoValue}>{group.user_name}</ThemedText>
@@ -87,12 +88,12 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 									R {Number(group.total_amount).toFixed(2)}
 								</ThemedText>
 							</View>
-						</View>
+						</ThemedView>
 						<ScrollView style={styles.itemsSection}>
 							<ThemedText style={styles.itemsTitle}>Order Items</ThemedText>
 							{group.orders && group.orders.length > 0 ? (
 								group.orders.map((order: iOrder) => (
-									<View key={order.id} style={styles.itemCard}>
+									<ThemedView type="card" key={order.id} style={styles.itemCard}>
 										<View style={styles.itemRow}>
 											<ThemedText style={styles.itemName}>
 												{order.item_name}
@@ -106,7 +107,7 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 												{order.order_status}
 											</ThemedText>
 										</View>
-									</View>
+									</ThemedView>
 								))
 							) : (
 								<ThemedText style={styles.noItemsText}>
@@ -115,7 +116,7 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 							)}
 						</ScrollView>
 					</ScrollView>
-				</View>
+				</ThemedView>
 			</View>
 		</Modal>
 	);
@@ -124,14 +125,13 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 const styles = StyleSheet.create({
 	overlay: {
 		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.25)",
+		backgroundColor: "rgba(0,0,0,0.85)",
 		justifyContent: "center",
 		alignItems: "center",
 	},
 	modal: {
 		width: "92%",
 		maxHeight: "90%",
-		backgroundColor: "#fff",
 		borderRadius: 22,
 		paddingTop: 0,
 		paddingBottom: 16,
@@ -150,7 +150,6 @@ const styles = StyleSheet.create({
 		paddingBottom: 8,
 		borderTopLeftRadius: 22,
 		borderTopRightRadius: 22,
-		backgroundColor: "#eaf3fb",
 	},
 	headerLeft: {
 		flexDirection: "row",
@@ -166,13 +165,13 @@ const styles = StyleSheet.create({
 	closeBtn: {
 		padding: 6,
 		borderRadius: 8,
-		backgroundColor: Colors.light.muted,
+		backgroundColor: Colors.light.accent,
 		alignItems: "center",
 		justifyContent: "center",
 	},
 	statusBadge: {
 		alignSelf: "center",
-		borderRadius: 8,
+		borderRadius: 50,
 		paddingVertical: 6,
 		paddingHorizontal: 18,
 		marginTop: 8,
@@ -188,7 +187,6 @@ const styles = StyleSheet.create({
 		minWidth: "100%",
 	},
 	infoCard: {
-		backgroundColor: Colors.light.secondary,
 		borderRadius: 14,
 		padding: 16,
 		marginBottom: 18,
@@ -222,7 +220,6 @@ const styles = StyleSheet.create({
 		color: Colors.light.textPrimaryForeground,
 	},
 	itemCard: {
-		backgroundColor: Colors.light.muted,
 		borderRadius: 10,
 		padding: 12,
 		marginBottom: 8,

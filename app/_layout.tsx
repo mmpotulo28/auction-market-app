@@ -1,5 +1,6 @@
 import { useColorScheme } from "@//hooks/useColorScheme";
 import AccessControlProvider from "@/context/AccessControlProvider";
+import { AccountProvider } from "@/context/AccountContext";
 import { WebSocketProvider } from "@/context/WebSocketProvider";
 import { ClerkProvider } from "@clerk/clerk-expo";
 import { tokenCache } from "@clerk/clerk-expo/token-cache";
@@ -49,27 +50,35 @@ export default Sentry.wrap(function RootLayout() {
 					<GestureHandlerRootView>
 						<AccessControlProvider>
 							<WebSocketProvider>
-								<Stack>
-									<Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-									<Stack.Screen
-										name="(support)"
-										options={{ headerShown: false }}
-									/>
-									<Stack.Screen name="(auth)" options={{ headerShown: false }} />
-									<Stack.Screen
-										name="oauth-native-callback"
-										options={{ headerShown: false }}
-									/>
-									<Stack.Screen
-										name="(account)"
-										options={{ headerShown: false }}
-									/>
-									<Stack.Screen
-										name="(auctions)"
-										options={{ headerShown: false }}
-									/>
-									<Stack.Screen name="+not-found" />
-								</Stack>
+								<AccountProvider>
+									<Stack>
+										<Stack.Screen
+											name="(tabs)"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen
+											name="(support)"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen
+											name="(auth)"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen
+											name="oauth-native-callback"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen
+											name="(account)"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen
+											name="(auctions)"
+											options={{ headerShown: false }}
+										/>
+										<Stack.Screen name="+not-found" />
+									</Stack>
+								</AccountProvider>
 							</WebSocketProvider>
 						</AccessControlProvider>
 					</GestureHandlerRootView>
