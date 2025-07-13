@@ -103,11 +103,13 @@ const SignInScreen = () => {
 	};
 
 	return (
-		<KeyboardAvoidingView
-			style={styles.container}
-			behavior={Platform.OS === "ios" ? "padding" : "height"}>
-			<ScrollView>
-				<ThemedView style={styles.container}>
+		<ThemedView style={styles.container}>
+			<KeyboardAvoidingView
+				style={{ flex: 1 }}
+				behavior={Platform.OS === "ios" ? "padding" : "height"}>
+				<ScrollView
+					contentContainerStyle={{ flexGrow: 1 }}
+					keyboardShouldPersistTaps="handled">
 					<View style={styles.logoContainer}>
 						<Image
 							source={require("@/assets/images/amsa-logo.png")}
@@ -115,7 +117,7 @@ const SignInScreen = () => {
 							resizeMode="contain"
 						/>
 					</View>
-					<View style={styles.formCard}>
+					<ThemedView type="card" style={styles.formCard}>
 						<ThemedText type="title" style={styles.heading}>
 							Sign In
 						</ThemedText>
@@ -200,7 +202,7 @@ const SignInScreen = () => {
 								</ThemedText>
 							</TouchableOpacity>
 						</View>
-					</View>
+					</ThemedView>
 					<PopupModal
 						visible={errorModal.visible}
 						title="Error"
@@ -210,9 +212,9 @@ const SignInScreen = () => {
 						confirmText="OK"
 						cancelText="Close"
 					/>
-				</ThemedView>
-			</ScrollView>
-		</KeyboardAvoidingView>
+				</ScrollView>
+			</KeyboardAvoidingView>
+		</ThemedView>
 	);
 };
 
@@ -221,7 +223,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: "center",
 		padding: 24,
-		backgroundColor: Colors.light.background,
 		minWidth: "100%", // Ensure full width on small screens
 	},
 	logoContainer: {
@@ -241,7 +242,6 @@ const styles = StyleSheet.create({
 		elevation: 2,
 	},
 	formCard: {
-		backgroundColor: Colors.light.card,
 		borderRadius: 18,
 		padding: 24,
 		shadowColor: "#000",

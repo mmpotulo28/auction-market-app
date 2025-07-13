@@ -5,8 +5,8 @@ const SupportLayout = () => {
 	return (
 		<Stack>
 			<SafeAreaView style={{ flex: 1 }}>
-				<Stack.Screen name="sign-in" options={{ headerShown: true, title: "Sign In" }} />
-				<Stack.Screen name="sign-up" options={{ headerShown: true, title: "Sign Up" }} />
+				<Stack.Screen name="sign-in" options={{ headerShown: false, title: "Sign In" }} />
+				<Stack.Screen name="sign-up" options={{ headerShown: false, title: "Sign Up" }} />
 			</SafeAreaView>
 		</Stack>
 	);

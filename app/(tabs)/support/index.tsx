@@ -53,13 +53,13 @@ const SupportScreen = () => {
 				<ThemedText style={styles.subheading}>
 					We&apos;re here to help you with anything you need.
 				</ThemedText>
-				<View style={styles.section}>
+				<ThemedView type="card" style={styles.section}>
 					{supportOptions.map((option, idx) => (
 						<TouchableOpacity
 							key={option.label}
 							style={[
-								styles.optionRow,
-								selected === option.label && styles.optionRowSelected,
+								{ flex: 1 },
+
 								idx === supportOptions.length - 1 && { borderBottomWidth: 0 },
 							]}
 							activeOpacity={0.8}
@@ -67,20 +67,28 @@ const SupportScreen = () => {
 								setSelected(option.label);
 								option.onPress(router);
 							}}>
-							<View style={styles.optionIcon}>{option.icon}</View>
-							<View style={styles.optionText}>
-								<ThemedText style={styles.optionLabel}>{option.label}</ThemedText>
-								<ThemedText style={styles.optionDesc}>
-									{option.description}
-								</ThemedText>
-							</View>
+							<ThemedView
+								style={[
+									styles.optionRow,
+									selected === option.label && styles.optionRowSelected,
+								]}>
+								<View style={styles.optionIcon}>{option.icon}</View>
+								<View style={styles.optionText}>
+									<ThemedText style={styles.optionLabel}>
+										{option.label}
+									</ThemedText>
+									<ThemedText style={styles.optionDesc}>
+										{option.description}
+									</ThemedText>
+								</View>
+							</ThemedView>
 						</TouchableOpacity>
 					))}
-				</View>
+				</ThemedView>
 
 				<ShareApp />
 
-				<View style={styles.footer}>
+				<ThemedView style={styles.footer}>
 					<ThemedText style={styles.footerText}>
 						For urgent support, email us at{" "}
 						<ThemedText
@@ -89,7 +97,7 @@ const SupportScreen = () => {
 							support@example.com
 						</ThemedText>
 					</ThemedText>
-				</View>
+				</ThemedView>
 			</ScrollView>
 		</ThemedView>
 	);
@@ -98,7 +106,7 @@ const SupportScreen = () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		paddingTop: 24,
+		paddingTop: 44,
 	},
 	scrollContent: {
 		paddingBottom: 32,
@@ -117,7 +125,6 @@ const styles = StyleSheet.create({
 		fontSize: 16,
 	},
 	section: {
-		backgroundColor: Colors.light.card,
 		borderRadius: 16,
 		marginHorizontal: 18,
 		marginBottom: 24,
@@ -137,7 +144,6 @@ const styles = StyleSheet.create({
 		borderBottomColor: Colors.light.border,
 		borderRadius: 10,
 		marginBottom: 2,
-		backgroundColor: "#fff",
 	},
 	optionRowSelected: {
 		backgroundColor: Colors.light.muted,

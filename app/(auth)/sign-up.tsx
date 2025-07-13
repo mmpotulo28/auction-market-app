@@ -86,7 +86,7 @@ const SignUpScreen = () => {
 					resizeMode="contain"
 				/>
 			</View>
-			<View style={styles.formCard}>
+			<ThemedView type="card" style={styles.formCard}>
 				<ThemedText type="title" style={styles.heading}>
 					Sign Up
 				</ThemedText>
@@ -145,7 +145,7 @@ const SignUpScreen = () => {
 						</ThemedText>
 					</TouchableOpacity>
 				</View>
-			</View>
+			</ThemedView>
 			<PopupModal
 				visible={errorModal.visible}
 				title="Error"
@@ -164,7 +164,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 		justifyContent: "center",
 		padding: 24,
-		backgroundColor: Colors.light.background,
 	},
 	logoContainer: {
 		alignItems: "center",
@@ -183,7 +182,6 @@ const styles = StyleSheet.create({
 		elevation: 2,
 	},
 	formCard: {
-		backgroundColor: Colors.light.card,
 		borderRadius: 18,
 		padding: 24,
 		shadowColor: "#000",
