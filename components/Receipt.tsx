@@ -16,6 +16,7 @@ import {
 	View,
 } from "react-native";
 import CopyElement from "./CopyElement";
+import { ThemedView } from "./ThemedView";
 
 interface ReceiptProps {
 	transaction: iTransaction;
@@ -82,7 +83,7 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 				<head>
 					<meta name="viewport" content="width=device-width, initial-scale=1.0">
 					<style>
-						body { font-family: monospace; background: #f6faff; color: #014b8b; margin: 0; padding: 0; }
+						body { font-family: monospace; background: #f6faff; color: #014b8b; margin: auto; padding: 0; max-width: 500px; }
 						.receipt-container { background: #fff; border-radius: 18px; margin: 24px; padding: 24px 18px; box-shadow: 0 2px 12px rgba(1,75,139,0.13); }
 						.logo { font-weight: bold; font-size: 22px; color: #1976c5; text-align: center; margin-bottom: 2px; }
 						.title { font-size: 15px; color: #7fa1c0; text-align: center; margin-bottom: 12px; }
@@ -153,7 +154,7 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 				</html>
 			`;
 
-			const { uri } = await Print.printToFileAsync({ html, base64: false });
+			const { uri } = await Print.printToFileAsync({ html, base64: false, width: 400 });
 			if (Platform.OS === "ios" || Platform.OS === "android") {
 				await Sharing.shareAsync(uri, {
 					UTI: "com.adobe.pdf",
@@ -171,7 +172,7 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 	return (
 		<Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
 			<View style={styles.overlay}>
-				<View style={styles.receiptPaper} ref={receiptRef}>
+				<ThemedView style={styles.receiptPaper} ref={receiptRef}>
 					{/* Close button at top right */}
 					<TouchableOpacity
 						style={styles.closeBtnTop}
@@ -180,10 +181,10 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 						<X size={22} color={Colors.light.textMutedForeground} />
 					</TouchableOpacity>
 					<ScrollView contentContainerStyle={styles.scrollContent}>
-						<View style={styles.receiptHeader}>
+						<ThemedView style={styles.receiptHeader}>
 							<ThemedText style={styles.receiptLogo}>AUCTION MARKET SA</ThemedText>
 							<ThemedText style={styles.receiptTitle}>Transaction Receipt</ThemedText>
-						</View>
+						</ThemedView>
 						<View style={styles.dashedDivider} />
 						{!showFull ? (
 							<>
@@ -391,8 +392,7 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 							</>
 						)}
 					</ScrollView>
-					<View style={styles.paperTear} />
-				</View>
+				</ThemedView>
 			</View>
 		</Modal>
 	);
@@ -401,7 +401,7 @@ const Receipt: React.FC<ReceiptProps> = ({ transaction, visible, onClose }) => {
 const styles = StyleSheet.create({
 	overlay: {
 		flex: 1,
-		backgroundColor: Colors.light.overlay,
+		backgroundColor: Colors.dark.overlay,
 		justifyContent: "center",
 		alignItems: "center",
 		minHeight: "100%",
@@ -409,7 +409,6 @@ const styles = StyleSheet.create({
 	},
 	receiptPaper: {
 		width: "92%",
-		backgroundColor: "#f6faff",
 		borderRadius: 18,
 		padding: 0,
 		alignItems: "center",
@@ -429,7 +428,6 @@ const styles = StyleSheet.create({
 		top: 12,
 		right: 12,
 		zIndex: 10,
-		backgroundColor: Colors.light.muted,
 		borderRadius: 20,
 		padding: 6,
 		alignItems: "center",
@@ -439,7 +437,6 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		paddingTop: 32,
 		paddingBottom: 8,
-		backgroundColor: "#f6faff",
 		width: "100%",
 		borderTopLeftRadius: 18,
 		borderTopRightRadius: 18,
@@ -546,7 +543,6 @@ const styles = StyleSheet.create({
 	paperTear: {
 		width: "100%",
 		height: 16,
-		backgroundColor: "#f6faff",
 		borderBottomLeftRadius: 18,
 		borderBottomRightRadius: 18,
 		borderTopWidth: 1,

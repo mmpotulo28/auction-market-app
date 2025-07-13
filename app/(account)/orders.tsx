@@ -253,7 +253,6 @@ const styles = StyleSheet.create({
 	orderIdText: {
 		fontWeight: "bold",
 		fontSize: 18,
-		color: Colors.light.textPrimaryForeground,
 		marginLeft: 8,
 	},
 	orderDetailsRow: {
@@ -270,7 +269,6 @@ const styles = StyleSheet.create({
 	orderValue: {
 		fontWeight: "600",
 		fontSize: 15,
-		color: Colors.light.textPrimaryForeground,
 	},
 	statusBadge: {
 		borderRadius: 50,

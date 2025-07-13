@@ -1,5 +1,6 @@
 import { fetchOrders, fetchTransactions } from "@/lib/helpers";
 import { iGroupedOrder, iTransaction } from "@/lib/types";
+import { AxiosError } from "axios";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 interface AccountContextType {
@@ -39,7 +40,12 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			const data = await fetchOrders({ page: 1, pageSize: 10 });
 			setOrders(data.groupedOrders);
 		} catch (err) {
-			setErrorOrders("Failed to fetch orders.");
+			if (err instanceof Error || err instanceof AxiosError) {
+				setErrorOrders(err.message);
+			} else {
+				console.error("Error fetching orders:", err);
+				setErrorOrders("Failed to fetch orders.");
+			}
 		} finally {
 			setLoadingOrders(false);
 		}
@@ -52,7 +58,12 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			const data = await fetchTransactions({ page: 1, pageSize: 10 });
 			setTransactions(data.transactions);
 		} catch (err) {
-			setErrorTransactions("Failed to fetch transactions.");
+			console.error("Error fetching transactions:", err);
+			if (err instanceof Error || err instanceof AxiosError) {
+				setErrorTransactions(err.message);
+			} else {
+				setErrorTransactions("Failed to fetch transactions.");
+			}
 		} finally {
 			setLoadingTransactions(false);
 		}

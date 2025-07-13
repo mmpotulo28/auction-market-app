@@ -150,7 +150,7 @@ const AccountScreen = () => {
 							<TouchableOpacity
 								style={styles.actionCard}
 								onPress={() => router.push(action.navigateTo as any)}>
-								<action.icon size={28} color={Colors.light.background} />
+								<action.icon size={28} color={Colors.light.accent} />
 								<ThemedText style={styles.actionLabel}>{action.label}</ThemedText>
 							</TouchableOpacity>
 						</ThemedView>
@@ -301,7 +301,6 @@ const styles = StyleSheet.create({
 	actionLabel: {
 		marginTop: 8,
 		fontWeight: "600",
-		color: Colors.light.textPrimaryForeground,
 		fontSize: 15,
 	},
 	section: {
@@ -318,8 +317,6 @@ const styles = StyleSheet.create({
 	sectionTitle: {
 		fontWeight: "700",
 		fontSize: 16,
-		marginBottom: 10,
-		color: Colors.light.textPrimaryForeground,
 	},
 	placeholderCard: {
 		borderRadius: 10,

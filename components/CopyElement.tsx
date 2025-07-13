@@ -1,7 +1,8 @@
 import * as Clipboard from "expo-clipboard";
 import { Check, Copy } from "lucide-react-native";
 import React, { useState } from "react";
-import { StyleSheet, Text, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native";
+import { StyleSheet, TextStyle, TouchableOpacity, View, ViewStyle } from "react-native";
+import { ThemedText } from "./ThemedText";
 
 interface CopyElementProps {
 	content: string;
@@ -28,12 +29,12 @@ const CopyElement: React.FC<CopyElementProps> = ({
 
 	return (
 		<View style={[styles.row, style]}>
-			<Text
+			<ThemedText
 				numberOfLines={truncate ? 1 : undefined}
 				ellipsizeMode={truncate ? "tail" : undefined}
 				style={[styles.text, truncate && { maxWidth: truncateWidth }, textStyle]}>
 				{content}
-			</Text>
+			</ThemedText>
 			<TouchableOpacity
 				style={styles.iconBtn}
 				onPress={() => handleCopy(content)}
@@ -57,7 +58,6 @@ const styles = StyleSheet.create({
 	},
 	text: {
 		fontSize: 15,
-		color: "#014b8b",
 	},
 	iconBtn: {
 		marginLeft: 4,

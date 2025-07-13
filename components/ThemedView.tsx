@@ -6,6 +6,7 @@ import { useThemeColor } from "@/hooks/useThemeColor";
 export type ThemedViewProps = ViewProps & {
 	lightColor?: string;
 	darkColor?: string;
+	ref?: React.RefObject<View | null>;
 	type?: "view" | "container" | "card" | "modal";
 };
 
@@ -14,6 +15,7 @@ export function ThemedView({
 	lightColor,
 	darkColor,
 	type = "view",
+	ref,
 	...otherProps
 }: ThemedViewProps) {
 	let property = "background";

@@ -33,8 +33,8 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 	return (
 		<Modal visible={true} transparent animationType="slide" onRequestClose={onClose}>
 			<View style={styles.overlay}>
-				<ThemedView type="modal" style={styles.modal}>
-					<ThemedView type="card" style={styles.header}>
+				<ThemedView type="card" style={styles.modal}>
+					<ThemedView type="view" style={styles.header}>
 						<View style={styles.headerLeft}>
 							<Receipt size={22} color={Colors.light.tint} />
 							<ThemedText style={styles.headerTitle}>
@@ -51,7 +51,7 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 						</ThemedText>
 					</View>
 					<ScrollView contentContainerStyle={styles.scrollContent}>
-						<ThemedView type="card" style={styles.infoCard}>
+						<ThemedView type="view" style={styles.infoCard}>
 							<View style={styles.infoRow}>
 								<ThemedText style={styles.infoLabel}>Customer:</ThemedText>
 								<ThemedText style={styles.infoValue}>{group.user_name}</ThemedText>
@@ -93,7 +93,7 @@ const OrderView: React.FC<OrderViewProps> = ({ group, onClose }) => {
 							<ThemedText style={styles.itemsTitle}>Order Items</ThemedText>
 							{group.orders && group.orders.length > 0 ? (
 								group.orders.map((order: iOrder) => (
-									<ThemedView type="card" key={order.id} style={styles.itemCard}>
+									<ThemedView type="view" key={order.id} style={styles.itemCard}>
 										<View style={styles.itemRow}>
 											<ThemedText style={styles.itemName}>
 												{order.item_name}
@@ -139,6 +139,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		boxShadow: "0 2px 12px rgba(1,75,139,0.13)",
 		elevation: 8,
+		position: "relative",
 	},
 	header: {
 		width: "100%",
@@ -164,10 +165,12 @@ const styles = StyleSheet.create({
 	},
 	closeBtn: {
 		padding: 6,
-		borderRadius: 8,
-		backgroundColor: Colors.light.accent,
+		borderRadius: 50,
 		alignItems: "center",
 		justifyContent: "center",
+		position: "absolute",
+		top: 8,
+		right: 8,
 	},
 	statusBadge: {
 		alignSelf: "center",
@@ -217,7 +220,6 @@ const styles = StyleSheet.create({
 		fontWeight: "700",
 		fontSize: 16,
 		marginBottom: 8,
-		color: Colors.light.textPrimaryForeground,
 	},
 	itemCard: {
 		borderRadius: 10,
@@ -233,7 +235,6 @@ const styles = StyleSheet.create({
 	itemName: {
 		fontWeight: "600",
 		fontSize: 15,
-		color: Colors.light.textPrimaryForeground,
 		flex: 2,
 	},
 	itemPrice: {

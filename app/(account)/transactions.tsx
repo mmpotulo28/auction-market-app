@@ -64,7 +64,7 @@ export default function TransactionsScreen() {
 	}, [fetchData]);
 
 	return (
-		<SafeAreaView style={{ flex: 1, backgroundColor: Colors.light.background, paddingTop: 24 }}>
+		<SafeAreaView style={{ flex: 1, paddingTop: 24 }}>
 			<ThemedView style={styles.container}>
 				<View style={styles.headerRow}>
 					<ThemedText type="title" style={styles.heading}>
@@ -91,9 +91,9 @@ export default function TransactionsScreen() {
 							style={{ marginVertical: 32 }}
 						/>
 					) : transactions.length === 0 ? (
-						<View style={styles.emptyState}>
+						<ThemedView style={styles.emptyState}>
 							<ThemedText style={styles.emptyText}>No transactions found.</ThemedText>
-						</View>
+						</ThemedView>
 					) : (
 						<FlatList
 							data={transactions}
@@ -106,7 +106,7 @@ export default function TransactionsScreen() {
 										start={{ x: 0, y: 0 }}
 										end={{ x: 1, y: 1 }}
 										style={styles.txCardGradient}>
-										<View style={styles.txItem}>
+										<ThemedView type="card" style={styles.txItem}>
 											<View style={styles.txHeader}>
 												<View style={styles.txHeaderLeft}>
 													<Receipt size={22} color={Colors.light.tint} />
@@ -166,7 +166,7 @@ export default function TransactionsScreen() {
 													/>
 												</ThemedText>
 											</View>
-										</View>
+										</ThemedView>
 									</LinearGradient>
 								);
 							}}
@@ -187,7 +187,6 @@ export default function TransactionsScreen() {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		backgroundColor: Colors.light.border,
 		paddingTop: 24,
 	},
 	headerRow: {
@@ -211,7 +210,6 @@ const styles = StyleSheet.create({
 		boxShadow: "0 1px 4px rgba(1,75,139,0.07)",
 	},
 	card: {
-		backgroundColor: Colors.light.background,
 		borderRadius: 22,
 		marginHorizontal: 12,
 		padding: 6,
@@ -225,7 +223,6 @@ const styles = StyleSheet.create({
 		boxShadow: "0 2px 8px rgba(1,75,139,0.07)",
 	},
 	txItem: {
-		backgroundColor: Colors.light.card,
 		borderRadius: 18,
 		padding: 18,
 		boxShadow: "0 1px 4px rgba(1,75,139,0.06)",
@@ -271,9 +268,9 @@ const styles = StyleSheet.create({
 		color: Colors.light.textPrimaryForeground,
 	},
 	statusBadge: {
-		borderRadius: 8,
-		paddingVertical: 4,
-		paddingHorizontal: 14,
+		borderRadius: 50,
+		paddingVertical: 2,
+		paddingHorizontal: 8,
 		alignItems: "center",
 		justifyContent: "center",
 		marginLeft: 4,
@@ -307,59 +304,5 @@ const styles = StyleSheet.create({
 		fontWeight: "600",
 		fontSize: 15,
 		marginLeft: 8,
-	},
-	modal: {
-		width: "90%",
-		backgroundColor: "#fff",
-		borderRadius: 18,
-		padding: 20,
-		alignItems: "center",
-		boxShadow: "0 2px 12px rgba(1,75,139,0.13)",
-	},
-	overlay: {
-		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.25)",
-		justifyContent: "center",
-		alignItems: "center",
-	},
-	modalTitle: {
-		fontWeight: "bold",
-		fontSize: 22,
-		marginBottom: 18,
-		color: Colors.light.textPrimaryForeground,
-		textAlign: "center",
-	},
-	receiptContent: {
-		width: "100%",
-		marginBottom: 18,
-	},
-	receiptRow: {
-		flexDirection: "row",
-		justifyContent: "space-between",
-		alignItems: "center",
-		marginBottom: 6,
-	},
-	receiptLabel: {
-		fontWeight: "600",
-		fontSize: 15,
-		color: Colors.light.textMutedForeground,
-	},
-	receiptValue: {
-		fontWeight: "600",
-		fontSize: 15,
-		color: Colors.light.textPrimaryForeground,
-	},
-	closeBtn: {
-		backgroundColor: Colors.light.tint,
-		paddingVertical: 12,
-		paddingHorizontal: 32,
-		borderRadius: 8,
-		alignItems: "center",
-		marginTop: 8,
-	},
-	closeBtnText: {
-		color: "#fff",
-		fontWeight: "700",
-		fontSize: 16,
 	},
 });
