@@ -1,5 +1,5 @@
 import { useColorScheme } from "@//hooks/useColorScheme";
-import AccessControlProvider from "@/context/AccessControlProvider";
+import { AccessControlProvider } from "@/context/AccessControlProvider";
 import { AccountProvider } from "@/context/AccountContext";
 import { WebSocketProvider } from "@/context/WebSocketProvider";
 import { ClerkProvider } from "@clerk/clerk-expo";
@@ -9,9 +9,11 @@ import * as Sentry from "@sentry/react-native";
 import { useFonts } from "expo-font";
 import { Stack } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import React from "react";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
+import Toast from "react-native-toast-message";
 import { Toaster } from "sonner-native";
 
 Sentry.init({
@@ -46,8 +48,7 @@ export default Sentry.wrap(function RootLayout() {
 				publishableKey={process.env.EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY}
 				tokenCache={tokenCache}>
 				<ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-					<Toaster />
-					<GestureHandlerRootView>
+					<GestureHandlerRootView style={{ flex: 1 }}>
 						<AccessControlProvider>
 							<WebSocketProvider>
 								<AccountProvider>
@@ -78,11 +79,30 @@ export default Sentry.wrap(function RootLayout() {
 										/>
 										<Stack.Screen name="+not-found" />
 									</Stack>
+									<Toaster
+										theme="light"
+										richColors={false}
+										loadingIcon
+										offset={50}
+										toastOptions={{
+											style: {
+												borderRadius: 8,
+												padding: 5,
+												paddingVertical: 10,
+												shadowColor: "#000",
+												shadowOffset: { width: 0, height: 2 },
+												shadowOpacity: 0.1,
+												shadowRadius: 4,
+												elevation: 2,
+											},
+										}}
+									/>
+									<Toast position="top" autoHide bottomOffset={50} />
 								</AccountProvider>
 							</WebSocketProvider>
 						</AccessControlProvider>
+						<StatusBar style="auto" />
 					</GestureHandlerRootView>
-					<StatusBar style="auto" />
 				</ThemeProvider>
 			</ClerkProvider>
 		</SafeAreaProvider>

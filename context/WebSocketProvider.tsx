@@ -126,10 +126,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	// Subscribe to real-time updates for the "bids" table
 	useEffect(() => {
 		const subscription = supabase
-			.channel("realtime.public.bids") // Use the "public" schema explicitly
+			.channel("realtime.public.bids")
 			.on<iSupabasePayload>(
 				REALTIME_LISTEN_TYPES.POSTGRES_CHANGES as REALTIME_LISTEN_TYPES.SYSTEM,
-				{ event: "*", schema: "public", table: "bids" }, // Use the "public" schema explicitly
+				{ event: "*", schema: "public", table: "bids" },
 				(payload) => {
 					if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
 						const bid = payload.new as iBid;
@@ -152,10 +152,42 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			)
 			.subscribe();
 
+		// --- Notifications subscription ---
+		const notificationSubscription = supabase
+			.channel("realtime.public.notifications")
+			.on(
+				REALTIME_LISTEN_TYPES.POSTGRES_CHANGES as REALTIME_LISTEN_TYPES.SYSTEM,
+				{ event: "INSERT", schema: "public", table: "notifications" },
+				(payload: any) => {
+					const notif = payload.new;
+					// notif.user_id can be "All" or a specific user id
+					// Show notification using toaster
+					if (notif && notif.message) {
+						const type = notif.type || "info";
+						const toastFn =
+							type === "success"
+								? toast.success
+								: type === "error"
+								? toast.error
+								: type === "warning"
+								? toast.warning
+								: toast.info;
+						toastFn(notif.message, {
+							description:
+								notif.user_id === "All"
+									? "Global notification"
+									: "Personal notification",
+						});
+					}
+				},
+			)
+			.subscribe();
+
 		logger.info("WebSocket subscription created");
 
 		return () => {
 			supabase.removeChannel(subscription);
+			supabase.removeChannel(notificationSubscription);
 		};
 	}, []);
 
