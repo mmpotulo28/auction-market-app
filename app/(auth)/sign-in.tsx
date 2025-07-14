@@ -12,8 +12,8 @@ import * as ClerckTypes from "@clerk/types";
 import { makeRedirectUri } from "expo-auth-session";
 import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
-import { HomeIcon, LogInIcon } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import { FingerprintIcon, HomeIcon, LogInIcon, ScanFace } from "lucide-react-native";
+import React, { useState } from "react";
 import {
 	Image,
 	KeyboardAvoidingView,
@@ -27,8 +27,7 @@ import { ScrollView } from "react-native-gesture-handler";
 
 const SignInScreen = () => {
 	const { signIn, setActive, isLoaded } = useSignIn();
-	const { hasCredentials, setCredentials, authenticate, clearCredentials, userOwnsCredentials } =
-		useLocalCredentials();
+	const { hasCredentials, setCredentials, authenticate } = useLocalCredentials();
 	const { biometricEnabled, biometricType, refreshBiometricState } = useAccountContext();
 
 	const [loading, setLoading] = useState(false);
@@ -40,28 +39,6 @@ const SignInScreen = () => {
 		email: "",
 		password: "",
 	});
-
-	useEffect(() => {
-		(async () => {
-			// Optionally, check AsyncStorage for previous enablement
-			// setBiometricEnabled(await AsyncStorage.getItem("biometricEnabled") === "true");
-			// For demo, just set to false or true as needed
-			const enabled = false; // await AsyncStorage.getItem("biometricEnabled") === "true";
-			setBiometricEnabled(enabled);
-			if (enabled) {
-				const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
-				if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
-					setBiometricType("Fingerprint");
-				} else if (
-					types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)
-				) {
-					setBiometricType("Face ID");
-				} else {
-					setBiometricType("Biometric");
-				}
-			}
-		})();
-	}, []);
 
 	const handleChange = (key: string, value: string) => {
 		setForm((prev) => ({ ...prev, [key]: value }));
@@ -120,10 +97,6 @@ const SignInScreen = () => {
 		setLoading(false);
 	};
 
-	const handleClearCredentials = async () => {
-		await clearCredentials();
-	};
-
 	const handleBiometricSignIn = async () => {
 		setLoading(true);
 		const result = await LocalAuthentication.authenticateAsync({
@@ -132,7 +105,6 @@ const SignInScreen = () => {
 		setLoading(false);
 		await refreshBiometricState();
 		if (result.success) {
-			// Proceed with sign-in logic (e.g., fetch user session, etc.)
 			// ...
 		} else {
 			// Optionally show error
@@ -167,29 +139,23 @@ const SignInScreen = () => {
 								onPress={handleBiometricSignIn}
 								disabled={loading}>
 								<ThemedText style={styles.buttonText}>
-									{loading
-										? "Authenticating..."
-										: biometricType === "Face ID"
-										? "Sign in with Face ID"
-										: biometricType === "Fingerprint"
-										? "Sign in with Touch ID"
-										: "Sign in with Biometrics"}
+									{loading ? (
+										"Authenticating..."
+									) : biometricType === "Face ID" ? (
+										"Sign in with Face ID"
+									) : biometricType === "Fingerprint" ? (
+										<>
+											Sign in with <FingerprintIcon size={18} color="#fff" />
+										</>
+									) : (
+										<>
+											Sign in with <ScanFace size={18} color="#fff" />
+										</>
+									)}
 								</ThemedText>
 							</TouchableOpacity>
 						)}
-						{hasCredentials && userOwnsCredentials && (
-							<TouchableOpacity
-								style={[
-									styles.button,
-									{ backgroundColor: "#c90000", marginBottom: 10 },
-								]}
-								onPress={handleClearCredentials}
-								disabled={loading}>
-								<ThemedText style={styles.buttonText}>
-									Remove Biometric Credentials
-								</ThemedText>
-							</TouchableOpacity>
-						)}
+
 						<View style={styles.socialCol}>
 							{SOCIAL_PROVIDERS.map((provider) => (
 								<TouchableOpacity
@@ -231,7 +197,7 @@ const SignInScreen = () => {
 								actions={[
 									{
 										label: loading ? "Signing in..." : "Sign In",
-										click: () => handleSubmit,
+										click: () => handleSubmit(false),
 										disabled: loading,
 										iconEnd: <LogInIcon size={18} color="#fff" />,
 										variant: iVariant.Primary,

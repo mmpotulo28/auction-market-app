@@ -1,5 +1,6 @@
 import { fetchNotifications, fetchOrders, fetchTransactions } from "@/lib/helpers";
 import { iGroupedOrder, iNotification, iTransaction } from "@/lib/types";
+import { useLocalCredentials } from "@clerk/clerk-expo/local-credentials";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AxiosError } from "axios";
 import * as LocalAuthentication from "expo-local-authentication";
@@ -54,6 +55,7 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 	const [notifications, setNotifications] = useState<iNotification[]>([]);
 	const [errorNotifications, setErrorNotifications] = useState<string | null>(null);
 	const [loadingNotifications, setLoadingNotifications] = useState(false);
+	const { clearCredentials } = useLocalCredentials();
 
 	// Biometric state
 	const [biometricEnabled, setBiometricEnabledState] = useState(false);
@@ -83,22 +85,29 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 		refreshBiometricState();
 	}, [refreshBiometricState]);
 
-	const setBiometricEnabled = useCallback(async (enabled: boolean) => {
-		await AsyncStorage.setItem(BIOMETRIC_KEY, enabled ? "true" : "false");
-		setBiometricEnabledState(enabled);
-		if (enabled) {
-			const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
-			if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
-				setBiometricType("Fingerprint");
-			} else if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
-				setBiometricType("Face ID");
+	const setBiometricEnabled = useCallback(
+		async (enabled: boolean) => {
+			await AsyncStorage.setItem(BIOMETRIC_KEY, enabled ? "true" : "false");
+			setBiometricEnabledState(enabled);
+			if (enabled) {
+				const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+				if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+					setBiometricType("Fingerprint");
+				} else if (
+					types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)
+				) {
+					setBiometricType("Face ID");
+				} else {
+					setBiometricType("Biometric");
+				}
 			} else {
-				setBiometricType("Biometric");
+				await clearCredentials();
+				await AsyncStorage.removeItem(BIOMETRIC_KEY);
+				setBiometricType(null);
 			}
-		} else {
-			setBiometricType(null);
-		}
-	}, []);
+		},
+		[clearCredentials],
+	);
 
 	const fetchOrdersData = useCallback(async () => {
 		setLoadingOrders(true);
