@@ -1,4 +1,5 @@
 import { Colors } from "@/constants/Colors";
+import logger from "@/lib/logger";
 import * as Clipboard from "expo-clipboard";
 import { Copy, Facebook, Linkedin, Twitter } from "lucide-react-native";
 import React from "react";
@@ -34,7 +35,7 @@ const openShareLink = async (url: string) => {
 		await Share.share({ message: `${appTitle} - ${shareUrl}\n${url}` });
 	} catch (error) {
 		Alert.alert("Error", "Unable to share at this time.");
-		console.error("Error sharing link:", error);
+		logger.error("Error sharing link:", error);
 	}
 };
 

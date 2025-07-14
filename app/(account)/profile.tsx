@@ -1,6 +1,7 @@
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
+import logger from "@/lib/logger";
 import { useUser } from "@clerk/clerk-expo";
 import * as ImagePicker from "expo-image-picker";
 import { useRouter } from "expo-router";
@@ -119,7 +120,7 @@ export default function ProfileScreen() {
 		setLoading(true);
 		try {
 			const emailObj = await user?.createEmailAddress({ email: newEmail });
-			console.log("Added email:", emailObj);
+			logger.info("Added email:", emailObj);
 			setForm((prev) => ({ ...prev, email: newEmail }));
 			setNewEmail("");
 		} catch (err: any) {

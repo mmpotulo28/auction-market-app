@@ -1,4 +1,5 @@
 import { fetchNotifications, fetchOrders, fetchTransactions } from "@/lib/helpers";
+import logger from "@/lib/logger";
 import { iGroupedOrder, iNotification, iTransaction } from "@/lib/types";
 import { useLocalCredentials } from "@clerk/clerk-expo/local-credentials";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -119,7 +120,7 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			if (err instanceof Error || err instanceof AxiosError) {
 				setErrorOrders(err.message);
 			} else {
-				console.error("Error fetching orders:", err);
+				logger.error("Error fetching orders:", err);
 				setErrorOrders("Failed to fetch orders.");
 			}
 		} finally {
@@ -134,7 +135,7 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			const data = await fetchTransactions({ page: 1, pageSize: 10 });
 			setTransactions(data.transactions);
 		} catch (err) {
-			console.error("Error fetching transactions:", err);
+			logger.error("Error fetching transactions:", err);
 			if (err instanceof Error || err instanceof AxiosError) {
 				setErrorTransactions(err.message);
 			} else {
@@ -155,7 +156,7 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			}
 			setNotifications(res.notifications);
 		} catch (err) {
-			console.error("Error fetching notifications:", err);
+			logger.error("Error fetching notifications:", err);
 			if (err instanceof Error || err instanceof AxiosError) {
 				setErrorNotifications(err.message);
 			} else {

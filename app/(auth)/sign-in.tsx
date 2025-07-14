@@ -5,6 +5,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useAccountContext } from "@/context/AccountContext";
 import { SOCIAL_PROVIDERS } from "@/lib/helper_components";
+import logger from "@/lib/logger";
 import { iVariant } from "@/lib/types";
 import { useSignIn } from "@clerk/clerk-expo";
 import { useLocalCredentials } from "@clerk/clerk-expo/local-credentials";
@@ -56,7 +57,7 @@ const SignInScreen = () => {
 							password: form.password,
 					  });
 
-			console.log("Sign in attempt result:", signInAttempt.userData.firstName);
+			logger.info("Sign in attempt result:", signInAttempt.userData.firstName);
 			if (signInAttempt.status === "complete") {
 				if (!useLocal) {
 					await setCredentials({

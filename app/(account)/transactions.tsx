@@ -4,6 +4,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { fetchTransactions } from "@/lib/helpers";
+import logger from "@/lib/logger";
 import { iTransaction } from "@/lib/types";
 import { LinearGradient } from "expo-linear-gradient";
 import { Eye, Receipt, RotateCcw } from "lucide-react-native";
@@ -52,7 +53,7 @@ export default function TransactionsScreen() {
 				setTransactions(res.transactions);
 			}
 		} catch (err) {
-			console.error("Error fetching transactions:", err);
+			logger.error("Error fetching transactions:", err);
 			setError("Failed to load transactions. Please try again later.");
 		} finally {
 			setLoading(false);

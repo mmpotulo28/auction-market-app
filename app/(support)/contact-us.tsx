@@ -2,6 +2,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { contactFormTemplate, contactFormUserConfirmationTemplate } from "@/lib/email_templates";
+import logger from "@/lib/logger";
 import axios from "axios";
 import { Mail, MessageCircle, Phone, Send, Smile, Users } from "lucide-react-native";
 import React, { useState } from "react";
@@ -74,7 +75,7 @@ const ContactUsScreen = () => {
 				)
 				.catch((err) => {
 					// Sentry.captureException(err);
-					console.error("User confirmation email error:", err);
+					logger.error("User confirmation email error:", err);
 				});
 
 			if (data.success) {
@@ -82,12 +83,12 @@ const ContactUsScreen = () => {
 				setForm({ name: "", email: "", message: "" });
 			} else {
 				// Sentry.captureException(new Error(data.error || "Failed to send message."));
-				console.error("Contact form error:", data.error || "Failed to send message.");
+				logger.error("Contact form error:", data.error || "Failed to send message.");
 				// toast.error(data.error || "Failed to send message.");
 			}
 		} catch (err: any) {
 			// Sentry.captureException(err);
-			console.error("Contact form error:", err);
+			logger.error("Contact form error:", err);
 			// toast.error(err?.response?.data?.error || err?.message || "Failed to send message.");
 		}
 		setLoading(false);

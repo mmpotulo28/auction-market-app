@@ -5,6 +5,7 @@ import ShareApp from "@/components/ShareApp";
 import { ThemedView } from "@/components/ThemedView";
 import TopBanner from "@/components/TopBanner";
 import UpcomingAuctions from "@/components/UpcomingAuctions";
+import logger from "@/lib/logger";
 import { ScrollView } from "react-native";
 
 export default function Index() {
@@ -19,7 +20,7 @@ export default function Index() {
 				<TopBanner
 					action={{
 						label: "Get Started",
-						click: () => console.log("Get Started clicked"),
+						click: () => logger.info("Get Started clicked"),
 					}}
 					title="Welcome to the Auction App"
 					overline="Bid on your favorite items"

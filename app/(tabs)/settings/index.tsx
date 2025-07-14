@@ -6,6 +6,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useAccountContext } from "@/context/AccountContext";
 import { setColorScheme, useColorScheme } from "@/hooks/useColorScheme";
+import logger from "@/lib/logger";
 import { useAuth } from "@clerk/clerk-expo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as LocalAuthentication from "expo-local-authentication";
@@ -53,7 +54,7 @@ const SettingsScreen = () => {
 		} catch (e) {
 			setShowClearModal(false);
 			Alert.alert("Error", "Failed to clear storage.");
-			console.error("Error clearing storage:", e);
+			logger.error("Error clearing storage:", e);
 		}
 	};
 
@@ -110,7 +111,7 @@ const SettingsScreen = () => {
 			// Optionally clear AsyncStorage or any other app state here
 			router.replace("/(auth)/sign-in");
 		} catch (e) {
-			console.error("Error logging out:", e);
+			logger.error("Error logging out:", e);
 			Alert.alert("Error", "Failed to log out.");
 		}
 	};

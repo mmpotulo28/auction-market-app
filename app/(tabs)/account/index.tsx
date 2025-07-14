@@ -4,6 +4,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useAccountContext } from "@/context/AccountContext";
 import { useWebSocket } from "@/context/WebSocketProvider";
+import logger from "@/lib/logger";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import { Bell, CreditCard, LogOut, Receipt, User2 } from "lucide-react-native";
@@ -106,7 +107,7 @@ const AccountScreen = () => {
 			// Optionally clear AsyncStorage or any other app state here
 			router.replace("/(auth)/sign-in");
 		} catch (e) {
-			console.error("Logout error:", e);
+			logger.error("Logout error:", e);
 			Alert.alert("Error", "Failed to log out.");
 		}
 	};

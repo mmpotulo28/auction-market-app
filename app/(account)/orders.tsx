@@ -4,6 +4,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { fetchOrders } from "@/lib/helpers";
+import logger from "@/lib/logger";
 import { iGroupedOrder, iOrderStatus } from "@/lib/types";
 import { LinearGradient } from "expo-linear-gradient";
 import { ChevronRight, Receipt, RotateCcw } from "lucide-react-native";
@@ -44,7 +45,7 @@ export default function OrdersScreen() {
 				setLoading(false);
 			})
 			.catch((err) => {
-				console.error("Error fetching orders:", err);
+				logger.error("Error fetching orders:", err);
 				setError("Failed to fetch orders.");
 				setLoading(false);
 			});

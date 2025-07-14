@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import {} from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import { useEffect } from "react";
@@ -12,7 +13,7 @@ export default function OAuthNativeCallback() {
 				await handleOpenAuthRedirect();
 			} catch (e) {
 				// Optionally handle error
-				console.error("OAuth callback error:", e);
+				logger.error("OAuth callback error:", e);
 			}
 			router.replace("/");
 		};

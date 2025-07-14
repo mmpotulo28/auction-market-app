@@ -1,3 +1,4 @@
+import logger from "@/lib/logger";
 import { useUser } from "@clerk/clerk-expo";
 import { useRouter, useSegments } from "expo-router";
 import React, { createContext, useContext } from "react";
@@ -44,8 +45,8 @@ export const AccessControlProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	const isPrivate = isPrivateRoute(segments);
 
-	console.log("Current segments:", segments);
-	console.log("Is private route:", isPrivate);
+	logger.info("Current segments:", segments);
+	logger.info("Is private route:", isPrivate);
 
 	React.useEffect(() => {
 		if (isLoaded && !user && isPrivate) {

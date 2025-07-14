@@ -1,4 +1,5 @@
 import supabase, { supabaseAdmin } from "@/lib/db";
+import logger from "./logger";
 
 export interface AddItemData {
 	id?: string;
@@ -53,7 +54,7 @@ export async function addItemToDatabase(
 					.remove([`images/${Date.now()}-${formData.imageFile?.name}`]);
 
 				if (deleteError) {
-					console.error(
+					logger.error(
 						`Failed to delete image from storage after insert error: ${deleteError.message}`,
 					);
 				}
@@ -66,7 +67,7 @@ export async function addItemToDatabase(
 
 		return { success: true, error: undefined };
 	} catch (err) {
-		console.error("(addItemsToDatabase):\n", err);
+		logger.error("(addItemsToDatabase):\n", err);
 		return {
 			success: false,
 			error: err instanceof Error ? err.message : "Unexpected error occurred.",

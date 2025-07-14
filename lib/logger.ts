@@ -3,13 +3,9 @@
  */
 type LogLevel = "debug" | "info" | "warn" | "error" | "fatal";
 
-interface LogContext {
-	[key: string]: any;
-}
-
 export class Logger {
 	private static instance: Logger;
-	private context: LogContext = {};
+	private context: any = {};
 
 	private constructor() {}
 
@@ -20,7 +16,7 @@ export class Logger {
 		return Logger.instance;
 	}
 
-	setContext(context: LogContext) {
+	setContext(context: any) {
 		this.context = { ...this.context, ...context };
 	}
 
@@ -28,42 +24,42 @@ export class Logger {
 		this.context = {};
 	}
 
-	captureMessage(message: string, level: LogLevel = "info", context?: LogContext) {
+	captureMessage(message: string, level: LogLevel = "info", context?: any) {
 		this.log(level, message, context);
 	}
 
-	captureException(error: Error, context?: LogContext) {
+	captureException(error: Error, context?: any) {
 		this.log("error", error.message, { ...context, stack: error.stack });
 	}
 
-	captureEvent(event: any, context?: LogContext) {
+	captureEvent(event: any, context?: any) {
 		this.log("info", "Event captured", { ...context, event });
 	}
 
-	debug(message: string, context?: LogContext) {
+	debug(message: string, context?: any) {
 		this.log("debug", message, context);
 	}
 
-	info(message: string, context?: LogContext) {
+	info(message: string, context?: any) {
 		this.log("info", message, context);
 	}
 
-	warn(message: string, context?: LogContext) {
+	warn(message: string, context?: any) {
 		this.log("warn", message, context);
 	}
 
-	error(message: string, context?: LogContext) {
+	error(message: string, context?: any) {
 		this.log("error", message, context);
 	}
 
-	fatal(message: string, context?: LogContext) {
+	fatal(message: string, context?: any) {
 		this.log("fatal", message, context);
 	}
 
-	private log(level: LogLevel, message: string, context?: LogContext) {
+	private log(level: LogLevel, message: string, context?: any) {
 		const logEntry = {
 			level,
-			message,
+			message: `Logger: ${message}`,
 			timestamp: new Date().toISOString(),
 			...this.context,
 			...context,

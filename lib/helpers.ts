@@ -1,4 +1,5 @@
 import axios, { isAxiosError } from "axios";
+import logger from "./logger";
 import {
 	iAuction,
 	iGroupedOrder,
@@ -68,7 +69,7 @@ export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuc
 			const text = await response.text();
 			data = JSON.parse(text);
 		} catch (err) {
-			console.error("Network error, using fallback mock data:", err);
+			logger.error("Network error, using fallback mock data:", err);
 			// fallback mock data
 			data = [
 				{
@@ -115,7 +116,7 @@ export const fetchAuctions = async ({ setIsLoading, onLoad, onError }: iFetchAuc
 		return data;
 	} catch (err) {
 		onError?.(err instanceof Error ? err.message : "Failed to fetch auctions");
-		console.error(`Failed to fetch auctions: ${err}`);
+		logger.error(`Failed to fetch auctions: ${err}`);
 	} finally {
 		setIsLoading?.(false);
 	}
@@ -134,14 +135,14 @@ export const fetchAuctionByName = async (name: string): Promise<iAuction | undef
 
 		// Use a for loop for early exit on match (more efficient than .find for large arrays)
 		for (const auction of auctions) {
-			console.log(normalizedTarget, stringToUrl(auction.name));
+			logger.info(normalizedTarget, stringToUrl(auction.name));
 			if (stringToUrl(auction.name) === normalizedTarget) {
 				return auction;
 			}
 		}
 		return undefined;
 	} catch (error) {
-		console.error(`Failed to fetch auction by name: ${name}`, error);
+		logger.error(`Failed to fetch auction by name: ${name}`, error);
 		return undefined;
 	}
 };
@@ -172,7 +173,7 @@ export const sendNotification = async (
 		let errorMsg = "Failed to send notification.";
 		if (e?.response?.data?.error) errorMsg = e.response.data.error;
 		else if (e?.message) errorMsg = e.message;
-		console.error("Notification error:", errorMsg);
+		logger.error("Notification error:", errorMsg);
 		return { success: false, error: errorMsg };
 	}
 };
@@ -257,15 +258,15 @@ export async function fetchOrders({
 			// Group orders by order_id
 			const grouped = groupOrdersByOrderId(res.data.orders);
 
-			console.log("Fetched orders:", res.data.orders.length);
-			console.log("Grouped orders:", grouped.length);
+			logger.info("Fetched orders:", res.data.orders.length);
+			logger.info("Grouped orders:", grouped.length);
 
 			return { orders: res.data.orders, groupedOrders: grouped, error: null };
 		} else {
 			return { orders: [], groupedOrders: [], error: "Invalid response from server." };
 		}
 	} catch (e: any) {
-		console.error("Error fetching orders:", e);
+		logger.error("Error fetching orders:", e);
 		let msg = "Failed to fetch orders.";
 		if (e?.response?.data?.error) msg = e.response.data.error;
 		else if (e?.message) msg = e.message;
@@ -285,13 +286,13 @@ export async function fetchTransactions({
 			`https://auctionmarket.tech/api/admin/transactions?page=${page}&pageSize=${pageSize}`,
 		);
 		if (res.data && Array.isArray(res.data.transactions)) {
-			console.log("Fetched transactions:", res.data.transactions.length);
+			logger.info("Fetched transactions:", res.data.transactions.length);
 			return { transactions: res.data.transactions, error: null };
 		} else {
 			return { transactions: [], error: "Invalid response from server." };
 		}
 	} catch (e: any) {
-		console.error("Error fetching transactions:", e);
+		logger.error("Error fetching transactions:", e);
 		let msg = "Failed to fetch transactions.";
 		if (e?.response?.data?.error) msg = e.response.data.error;
 		else if (e?.message) msg = e.message;

@@ -6,6 +6,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { fetchAuctionByName } from "@/lib/helpers";
+import logger from "@/lib/logger";
 import { iAuction } from "@/lib/types";
 import { useLocalSearchParams } from "expo-router";
 import { useEffect, useState } from "react";
@@ -22,7 +23,7 @@ const AuctionPage = () => {
 				const auctionData = await fetchAuctionByName(name as string);
 				setAuction(auctionData);
 			} catch (error) {
-				console.error("Error fetching auction:", error);
+				logger.error("Error fetching auction:", error);
 			} finally {
 				setLoading(false);
 			}
