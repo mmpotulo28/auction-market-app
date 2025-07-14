@@ -4,9 +4,11 @@ import ShareApp from "@/components/ShareApp";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
+import { useAccountContext } from "@/context/AccountContext";
 import { setColorScheme, useColorScheme } from "@/hooks/useColorScheme";
 import { useAuth } from "@clerk/clerk-expo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import * as LocalAuthentication from "expo-local-authentication";
 import * as Location from "expo-location";
 import { router } from "expo-router";
 import { Bell, Info, Lock, LogOut, Moon } from "lucide-react-native";
@@ -15,6 +17,8 @@ import { Alert, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from "r
 
 const SettingsScreen = () => {
 	const colorScheme = useColorScheme();
+	const { biometricEnabled, biometricType, setBiometricEnabled, refreshBiometricState } =
+		useAccountContext();
 	const [darkMode, setDarkModeState] = useState(colorScheme === "dark");
 	const [inAppNotifications, setInAppNotifications] = useState(true);
 	const [browserPushNotifications, setBrowserPushNotifications] = useState(false);
@@ -61,6 +65,43 @@ const SettingsScreen = () => {
 			// No direct way to revoke permission, so just update UI state
 			setLocationAccess(false);
 		}
+	};
+
+	const handleBiometricToggle = async (value: boolean) => {
+		if (value) {
+			const compatible = await LocalAuthentication.hasHardwareAsync();
+			const enrolled = await LocalAuthentication.isEnrolledAsync();
+			if (!compatible) {
+				Alert.alert(
+					"Biometric not supported",
+					"Your device does not support biometric authentication.",
+				);
+				return;
+			}
+			if (!enrolled) {
+				const enroll = await LocalAuthentication.authenticateAsync({
+					promptMessage: "Register your biometrics to enable biometric login.",
+				});
+				if (!enroll.success) {
+					Alert.alert("Biometric setup failed", "Could not register biometrics.");
+					return;
+				}
+			}
+			const result = await LocalAuthentication.authenticateAsync({
+				promptMessage: "Enable biometric login",
+			});
+			if (result.success) {
+				await setBiometricEnabled(true);
+				Alert.alert("Success", "Biometric login enabled.");
+			} else {
+				await setBiometricEnabled(false);
+				Alert.alert("Failed", "Biometric authentication was not successful.");
+			}
+		} else {
+			await setBiometricEnabled(false);
+			Alert.alert("Biometric login disabled");
+		}
+		await refreshBiometricState();
 	};
 
 	const handleLogout = async () => {
@@ -133,6 +174,28 @@ const SettingsScreen = () => {
 							trackColor={{ false: "#e0eaff", true: Colors.light.tint }}
 						/>
 					</View>
+					<View style={styles.row}>
+						<View style={styles.rowLeft}>
+							<Lock size={22} color={Colors.light.tint} />
+							<ThemedText style={styles.rowLabel}>Enable Biometric Login</ThemedText>
+						</View>
+						<Switch
+							value={biometricEnabled}
+							onValueChange={handleBiometricToggle}
+							thumbColor={Colors.light.tint}
+							trackColor={{ false: "#e0eaff", true: Colors.light.tint }}
+						/>
+					</View>
+					{biometricEnabled && biometricType && (
+						<ThemedText
+							style={{
+								color: Colors.light.textMutedForeground,
+								marginLeft: 36,
+								marginBottom: 8,
+							}}>
+							Biometric type: {biometricType}
+						</ThemedText>
+					)}
 				</ThemedView>
 
 				<ThemedView type="card" style={styles.section}>

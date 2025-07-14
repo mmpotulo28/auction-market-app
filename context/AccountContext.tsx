@@ -1,6 +1,8 @@
 import { fetchNotifications, fetchOrders, fetchTransactions } from "@/lib/helpers";
 import { iGroupedOrder, iNotification, iTransaction } from "@/lib/types";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AxiosError } from "axios";
+import * as LocalAuthentication from "expo-local-authentication";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 interface AccountContextType {
@@ -16,6 +18,11 @@ interface AccountContextType {
 	fetchOrders: () => Promise<void>;
 	fetchTransactions: () => Promise<void>;
 	fetchNotifications: () => Promise<void>;
+	// Biometric login state and actions
+	biometricEnabled: boolean;
+	biometricType: string | null;
+	setBiometricEnabled: (enabled: boolean) => Promise<void>;
+	refreshBiometricState: () => Promise<void>;
 }
 
 export const AccountContext = React.createContext<AccountContextType>({
@@ -31,6 +38,10 @@ export const AccountContext = React.createContext<AccountContextType>({
 	fetchOrders: async () => {},
 	fetchTransactions: async () => {},
 	fetchNotifications: async () => {},
+	biometricEnabled: false,
+	biometricType: null,
+	setBiometricEnabled: async () => {},
+	refreshBiometricState: async () => {},
 });
 
 export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -43,6 +54,51 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 	const [notifications, setNotifications] = useState<iNotification[]>([]);
 	const [errorNotifications, setErrorNotifications] = useState<string | null>(null);
 	const [loadingNotifications, setLoadingNotifications] = useState(false);
+
+	// Biometric state
+	const [biometricEnabled, setBiometricEnabledState] = useState(false);
+	const [biometricType, setBiometricType] = useState<string | null>(null);
+
+	const BIOMETRIC_KEY = "biometricEnabled";
+
+	const refreshBiometricState = useCallback(async () => {
+		const enabled = (await AsyncStorage.getItem(BIOMETRIC_KEY)) === "true";
+		setBiometricEnabledState(enabled);
+		if (enabled) {
+			const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+			if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+				setBiometricType("Fingerprint");
+			} else if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+				setBiometricType("Face ID");
+			} else {
+				setBiometricType("Biometric");
+			}
+		} else {
+			setBiometricType(null);
+		}
+	}, []);
+
+	// Call on mount
+	useEffect(() => {
+		refreshBiometricState();
+	}, [refreshBiometricState]);
+
+	const setBiometricEnabled = useCallback(async (enabled: boolean) => {
+		await AsyncStorage.setItem(BIOMETRIC_KEY, enabled ? "true" : "false");
+		setBiometricEnabledState(enabled);
+		if (enabled) {
+			const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+			if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+				setBiometricType("Fingerprint");
+			} else if (types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)) {
+				setBiometricType("Face ID");
+			} else {
+				setBiometricType("Biometric");
+			}
+		} else {
+			setBiometricType(null);
+		}
+	}, []);
 
 	const fetchOrdersData = useCallback(async () => {
 		setLoadingOrders(true);
@@ -88,7 +144,6 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			if (res.error) {
 				throw new Error(res.error);
 			}
-
 			setNotifications(res.notifications);
 		} catch (err) {
 			console.error("Error fetching notifications:", err);
@@ -126,6 +181,10 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			fetchOrders: fetchOrdersData,
 			fetchTransactions: fetchTransactionsData,
 			fetchNotifications: fetchNotificationsData,
+			biometricEnabled,
+			biometricType,
+			setBiometricEnabled,
+			refreshBiometricState,
 		}),
 		[
 			orders,
@@ -140,6 +199,10 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			fetchOrdersData,
 			fetchTransactionsData,
 			fetchNotificationsData,
+			biometricEnabled,
+			biometricType,
+			setBiometricEnabled,
+			refreshBiometricState,
 		],
 	);
 

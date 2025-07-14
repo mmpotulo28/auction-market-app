@@ -3,15 +3,17 @@ import PopupModal from "@/components/PopupModal";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
+import { useAccountContext } from "@/context/AccountContext";
 import { SOCIAL_PROVIDERS } from "@/lib/helper_components";
 import { iVariant } from "@/lib/types";
 import { useSignIn } from "@clerk/clerk-expo";
 import { useLocalCredentials } from "@clerk/clerk-expo/local-credentials";
 import * as ClerckTypes from "@clerk/types";
 import { makeRedirectUri } from "expo-auth-session";
+import * as LocalAuthentication from "expo-local-authentication";
 import { router } from "expo-router";
 import { HomeIcon, LogInIcon } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	Image,
 	KeyboardAvoidingView,
@@ -25,14 +27,9 @@ import { ScrollView } from "react-native-gesture-handler";
 
 const SignInScreen = () => {
 	const { signIn, setActive, isLoaded } = useSignIn();
-	const {
-		hasCredentials,
-		setCredentials,
-		authenticate,
-		biometricType,
-		clearCredentials,
-		userOwnsCredentials,
-	} = useLocalCredentials();
+	const { hasCredentials, setCredentials, authenticate, clearCredentials, userOwnsCredentials } =
+		useLocalCredentials();
+	const { biometricEnabled, biometricType, refreshBiometricState } = useAccountContext();
 
 	const [loading, setLoading] = useState(false);
 	const [errorModal, setErrorModal] = useState<{ visible: boolean; message: string }>({
@@ -43,6 +40,28 @@ const SignInScreen = () => {
 		email: "",
 		password: "",
 	});
+
+	useEffect(() => {
+		(async () => {
+			// Optionally, check AsyncStorage for previous enablement
+			// setBiometricEnabled(await AsyncStorage.getItem("biometricEnabled") === "true");
+			// For demo, just set to false or true as needed
+			const enabled = false; // await AsyncStorage.getItem("biometricEnabled") === "true";
+			setBiometricEnabled(enabled);
+			if (enabled) {
+				const types = await LocalAuthentication.supportedAuthenticationTypesAsync();
+				if (types.includes(LocalAuthentication.AuthenticationType.FINGERPRINT)) {
+					setBiometricType("Fingerprint");
+				} else if (
+					types.includes(LocalAuthentication.AuthenticationType.FACIAL_RECOGNITION)
+				) {
+					setBiometricType("Face ID");
+				} else {
+					setBiometricType("Biometric");
+				}
+			}
+		})();
+	}, []);
 
 	const handleChange = (key: string, value: string) => {
 		setForm((prev) => ({ ...prev, [key]: value }));
@@ -105,6 +124,21 @@ const SignInScreen = () => {
 		await clearCredentials();
 	};
 
+	const handleBiometricSignIn = async () => {
+		setLoading(true);
+		const result = await LocalAuthentication.authenticateAsync({
+			promptMessage: "Sign in with biometrics",
+		});
+		setLoading(false);
+		await refreshBiometricState();
+		if (result.success) {
+			// Proceed with sign-in logic (e.g., fetch user session, etc.)
+			// ...
+		} else {
+			// Optionally show error
+		}
+	};
+
 	return (
 		<ThemedView style={styles.container}>
 			<KeyboardAvoidingView
@@ -124,20 +158,22 @@ const SignInScreen = () => {
 						<ThemedText type="title" style={styles.heading}>
 							Sign In
 						</ThemedText>
-						{hasCredentials && biometricType && (
+						{biometricEnabled && biometricType && (
 							<TouchableOpacity
 								style={[
 									styles.button,
 									{ backgroundColor: "#1976c5", marginBottom: 10 },
 								]}
-								onPress={() => handleSubmit(true)}
+								onPress={handleBiometricSignIn}
 								disabled={loading}>
 								<ThemedText style={styles.buttonText}>
 									{loading
 										? "Authenticating..."
-										: biometricType === "face-recognition"
+										: biometricType === "Face ID"
 										? "Sign in with Face ID"
-										: "Sign in with Touch ID"}
+										: biometricType === "Fingerprint"
+										? "Sign in with Touch ID"
+										: "Sign in with Biometrics"}
 								</ThemedText>
 							</TouchableOpacity>
 						)}
