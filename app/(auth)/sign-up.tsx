@@ -11,7 +11,16 @@ import { makeRedirectUri } from "expo-auth-session";
 import { router } from "expo-router";
 import { Home, LogInIcon } from "lucide-react-native";
 import { useState } from "react";
-import { Image, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
+import {
+	Image,
+	KeyboardAvoidingView,
+	Platform,
+	ScrollView,
+	StyleSheet,
+	TextInput,
+	TouchableOpacity,
+	View,
+} from "react-native";
 
 const SignUpScreen = () => {
 	const { signUp, setActive, isLoaded } = useSignUp();
@@ -81,93 +90,99 @@ const SignUpScreen = () => {
 	};
 
 	return (
-		<ThemedView style={styles.container}>
-			<View style={styles.logoContainer}>
-				<Image
-					source={require("@/assets/images/amsa-logo.png")}
-					style={styles.logo}
-					resizeMode="contain"
-				/>
-			</View>
-			<ThemedView type="card" style={styles.formCard}>
-				<ThemedText type="title" style={styles.heading}>
-					Sign Up
-				</ThemedText>
-				<View style={styles.socialCol}>
-					{SOCIAL_PROVIDERS.map((provider) => (
-						<TouchableOpacity
-							key={provider.key}
-							style={styles.socialBtn}
-							onPress={() => handleSocialSignUp(provider.key)}
-							disabled={loading}>
-							{provider.icon}
-							<ThemedText style={styles.socialBtnText}>
-								Sign up with {provider.name}
-							</ThemedText>
-						</TouchableOpacity>
-					))}
-				</View>
-				<View style={styles.dividerRow}>
-					<View style={styles.divider} />
-					<ThemedText style={styles.dividerText}>or</ThemedText>
-					<View style={styles.divider} />
-				</View>
-				<View style={styles.form}>
-					<TextInput
-						style={styles.input}
-						placeholder="Email"
-						autoCapitalize="none"
-						keyboardType="email-address"
-						value={form.email}
-						onChangeText={(v) => handleChange("email", v)}
-						placeholderTextColor={Colors.light.textMutedForeground}
-						inputMode="email"
-					/>
-					<TextInput
-						style={styles.input}
-						placeholder="Password"
-						secureTextEntry
-						value={form.password}
-						onChangeText={(v) => handleChange("password", v)}
-						placeholderTextColor={Colors.light.textMutedForeground}
-						passwordRules={
-							"required: lower; required: upper; required: digit; minlength: 8;"
-						}
-					/>
+		<KeyboardAvoidingView
+			style={{ flex: 1 }}
+			behavior={Platform.OS === "ios" ? "padding" : "height"}>
+			<ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+				<ThemedView style={styles.container}>
+					<View style={styles.logoContainer}>
+						<Image
+							source={require("@/assets/images/amsa-logo.png")}
+							style={styles.logo}
+							resizeMode="contain"
+						/>
+					</View>
+					<ThemedView type="card" style={styles.formCard}>
+						<ThemedText type="title" style={styles.heading}>
+							Sign Up
+						</ThemedText>
+						<View style={styles.socialCol}>
+							{SOCIAL_PROVIDERS.map((provider) => (
+								<TouchableOpacity
+									key={provider.key}
+									style={styles.socialBtn}
+									onPress={() => handleSocialSignUp(provider.key)}
+									disabled={loading}>
+									{provider.icon}
+									<ThemedText style={styles.socialBtnText}>
+										Sign up with {provider.name}
+									</ThemedText>
+								</TouchableOpacity>
+							))}
+						</View>
+						<View style={styles.dividerRow}>
+							<View style={styles.divider} />
+							<ThemedText style={styles.dividerText}>or</ThemedText>
+							<View style={styles.divider} />
+						</View>
+						<View style={styles.form}>
+							<TextInput
+								style={styles.input}
+								placeholder="Email"
+								autoCapitalize="none"
+								keyboardType="email-address"
+								value={form.email}
+								onChangeText={(v) => handleChange("email", v)}
+								placeholderTextColor={Colors.light.textMutedForeground}
+								inputMode="email"
+							/>
+							<TextInput
+								style={styles.input}
+								placeholder="Password"
+								secureTextEntry
+								value={form.password}
+								onChangeText={(v) => handleChange("password", v)}
+								placeholderTextColor={Colors.light.textMutedForeground}
+								passwordRules={
+									"required: lower; required: upper; required: digit; minlength: 8;"
+								}
+							/>
 
-					<Actions
-						actions={[
-							{
-								label: loading ? "Signing Up..." : "Sign Up",
-								click: handleSubmit,
-								disabled: loading,
-								iconEnd: <LogInIcon size={18} color="#fff" />,
-								variant: iVariant.Primary,
-							},
-							{
-								label: "Sign In",
-								click: () => router.push("/(auth)/sign-in"),
-								variant: iVariant.Secondary,
-							},
-							{
-								click: () => router.push("/(tabs)"),
-								iconEnd: <Home size={18} color="#fff" />,
-								variant: iVariant.Quinary,
-							},
-						]}
+							<Actions
+								actions={[
+									{
+										label: loading ? "Signing Up..." : "Sign Up",
+										click: handleSubmit,
+										disabled: loading,
+										iconEnd: <LogInIcon size={18} color="#fff" />,
+										variant: iVariant.Primary,
+									},
+									{
+										label: "Sign In",
+										click: () => router.push("/(auth)/sign-in"),
+										variant: iVariant.Secondary,
+									},
+									{
+										click: () => router.push("/(tabs)"),
+										iconEnd: <Home size={18} color="#fff" />,
+										variant: iVariant.Quinary,
+									},
+								]}
+							/>
+						</View>
+					</ThemedView>
+					<PopupModal
+						visible={errorModal.visible}
+						title="Error"
+						message={errorModal.message}
+						onCancel={() => setErrorModal({ visible: false, message: "" })}
+						onConfirm={() => setErrorModal({ visible: false, message: "" })}
+						confirmText="OK"
+						cancelText="Close"
 					/>
-				</View>
-			</ThemedView>
-			<PopupModal
-				visible={errorModal.visible}
-				title="Error"
-				message={errorModal.message}
-				onCancel={() => setErrorModal({ visible: false, message: "" })}
-				onConfirm={() => setErrorModal({ visible: false, message: "" })}
-				confirmText="OK"
-				cancelText="Close"
-			/>
-		</ThemedView>
+				</ThemedView>
+			</ScrollView>
+		</KeyboardAvoidingView>
 	);
 };
 

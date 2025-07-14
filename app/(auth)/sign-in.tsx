@@ -88,6 +88,7 @@ const SignInScreen = () => {
 				strategy: `oauth_${provider}` as ClerckTypes.OAuthStrategy,
 				redirectUrl,
 				redirectUrlComplete: redirectUrl,
+				legalAccepted: true,
 			});
 		} catch (err: any) {
 			setErrorModal({
