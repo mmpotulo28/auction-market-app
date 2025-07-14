@@ -103,12 +103,32 @@ const SignInScreen = () => {
 		const result = await LocalAuthentication.authenticateAsync({
 			promptMessage: "Sign in with biometrics",
 		});
+
+		const enrolledLevel = await LocalAuthentication.getEnrolledLevelAsync();
+		logger.info("Biometric enrolled level:", enrolledLevel);
 		setLoading(false);
 		await refreshBiometricState();
 		if (result.success) {
-			// ...
+			// pull the latest credentials
+			const credentials = hasCredentials;
+			if (!credentials) {
+				setErrorModal({
+					visible: true,
+					message:
+						"No saved credentials found. Please sign in with email and password first.",
+				});
+				return;
+			}
+
+			logger.info("Biometric authentication successful", result);
+			// router.replace("/");
 		} else {
 			// Optionally show error
+			setErrorModal({
+				visible: true,
+				message: result.error || "Biometric authentication failed.",
+			});
+			logger.error("Biometric authentication failed", result);
 		}
 	};
 

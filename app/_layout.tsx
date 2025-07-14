@@ -77,14 +77,7 @@ export default Sentry.wrap(function RootLayout() {
 											name="(auctions)"
 											options={{ headerShown: false }}
 										/>
-										<Stack.Screen
-											name="(auth)/sign-in"
-											options={{ headerShown: false }}
-										/>
-										<Stack.Screen
-											name="(auth)/sign-up"
-											options={{ headerShown: false }}
-										/>
+
 										<Stack.Screen name="+not-found" />
 									</Stack>
 									<Toaster

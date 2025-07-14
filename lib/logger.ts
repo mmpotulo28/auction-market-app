@@ -1,3 +1,5 @@
+import { toast } from "sonner-native";
+
 /**
  * Logger class replicating Sentry-like logging methods.
  */
@@ -61,8 +63,8 @@ export class Logger {
 			level,
 			message,
 			timestamp: new Date().toISOString(),
+			context: context,
 			...this.context,
-			...context,
 		};
 		// Replace with integration to Sentry or other logging service if needed
 		// For now, just log to console
@@ -78,6 +80,9 @@ export class Logger {
 				break;
 			case "error":
 			case "fatal":
+				toast.error(logEntry.message, {
+					description: logEntry.context?.stack || "An error occurred",
+				});
 				console.error(logEntry);
 				break;
 			default:
