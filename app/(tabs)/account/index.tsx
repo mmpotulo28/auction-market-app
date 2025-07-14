@@ -173,7 +173,9 @@ const AccountScreen = () => {
 								data[card.dataKey as keyof AccountData]
 									?.slice(0, 3)
 									?.map((item, index) => (
-										<View key={item.id} style={styles.accountCardItem}>
+										<View
+											key={`${item.id}-${index}`}
+											style={styles.accountCardItem}>
 											<View style={styles.accountCardItemText}>
 												<ThemedText style={styles.accountCardItemLabel}>
 													<CopyElement truncate content={item.label} />

@@ -171,7 +171,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 						description: "Please log in to place a bid.",
 						action: {
 							label: "Login",
-							onClick: () => router.push("/auth?type=login&after_auth_return_to=/"),
+							onClick: () => router.push("/(auth)/sign-in?after_auth_return_to=/"),
 						},
 					});
 					return;

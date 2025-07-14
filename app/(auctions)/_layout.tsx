@@ -4,7 +4,7 @@ const AuctionsLayout = () => {
 	return (
 		<Stack>
 			<Stack.Screen
-				name="[name]"
+				name="name"
 				options={{
 					headerShown: false, // Hide header/title for dynamic auction pages
 				}}

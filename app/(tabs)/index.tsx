@@ -10,7 +10,7 @@ import { ScrollView } from "react-native";
 
 export default function Index() {
 	return (
-		<ScrollView>
+		<ScrollView style={{ flex: 1 }}>
 			<ThemedView
 				style={{
 					flex: 1,

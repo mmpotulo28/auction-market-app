@@ -5,7 +5,7 @@ import { fetchAuctions } from "@/lib/helpers";
 import { iAuction } from "@/lib/types";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { FlatList, StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text, View } from "react-native";
 import Actions from "./common/Actions";
 import { CountdownTimer } from "./CountdownTimer";
 import { ThemedView } from "./ThemedView";
@@ -46,12 +46,9 @@ const UpcomingAuctions: React.FC = () => {
 					<Illustration type="loading" style={{ marginBottom: 16 }} />
 				</View>
 			)}
-			<FlatList
-				data={auctions}
-				keyExtractor={(item) => item.id}
-				contentContainerStyle={styles.listContent}
-				renderItem={({ item }) => (
-					<ThemedView type="card" style={[styles.card]}>
+			<ThemedView style={styles.listContent}>
+				{auctions.map((item) => (
+					<ThemedView type="card" style={[styles.card]} key={item.id}>
 						<View style={styles.cardHeader}>
 							<LockUp title={item.name} centered bold />
 						</View>
@@ -78,16 +75,14 @@ const UpcomingAuctions: React.FC = () => {
 							/>
 						</View>
 					</ThemedView>
+				))}
+				{!isLoading && auctions.length === 0 && (
+					<View style={styles.center}>
+						<Illustration type="error" style={{ marginBottom: 16 }} />
+						<Text style={styles.errorText}>No upcoming auctions found.</Text>
+					</View>
 				)}
-				ListEmptyComponent={
-					!isLoading ? (
-						<ThemedView style={styles.center}>
-							<Illustration type="success" style={{ marginBottom: 16 }} />
-							<Text>No upcoming auctions found.</Text>
-						</ThemedView>
-					) : null
-				}
-			/>
+			</ThemedView>
 		</View>
 	);
 };

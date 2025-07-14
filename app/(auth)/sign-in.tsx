@@ -133,13 +133,11 @@ const SignInScreen = () => {
 	};
 
 	return (
-		<ThemedView style={styles.container}>
-			<KeyboardAvoidingView
-				style={{ flex: 1 }}
-				behavior={Platform.OS === "ios" ? "padding" : "height"}>
-				<ScrollView
-					contentContainerStyle={{ flexGrow: 1 }}
-					keyboardShouldPersistTaps="handled">
+		<KeyboardAvoidingView
+			style={{ flex: 1 }}
+			behavior={Platform.OS === "ios" ? "padding" : "height"}>
+			<ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
+				<ThemedView style={styles.container}>
 					<View style={styles.logoContainer}>
 						<Image
 							source={require("@/assets/images/amsa-logo.png")}
@@ -247,9 +245,9 @@ const SignInScreen = () => {
 						confirmText="OK"
 						cancelText="Close"
 					/>
-				</ScrollView>
-			</KeyboardAvoidingView>
-		</ThemedView>
+				</ThemedView>
+			</ScrollView>
+		</KeyboardAvoidingView>
 	);
 };
 
