@@ -33,7 +33,6 @@ export async function addItemToDatabase(
 		}
 
 		// Insert item into the database
-		console.log(formData);
 		const { error: insertError } = await supabase.from("items").insert([
 			{
 				title: formData.title, // Matches character varying(255)

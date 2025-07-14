@@ -1,13 +1,16 @@
+import Actions from "@/components/common/Actions";
 import PopupModal from "@/components/PopupModal";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { SOCIAL_PROVIDERS } from "@/lib/helper_components";
+import { iVariant } from "@/lib/types";
 import { useSignIn } from "@clerk/clerk-expo";
 import { useLocalCredentials } from "@clerk/clerk-expo/local-credentials";
 import * as ClerckTypes from "@clerk/types";
 import { makeRedirectUri } from "expo-auth-session";
 import { router } from "expo-router";
+import { HomeIcon, LogInIcon } from "lucide-react-native";
 import React, { useState } from "react";
 import {
 	Image,
@@ -45,7 +48,7 @@ const SignInScreen = () => {
 		setForm((prev) => ({ ...prev, [key]: value }));
 	};
 
-	const onSignInPress = async (useLocal: boolean) => {
+	const handleSubmit = async (useLocal: boolean) => {
 		if (!isLoaded) return;
 		setLoading(true);
 		try {
@@ -127,7 +130,7 @@ const SignInScreen = () => {
 									styles.button,
 									{ backgroundColor: "#1976c5", marginBottom: 10 },
 								]}
-								onPress={() => onSignInPress(true)}
+								onPress={() => handleSubmit(true)}
 								disabled={loading}>
 								<ThemedText style={styles.buttonText}>
 									{loading
@@ -188,19 +191,28 @@ const SignInScreen = () => {
 								onChangeText={(v) => handleChange("password", v)}
 								placeholderTextColor={Colors.light.textMutedForeground}
 							/>
-							<TouchableOpacity
-								style={styles.button}
-								onPress={() => onSignInPress(false)}
-								disabled={loading}>
-								<ThemedText style={styles.buttonText}>
-									{loading ? "Signing In..." : "Sign In"}
-								</ThemedText>
-							</TouchableOpacity>
-							<TouchableOpacity onPress={() => router.push("/(auth)/sign-up")}>
-								<ThemedText style={styles.link}>
-									Don&apos;t have an account? Sign Up
-								</ThemedText>
-							</TouchableOpacity>
+							<Actions
+								actions={[
+									{
+										label: loading ? "Signing in..." : "Sign In",
+										click: () => handleSubmit,
+										disabled: loading,
+										iconEnd: <LogInIcon size={18} color="#fff" />,
+										variant: iVariant.Primary,
+									},
+									{
+										label: "Sign Up",
+										click: () => router.push("/(auth)/sign-up"),
+										variant: iVariant.Secondary,
+									},
+									{
+										label: "",
+										click: () => router.push("/(tabs)"),
+										iconEnd: <HomeIcon size={18} color="#fff" />,
+										variant: iVariant.Quinary,
+									},
+								]}
+							/>
 						</View>
 					</ThemedView>
 					<PopupModal

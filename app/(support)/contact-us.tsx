@@ -33,8 +33,6 @@ const ContactUsScreen = () => {
 		setLoading(true);
 
 		try {
-			// Send support email
-			console.log("Sending contact form:", form);
 			const { data } = await axios.post(
 				"https://auctionmarket.tech/api/email/send",
 				{
@@ -54,9 +52,6 @@ const ContactUsScreen = () => {
 					},
 				},
 			);
-
-			// Send user confirmation email (do not block UI on error)
-			console.log("Sending user confirmation email:", form);
 			axios
 				.post(
 					"https://auctionmarket.tech/api/email/send",

@@ -45,7 +45,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 					itemsData = DUMMY_ITEMS;
 				}
 
-				console.log("Items fetched:", itemsData);
+				console.log("Items fetched:", itemsData.length);
 				setItems(itemsData);
 				setCategories([...new Set(itemsData.map((item) => item.category))]);
 

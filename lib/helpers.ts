@@ -257,8 +257,8 @@ export async function fetchOrders({
 			// Group orders by order_id
 			const grouped = groupOrdersByOrderId(res.data.orders);
 
-			console.log("Fetched orders:", res.data.orders);
-			console.log("Grouped orders:", grouped);
+			console.log("Fetched orders:", res.data.orders.length);
+			console.log("Grouped orders:", grouped.length);
 
 			return { orders: res.data.orders, groupedOrders: grouped, error: null };
 		} else {
@@ -285,7 +285,7 @@ export async function fetchTransactions({
 			`https://auctionmarket.tech/api/admin/transactions?page=${page}&pageSize=${pageSize}`,
 		);
 		if (res.data && Array.isArray(res.data.transactions)) {
-			console.log("Fetched transactions:", res.data.transactions);
+			console.log("Fetched transactions:", res.data.transactions.length);
 			return { transactions: res.data.transactions, error: null };
 		} else {
 			return { transactions: [], error: "Invalid response from server." };

@@ -4,36 +4,27 @@ import React, { createContext, useContext } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 // Define which routes are public (no login required)
-const PUBLIC_ROUTES = [
-	"(home)",
-	"(home)/index",
-	"/",
-	"(support)",
-	"(support)/contact-us",
-	"(support)/privacy-policy",
-	"(auth)",
-	"(auth)/sign-in",
-	"(auth)/sign-up",
-	"oauth-native-callback",
+
+// Define which routes are private (require login)
+const PRIVATE_ROUTES = [
+	"(account)",
+	"(account)/profile",
+	"(account)/orders",
+	"(account)/transactions",
+	"(account)/notifications",
+	"(auctions)",
+	"(auctions)/[auction]",
+	"(auctions)/[auction]/[item]",
+	"(tabs)/account",
 	"(tabs)/support",
-	"(tabs)/support/index",
-	"(tabs)/index",
-	"+not-found",
+	"(tabs)/settings",
+	// Add more private routes as needed
 ];
 
-// Helper to check if a route is public
-function isPublicRoute(segments: string[]) {
+// Helper to check if a route is private (requires authentication)
+function isPrivateRoute(segments: string[]) {
 	const path = segments.join("/");
-	// Only allow (tabs)/support and (tabs)/index as public, not (tabs)/account or any other (tabs) subroutes
-	if (
-		path.startsWith("(tabs)/") &&
-		path !== "(tabs)/support" &&
-		path !== "(tabs)/support/index" &&
-		path !== "(tabs)/index"
-	) {
-		return false;
-	}
-	return PUBLIC_ROUTES.some((pub) => path === pub || path.startsWith(pub + "/"));
+	return PRIVATE_ROUTES.some((priv) => path === priv || path.startsWith(priv + "/"));
 }
 
 interface AccessControlContextProps {
@@ -51,17 +42,16 @@ export const AccessControlProvider: React.FC<{ children: React.ReactNode }> = ({
 	const segments = useSegments();
 	const router = useRouter();
 
-	const isPublic = isPublicRoute(segments);
+	const isPrivate = isPrivateRoute(segments);
 
 	console.log("Current segments:", segments);
-	console.log("Is public route:", isPublic);
+	console.log("Is private route:", isPrivate);
 
 	React.useEffect(() => {
-		if (isLoaded && !user && !isPublic) {
-			// Redirect to sign-in if not authenticated and not on a public route
+		if (isLoaded && !user && isPrivate) {
 			router.replace("/(auth)/sign-in");
 		}
-	}, [isLoaded, user, isPublic, router]);
+	}, [isLoaded, user, isPrivate, router]);
 
 	if (!isLoaded) {
 		return (

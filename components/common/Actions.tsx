@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/Colors";
-import { iButtonProps } from "@/lib/types";
+import { iButtonProps, iButtonType, iVariant } from "@/lib/types";
 import React from "react";
-import { StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
+import { Linking, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
 
 export interface iActionProps {
 	actions?: iButtonProps[];
@@ -9,18 +9,65 @@ export interface iActionProps {
 	style?: ViewStyle;
 }
 
+const getButtonStyle = (variant?: iVariant, fullWidth?: boolean) => {
+	switch (variant) {
+		case iVariant.Primary:
+			return [styles.button, styles.primary, fullWidth && styles.fullWidthButton];
+		case iVariant.Secondary:
+			return [styles.button, styles.secondary, fullWidth && styles.fullWidthButton];
+		case iVariant.Tertiary:
+			return [styles.button, styles.tertiary, fullWidth && styles.fullWidthButton];
+		case iVariant.Quaternary:
+			return [styles.button, styles.quaternary, fullWidth && styles.fullWidthButton];
+		case iVariant.Quinary:
+			return [styles.button, styles.quinary, fullWidth && styles.fullWidthButton];
+		default:
+			return [styles.button, fullWidth && styles.fullWidthButton];
+	}
+};
+
+const getLabelStyle = (variant?: iVariant) => {
+	switch (variant) {
+		case iVariant.Primary:
+			return styles.labelPrimary;
+		case iVariant.Secondary:
+			return styles.labelSecondary;
+		case iVariant.Tertiary:
+			return styles.labelTertiary;
+		case iVariant.Quaternary:
+			return styles.labelQuaternary;
+		case iVariant.Quinary:
+			return styles.labelQuinary;
+		default:
+			return styles.label;
+	}
+};
+
 const Actions: React.FC<iActionProps> = ({ actions, fullWidth = false, style }) => {
+	const handlePress = (action: iButtonProps) => {
+		if (action.disabled) return;
+		if (action.type === iButtonType.Link && action.url?.link) {
+			Linking.openURL(action.url.link);
+		} else if (action.click) {
+			action.click();
+		}
+	};
+
 	return (
 		<View style={[styles.actions, fullWidth && styles.fullWidth, style]}>
 			{actions?.map((action) =>
 				action.hide ? null : (
 					<TouchableOpacity
 						key={`${action.key ?? action.label}`}
-						style={styles.button}
-						onPress={action.click ? action.click : undefined}
-						activeOpacity={0.8}>
+						style={getButtonStyle(action.variant, fullWidth)}
+						onPress={() => handlePress(action)}
+						activeOpacity={0.8}
+						disabled={action.disabled || action.isLoading}>
 						{action.iconStart && <View style={styles.icon}>{action.iconStart}</View>}
-						<Text style={styles.label}>{action.label}</Text>
+						{action.label && (
+							<Text style={getLabelStyle(action.variant)}>{action.label}</Text>
+						)}
+						{action.iconEnd && <View style={styles.icon}>{action.iconEnd}</View>}
 					</TouchableOpacity>
 				),
 			)}
@@ -35,23 +82,75 @@ const styles = StyleSheet.create({
 	},
 	fullWidth: {
 		width: "100%",
+		flexDirection: "column",
 	},
 	button: {
-		backgroundColor: Colors.light.tint,
 		paddingVertical: 10,
-		paddingHorizontal: 18,
+		paddingHorizontal: 12,
 		borderRadius: 6,
 		margin: "auto",
 		flexDirection: "row",
 		alignItems: "center",
+		justifyContent: "center",
+		gap: 8,
+	},
+	fullWidthButton: {
+		paddingVertical: 12,
+		paddingHorizontal: 20,
+		borderRadius: 8,
+		marginVertical: 4,
+		width: "100%",
+	},
+	primary: {
+		backgroundColor: Colors.light.tint,
+	},
+	secondary: {
+		backgroundColor: Colors.light.card,
+		borderWidth: 1,
+		borderColor: Colors.light.tint,
+	},
+	tertiary: {
+		backgroundColor: Colors.light.muted,
+	},
+	quaternary: {
+		backgroundColor: Colors.light.destructive,
+	},
+	quinary: {
+		backgroundColor: Colors.light.chart2,
 	},
 	label: {
 		color: "#fff",
 		fontWeight: "600",
 		fontSize: 16,
 	},
+	labelPrimary: {
+		color: "#fff",
+		fontWeight: "700",
+		fontSize: 16,
+	},
+	labelSecondary: {
+		color: Colors.light.tint,
+		fontWeight: "700",
+		fontSize: 16,
+	},
+	labelTertiary: {
+		color: Colors.light.textPrimaryForeground,
+		fontWeight: "600",
+		fontSize: 16,
+	},
+	labelQuaternary: {
+		color: "#fff",
+		fontWeight: "700",
+		fontSize: 16,
+	},
+	labelQuinary: {
+		color: "#fff",
+		fontWeight: "700",
+		fontSize: 16,
+	},
 	icon: {
-		marginRight: 6,
+		alignItems: "center",
+		justifyContent: "center",
 	},
 });
 

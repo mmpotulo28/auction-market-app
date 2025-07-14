@@ -1,12 +1,15 @@
+import Actions from "@/components/common/Actions";
 import PopupModal from "@/components/PopupModal";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { SOCIAL_PROVIDERS } from "@/lib/helper_components";
+import { iVariant } from "@/lib/types";
 import { useSignUp } from "@clerk/clerk-expo";
 import * as ClerkTypes from "@clerk/types";
 import { makeRedirectUri } from "expo-auth-session";
 import { router } from "expo-router";
+import { Home, LogInIcon } from "lucide-react-native";
 import { useState } from "react";
 import { Image, StyleSheet, TextInput, TouchableOpacity, View } from "react-native";
 
@@ -131,19 +134,28 @@ const SignUpScreen = () => {
 							"required: lower; required: upper; required: digit; minlength: 8;"
 						}
 					/>
-					<TouchableOpacity
-						style={styles.button}
-						onPress={handleSubmit}
-						disabled={loading}>
-						<ThemedText style={styles.buttonText}>
-							{loading ? "Signing Up..." : "Sign Up"}
-						</ThemedText>
-					</TouchableOpacity>
-					<TouchableOpacity onPress={() => router.push("/(auth)/sign-in")}>
-						<ThemedText style={styles.link}>
-							Already have an account? Sign In
-						</ThemedText>
-					</TouchableOpacity>
+
+					<Actions
+						actions={[
+							{
+								label: loading ? "Signing Up..." : "Sign Up",
+								click: handleSubmit,
+								disabled: loading,
+								iconEnd: <LogInIcon size={18} color="#fff" />,
+								variant: iVariant.Primary,
+							},
+							{
+								label: "Sign In",
+								click: () => router.push("/(auth)/sign-in"),
+								variant: iVariant.Secondary,
+							},
+							{
+								click: () => router.push("/(tabs)"),
+								iconEnd: <Home size={18} color="#fff" />,
+								variant: iVariant.Quinary,
+							},
+						]}
+					/>
 				</View>
 			</ThemedView>
 			<PopupModal
