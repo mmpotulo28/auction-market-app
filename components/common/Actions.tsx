@@ -9,7 +9,7 @@ export interface iActionProps {
 	style?: ViewStyle;
 }
 
-const getButtonStyle = (variant?: iVariant, fullWidth?: boolean) => {
+const getButtonStyle = (variant = iVariant.Primary, fullWidth = false) => {
 	switch (variant) {
 		case iVariant.Primary:
 			return [styles.button, styles.primary, fullWidth && styles.fullWidthButton];
@@ -26,7 +26,7 @@ const getButtonStyle = (variant?: iVariant, fullWidth?: boolean) => {
 	}
 };
 
-const getLabelStyle = (variant?: iVariant) => {
+const getLabelStyle = (variant = iVariant.Primary) => {
 	switch (variant) {
 		case iVariant.Primary:
 			return styles.labelPrimary;
@@ -93,6 +93,7 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		gap: 8,
+		flex: 1,
 	},
 	fullWidthButton: {
 		paddingVertical: 12,

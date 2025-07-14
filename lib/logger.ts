@@ -59,7 +59,7 @@ export class Logger {
 	private log(level: LogLevel, message: string, context?: any) {
 		const logEntry = {
 			level,
-			message: `Logger: ${message}`,
+			message,
 			timestamp: new Date().toISOString(),
 			...this.context,
 			...context,
