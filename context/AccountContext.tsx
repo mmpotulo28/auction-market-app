@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { AxiosError } from "axios";
 import * as LocalAuthentication from "expo-local-authentication";
 import React, { useCallback, useEffect, useMemo, useState } from "react";
+import { Alert } from "react-native";
 
 interface AccountContextType {
 	orders: iGroupedOrder[];
@@ -161,6 +162,9 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			if (err instanceof Error || err instanceof AxiosError) {
 				setErrorNotifications(err.message);
 			} else {
+				Alert.alert("Error", "Failed to fetch notifications. Please try again later.", [
+					{ text: "OK" },
+				]);
 				setErrorNotifications(
 					typeof err === "object" && err !== null && "toString" in err
 						? (err as { toString: () => string }).toString()

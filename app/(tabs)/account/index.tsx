@@ -3,7 +3,6 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useAccountContext } from "@/context/AccountContext";
-import { useWebSocket } from "@/context/WebSocketProvider";
 import logger from "@/lib/logger";
 import { useAuth, useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
@@ -29,8 +28,8 @@ const QuickActions = [
 	},
 ];
 
-interface AccountData {
-	bids: {
+interface iAccountData {
+	notifications: {
 		id: string;
 		label: string;
 		subLabel: string;
@@ -53,9 +52,9 @@ interface AccountData {
 const AccountCards = [
 	{
 		icon: User2,
-		label: "Bids",
-		dataKey: "bids",
-		navigateTo: "/(account)/profile",
+		label: "Notifications",
+		dataKey: "notifications",
+		navigateTo: "/(account)/notifications",
 	},
 	{
 		icon: Receipt,
@@ -73,24 +72,31 @@ const AccountCards = [
 
 const AccountScreen = () => {
 	const { user } = useUser();
-	const { orders, transactions } = useAccountContext();
-	const { bids, items } = useWebSocket();
+	const {
+		orders,
+		transactions,
+		notifications,
+		errorNotifications,
+		errorOrders,
+		errorTransactions,
+	} = useAccountContext();
 
-	const data: AccountData = {
-		bids:
-			bids?.map((bid) => ({
-				id: bid.itemId,
-				label: items.find((item) => item.id === bid.itemId)?.title || "Unknown Item",
-				subLabel: `R ${bid.amount.toFixed(2)}`,
-				date: bid.timestamp ? new Date(bid.timestamp).toLocaleString() : "-",
-			})) || [],
-		orders: orders.map((order) => ({
+	const data: iAccountData = {
+		notifications: notifications?.map((notification) => ({
+			id: notification.id,
+			label: notification.message,
+			subLabel: notification.type,
+			date: notification.created_at
+				? new Date(notification.created_at).toLocaleString()
+				: "-",
+		})),
+		orders: orders?.map((order) => ({
 			id: order.order_id,
 			label: order.order_id,
 			subLabel: `R${order.total_amount} - ${order.order_status}`,
 			date: order.created_at ? new Date(order.created_at).toLocaleString() : "-",
 		})),
-		transactions: transactions.map((tx) => ({
+		transactions: transactions?.map((tx) => ({
 			id: tx.pf_payment_id as string,
 			label: tx.m_payment_id as string,
 			subLabel: tx.payment_status as string,
@@ -158,6 +164,23 @@ const AccountScreen = () => {
 					))}
 				</ThemedView>
 
+				{/* errors */}
+				{errorNotifications && (
+					<View style={styles.errorCard}>
+						<ThemedText style={styles.errorText}>{errorNotifications}</ThemedText>
+					</View>
+				)}
+				{errorOrders && (
+					<View style={styles.errorCard}>
+						<ThemedText style={styles.errorText}>{errorOrders}</ThemedText>
+					</View>
+				)}
+				{errorTransactions && (
+					<View style={styles.errorCard}>
+						<ThemedText style={styles.errorText}>{errorTransactions}</ThemedText>
+					</View>
+				)}
+
 				{AccountCards?.map((card) => (
 					<ThemedView type="card" key={card.dataKey} style={styles.accountCard}>
 						<ThemedView type="card" style={styles.accountCardHeader}>
@@ -169,8 +192,8 @@ const AccountScreen = () => {
 							<ThemedText style={styles.sectionTitle}>Recent {card.label}</ThemedText>
 						</ThemedView>
 						<View style={styles.accountCardList}>
-							{data[card.dataKey as keyof AccountData]?.length > 0 ? (
-								data[card.dataKey as keyof AccountData]
+							{data[card.dataKey as keyof iAccountData]?.length > 0 ? (
+								data[card.dataKey as keyof iAccountData]
 									?.slice(0, 3)
 									?.map((item, index) => (
 										<View
@@ -424,6 +447,18 @@ const styles = StyleSheet.create({
 		color: Colors.light.textMutedForeground,
 		fontSize: 15,
 		fontStyle: "italic",
+	},
+	errorCard: {
+		backgroundColor: Colors.light.destructive,
+		borderRadius: 10,
+		padding: 16,
+		marginHorizontal: 18,
+		marginBottom: 18,
+	},
+	errorText: {
+		color: "#fff",
+		fontWeight: "600",
+		fontSize: 15,
 	},
 });
 
