@@ -16,7 +16,6 @@ import { router } from "expo-router";
 import { FingerprintIcon, HomeIcon, LogInIcon, ScanFace } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-	Image,
 	KeyboardAvoidingView,
 	Platform,
 	StyleSheet,
@@ -139,13 +138,6 @@ const SignInScreen = () => {
 			behavior={Platform.OS === "ios" ? "padding" : "height"}>
 			<ScrollView contentContainerStyle={{ flexGrow: 1 }} keyboardShouldPersistTaps="handled">
 				<ThemedView style={styles.container}>
-					<View style={styles.logoContainer}>
-						<Image
-							source={require("@/assets/images/amsa-logo.png")}
-							style={styles.logo}
-							resizeMode="contain"
-						/>
-					</View>
 					<ThemedView type="card" style={styles.formCard}>
 						<ThemedText type="title" style={styles.heading}>
 							Sign In

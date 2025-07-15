@@ -6,6 +6,7 @@ import { iAuction, iBid, iSize } from "@/lib/types";
 import { useUser } from "@clerk/clerk-expo";
 import { useRouter } from "expo-router";
 import {
+	ArrowLeftCircle,
 	ChevronDown,
 	ChevronUp,
 	Filter,
@@ -28,6 +29,7 @@ import {
 } from "react-native";
 import { toast } from "sonner-native";
 import { CountdownTimer } from "./CountdownTimer";
+import Illustration from "./Illustration";
 
 interface AuctionItemListProps {
 	auction?: iAuction;
@@ -353,8 +355,14 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 
 		if (!auction) {
 			return (
-				<ThemedView style={styles.center}>
+				<ThemedView type="card" style={styles.center}>
+					<Illustration type="face" />
 					<ThemedText style={styles.errorText}>No auction data available.</ThemedText>
+					{/* go back button */}
+					<TouchableOpacity style={styles.goBackButton} onPress={() => router.back()}>
+						<ArrowLeftCircle style={[styles.goBackIcon]} size={30} />
+						<ThemedText style={styles.goBackText}>Go Back</ThemedText>
+					</TouchableOpacity>
 				</ThemedView>
 			);
 		}
@@ -613,6 +621,26 @@ const styles = StyleSheet.create({
 		alignItems: "center",
 		justifyContent: "center",
 		padding: 32,
+		maxHeight: 300,
+		margin: "auto",
+		borderRadius: 16,
+		position: "relative",
+		gap: 12,
+	},
+	goBackButton: {
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	goBackText: {
+		fontSize: 16,
+		fontWeight: "600",
+		padding: 8,
+		flexDirection: "row",
+		alignItems: "center",
+	},
+	goBackIcon: {
+		color: Colors.light.textMutedForeground,
+		padding: 8,
 	},
 	headerRow: {
 		flexDirection: "row",
