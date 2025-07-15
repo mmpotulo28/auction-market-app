@@ -19,6 +19,7 @@ import {
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
+	Dimensions,
 	FlatList,
 	Image,
 	Modal,
@@ -248,6 +249,29 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 			timerMinimized,
 		]);
 
+		// --- Carousel logic ---
+		const [carouselIndexes, setCarouselIndexes] = useState<Record<string, number>>({});
+
+		const handleCarouselScroll = useCallback((itemId: string, event: any) => {
+			const layoutWidth = event.nativeEvent.layoutMeasurement.width || 1;
+			const offsetX = event.nativeEvent.contentOffset.x || 0;
+			const index = Math.round(offsetX / layoutWidth);
+			setCarouselIndexes((prev) => ({ ...prev, [itemId]: index }));
+		}, []);
+
+		const goToCarouselImage = useCallback((itemId: string, idx: number) => {
+			setCarouselIndexes((prev) => ({ ...prev, [itemId]: idx }));
+		}, []);
+
+		const carouselRefs = React.useRef<Record<string, FlatList<string> | null>>({});
+
+		const scrollToImage = useCallback((itemId: string, idx: number) => {
+			const ref = carouselRefs.current[itemId];
+			if (ref && typeof ref.scrollToIndex === "function") {
+				ref.scrollToIndex({ index: idx, animated: true });
+			}
+		}, []);
+
 		// Memoize FlatList renderItem
 		const renderItem = useCallback(
 			({ item }: { item: (typeof items)[0] }) => {
@@ -257,6 +281,10 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 					highestBid?.amount ||
 					item.price;
 				const isOwner = highestBid?.userId === user?.id;
+
+				const images: string[] = Array.isArray(item.image) ? item.image : [item.image];
+				const currentIndex = carouselIndexes[item.id] || 0;
+
 				return (
 					<ThemedView type="card" style={styles.card}>
 						{isOwner && (
@@ -281,12 +309,58 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 							</View>
 						</View>
 						<View style={styles.cardContent}>
-							{item.image ? (
-								<Image
-									source={{ uri: item.image }}
-									style={styles.image}
-									resizeMode="cover"
-								/>
+							{images.length > 0 ? (
+								<View style={{ flex: 1 }}>
+									<FlatList
+										ref={(ref) => {
+											if (ref) carouselRefs.current[item.id] = ref;
+										}}
+										data={images}
+										keyExtractor={(_, idx) => idx.toString()}
+										horizontal
+										pagingEnabled
+										showsHorizontalScrollIndicator={false}
+										onScroll={(e) => handleCarouselScroll(item.id, e)}
+										onMomentumScrollEnd={(e) =>
+											handleCarouselScroll(item.id, e)
+										}
+										renderItem={({ item: img }) => (
+											<Image
+												source={{ uri: img }}
+												style={styles.image}
+												resizeMode="cover"
+											/>
+										)}
+										style={styles.carousel}
+										getItemLayout={(_, index) => ({
+											length: 260,
+											offset: 260 * index,
+											index,
+										})}
+										initialScrollIndex={currentIndex}
+										extraData={currentIndex}
+									/>
+									{/* Carousel indicators */}
+									<View style={styles.carouselIndicators}>
+										{images.map((_, idx) => (
+											<TouchableOpacity
+												key={idx}
+												onPress={() => {
+													goToCarouselImage(item.id, idx);
+													scrollToImage(item.id, idx);
+												}}
+												activeOpacity={0.7}>
+												<View
+													style={[
+														styles.carouselDot,
+														currentIndex === idx &&
+															styles.carouselDotActive,
+													]}
+												/>
+											</TouchableOpacity>
+										))}
+									</View>
+								</View>
 							) : (
 								<View style={styles.imagePlaceholder}>
 									<ThemedText>No Image</ThemedText>
@@ -347,6 +421,10 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 				pendingBids,
 				auctionClosed,
 				auctionNotStarted,
+				carouselIndexes,
+				handleCarouselScroll,
+				goToCarouselImage,
+				scrollToImage,
 			],
 		);
 
@@ -813,27 +891,50 @@ const styles = StyleSheet.create({
 		marginBottom: 8,
 	},
 	image: {
-		width: "100%",
+		flex: 1,
+		width: Dimensions.get("window").width - 55, // full width minus padding
+		// maxWidth: 100,
 		height: 320,
 		borderRadius: 12,
 		marginBottom: 8,
 		backgroundColor: Colors.light.muted,
 		objectFit: "cover",
 		alignItems: "center",
-		// aspectRatio: 6 / ,
 	},
-	imagePlaceholder: {
+	carousel: {
+		flex: 1,
 		width: "100%",
-		height: 120,
+		height: 320,
 		borderRadius: 12,
-		marginBottom: 8,
-		backgroundColor: Colors.light.muted,
-		alignItems: "center",
+	},
+	carouselIndicators: {
+		flexDirection: "row",
 		justifyContent: "center",
+		alignItems: "center",
+		marginTop: 4,
+		marginBottom: 8,
+	},
+	carouselDot: {
+		width: 8,
+		height: 8,
+		borderRadius: 4,
+		backgroundColor: "#e0eaff",
+		marginHorizontal: 2,
+	},
+	carouselDotActive: {
+		backgroundColor: Colors.light.tint,
 	},
 	description: {
 		color: Colors.light.textSecondaryForeground,
 		fontSize: 15,
+	},
+	imagePlaceholder: {
+		width: 260,
+		height: 220,
+		borderRadius: 12,
+		backgroundColor: Colors.light.muted,
+		alignItems: "center",
+		justifyContent: "center",
 	},
 	cardFooter: {
 		flexDirection: "row",

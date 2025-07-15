@@ -145,7 +145,7 @@ export interface iAuctionItem {
 	title: string;
 	description: string;
 	price: number;
-	image: string;
+	image: string[]; // changed from string to string[]
 	category: string;
 	condition: iCondition;
 	auction: iAuction;
