@@ -2,13 +2,46 @@ import LockUp from "@/components/common/LockUp";
 import Illustration from "@/components/Illustration";
 import { Colors } from "@/constants/Colors";
 import { fetchAuctions } from "@/lib/helpers";
-import { iAuction } from "@/lib/types";
+import { iAuction, iAuctionLabel } from "@/lib/types";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import Actions from "./common/Actions";
 import { CountdownTimer } from "./CountdownTimer";
 import { ThemedView } from "./ThemedView";
+
+const AuctionLabel = ({ type }: { type: iAuctionLabel }) => {
+	let label = {
+		style: styles.hotLabel,
+		text: "🔥 Hot Auction",
+	};
+
+	switch (type) {
+		case iAuctionLabel.Hot:
+			label = { style: styles.hotLabel, text: "🔥 Hot Auction" };
+			break;
+		case iAuctionLabel.Demo:
+			label = { style: styles.demoLabel, text: "Demo Auction" };
+			break;
+		case iAuctionLabel.Sale:
+			label = { style: styles.saleLabel, text: "💰 Flash Sale" };
+			break;
+		case iAuctionLabel.OpeningSoon:
+			label = { style: styles.openingSoonLabel, text: "🚀 Opening Soon" };
+			break;
+		default:
+			label = {
+				style: styles.hotLabel,
+				text: "🔥 Hot Auction",
+			};
+	}
+
+	return (
+		<View style={[label.style, styles.label]}>
+			<Text style={{ color: "#fff", fontWeight: "bold" }}>{label.text} </Text>
+		</View>
+	);
+};
 
 const UpcomingAuctions: React.FC = () => {
 	const router = useRouter();
@@ -49,6 +82,7 @@ const UpcomingAuctions: React.FC = () => {
 			<ThemedView style={styles.listContent}>
 				{auctions.map((item) => (
 					<ThemedView type="card" style={[styles.card]} key={item.id}>
+						{item.label && <AuctionLabel type={item.label} />}
 						<View style={styles.cardHeader}>
 							<LockUp title={item.name} centered bold />
 						</View>
@@ -122,7 +156,40 @@ const styles = StyleSheet.create({
 		boxShadow: `0 2px 4px ${Colors.light.tint}`,
 		shadowColor: "transparent",
 		elevation: 5,
+		position: "relative",
+		overflow: "hidden",
 	},
+	label: {
+		position: "absolute",
+		top: 25,
+		right: -45,
+		color: "#fff",
+		fontWeight: "bold",
+		paddingVertical: 4,
+		paddingHorizontal: 20,
+		borderRadius: "8px 0 0 8px",
+		transform: [{ rotateZ: "45deg" }],
+		zIndex: 0,
+		minWidth: 160,
+		textAlign: "center",
+		justifyContent: "center",
+		alignItems: "center",
+		boxShadow: `0 2px 4px ${Colors.dark.muted}`,
+	},
+	hotLabel: {
+		backgroundColor: Colors.light.destructive,
+	},
+
+	saleLabel: {
+		backgroundColor: Colors.light.chart2,
+	},
+	openingSoonLabel: {
+		backgroundColor: Colors.light.primary,
+	},
+	demoLabel: {
+		backgroundColor: Colors.light.accent,
+	},
+
 	cardHeader: {
 		marginBottom: 10,
 	},

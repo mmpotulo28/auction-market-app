@@ -14,6 +14,13 @@ export enum iSize {
 	Large = "lg",
 }
 
+export enum iAuctionLabel {
+	Hot = "hot",
+	Sale = "sale",
+	OpeningSoon = "openingSoon",
+	Demo = "demo",
+}
+
 export type SizeType = keyof typeof iSize;
 
 export interface iLockUpProps {
@@ -162,6 +169,7 @@ export interface iAuction {
 	date_created: string;
 	items_count: number;
 	re_open_count: number;
+	label?: iAuctionLabel;
 }
 
 export interface iBid {
