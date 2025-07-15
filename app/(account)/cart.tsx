@@ -5,7 +5,6 @@ import { Colors } from "@/constants/Colors";
 import { useWebSocket } from "@/context/WebSocketProvider";
 import { iAuctionItem } from "@/lib/types";
 import { useUser } from "@clerk/clerk-expo";
-import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -24,7 +23,6 @@ const TWENTY_MINUTES = 20 * 60; // seconds
 
 const CartScreen = () => {
 	const { user } = useUser();
-	const router = useRouter();
 	const { items, highestBids, isLoading: auctionLoading } = useWebSocket();
 
 	const [secondsLeft, setSecondsLeft] = useState(TWENTY_MINUTES);
@@ -79,6 +77,7 @@ const CartScreen = () => {
 			// Redirect to web cart page for payment
 			await Linking.openURL("https://auctionmarket.tech/cart");
 		} catch (e: any) {
+			setClearError(e?.message || "Failed to open payment page. Please try again.");
 			Alert.alert("Error", e?.message || "Failed to open payment page. Please try again.");
 		}
 		setPayfastLoading(false);

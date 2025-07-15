@@ -15,16 +15,6 @@ import {
 	View,
 } from "react-native";
 
-type NotificationType = "info" | "warning" | "error" | "success" | "default";
-
-interface Notification {
-	id: string;
-	message: string;
-	type: NotificationType;
-	read: boolean;
-	created_at?: string;
-}
-
 const typeIcon = {
 	info: <Info size={22} color="#1976c5" />,
 	warning: <AlertTriangle size={22} color="#eab308" />,
@@ -34,14 +24,17 @@ const typeIcon = {
 };
 
 export default function NotificationsScreen() {
-	const [, setNotifications] = useState<Notification[]>([]);
-
 	const [showOld, setShowOld] = useState(false);
-	const { notifications, loadingNotifications, errorNotifications, fetchNotifications } =
-		useAccountContext();
+	const {
+		notifications,
+		loadingNotifications,
+		errorNotifications,
+		fetchNotifications,
+		readNotification,
+	} = useAccountContext();
 
 	const markAsRead = (id: string) => {
-		setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+		readNotification(id);
 	};
 
 	const now = Date.now();
@@ -92,20 +85,22 @@ export default function NotificationsScreen() {
 					</Modal>
 				)}
 				<ThemedView type="card" style={styles.card}>
-					{loadingNotifications ? (
+					{loadingNotifications && (
 						<ActivityIndicator
 							size="large"
 							color={Colors.light.tint}
 							style={{ marginVertical: 32 }}
 						/>
-					) : filteredNotifications.length === 0 ? (
+					)}
+					{!loadingNotifications && filteredNotifications.length === 0 && (
 						<View style={styles.emptyState}>
 							<Bell size={40} color={Colors.light.textMutedForeground} />
 							<ThemedText style={styles.emptyText}>
 								No notifications found.
 							</ThemedText>
 						</View>
-					) : (
+					)}
+					{!loadingNotifications && filteredNotifications.length > 0 && (
 						<FlatList
 							data={filteredNotifications}
 							keyExtractor={(item) => item.id}

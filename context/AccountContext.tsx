@@ -20,7 +20,7 @@ interface AccountContextType {
 	fetchOrders: () => Promise<void>;
 	fetchTransactions: () => Promise<void>;
 	fetchNotifications: () => Promise<void>;
-	// Biometric login state and actions
+	readNotification: (id: string) => void;
 	biometricEnabled: boolean;
 	biometricType: string | null;
 	setBiometricEnabled: (enabled: boolean) => Promise<void>;
@@ -40,6 +40,7 @@ export const AccountContext = React.createContext<AccountContextType>({
 	fetchOrders: async () => {},
 	fetchTransactions: async () => {},
 	fetchNotifications: async () => {},
+	readNotification: async () => {},
 	biometricEnabled: false,
 	biometricType: null,
 	setBiometricEnabled: async () => {},
@@ -171,6 +172,10 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 		}
 	}, []);
 
+	const readNotification = useCallback((id: string) => {
+		setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: true } : n)));
+	}, []);
+
 	useEffect(() => {
 		fetchOrdersData();
 		fetchTransactionsData();
@@ -191,6 +196,7 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			fetchOrders: fetchOrdersData,
 			fetchTransactions: fetchTransactionsData,
 			fetchNotifications: fetchNotificationsData,
+			readNotification,
 			biometricEnabled,
 			biometricType,
 			setBiometricEnabled,
@@ -209,6 +215,7 @@ export const AccountProvider: React.FC<{ children: React.ReactNode }> = ({ child
 			fetchOrdersData,
 			fetchTransactionsData,
 			fetchNotificationsData,
+			readNotification,
 			biometricEnabled,
 			biometricType,
 			setBiometricEnabled,

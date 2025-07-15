@@ -7,5 +7,9 @@
   "cSpell.words": [
     "sonner",
     "Subviews"
-  ]
+  ],
+  "sonarlint.connectedMode.project": {
+    "connectionId": "mmpotulo28",
+    "projectKey": "mmpotulo28_auction-market-app"
+  }
 }

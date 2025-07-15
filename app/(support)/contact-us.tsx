@@ -16,6 +16,7 @@ import {
 	TouchableOpacity,
 	View,
 } from "react-native";
+import { toast } from "sonner-native";
 
 const ContactUsScreen = () => {
 	const [form, setForm] = useState({
@@ -74,22 +75,19 @@ const ContactUsScreen = () => {
 					},
 				)
 				.catch((err) => {
-					// Sentry.captureException(err);
 					logger.error("User confirmation email error:", err);
 				});
 
 			if (data.success) {
-				// toast.success("Message sent! We'll get back to you soon.");
+				toast.success("Message sent! We'll get back to you soon.");
 				setForm({ name: "", email: "", message: "" });
 			} else {
-				// Sentry.captureException(new Error(data.error || "Failed to send message."));
 				logger.error("Contact form error:", data.error || "Failed to send message.");
-				// toast.error(data.error || "Failed to send message.");
+				toast.error(data.error || "Failed to send message.");
 			}
 		} catch (err: any) {
-			// Sentry.captureException(err);
 			logger.error("Contact form error:", err);
-			// toast.error(err?.response?.data?.error || err?.message || "Failed to send message.");
+			toast.error(err?.response?.data?.error || err?.message || "Failed to send message.");
 		}
 		setLoading(false);
 	};
