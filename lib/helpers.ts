@@ -252,7 +252,7 @@ export async function fetchOrders({
 }): Promise<iFetchOrdersResponse> {
 	try {
 		const res = await axios.get(
-			`https://auctionmarket.tech/api/orders/user?page=${page}&pageSize=${pageSize}`,
+			`https://auctionmarket.tech/api/admin/orders?page=${page}&pageSize=${pageSize}`,
 		);
 		if (res.data && Array.isArray(res.data.orders)) {
 			// Group orders by order_id

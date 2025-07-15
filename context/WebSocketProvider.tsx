@@ -12,6 +12,7 @@ interface WebSocketContextProps {
 	highestBids: Record<string, iBid>;
 	bids: iBid[];
 	getAllBids: () => Promise<void>;
+	fetchItems: () => Promise<void>;
 	items: iAuctionItem[];
 	isLoading: boolean;
 	error: string[];
@@ -201,6 +202,16 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		}
 	}, []);
 
+	const fetchItems = useCallback(async () => {
+		try {
+			const { data, error } = await supabase.from("items").select("*");
+			if (error) throw new Error(`Error fetching items: ${error.message}`);
+			setItems((data ?? []) as iAuctionItem[]);
+		} catch (err) {
+			logger.error("Unexpected error fetching items:", { err });
+		}
+	}, []);
+
 	const placeBid = useCallback(async (itemId: string, amount: number, userId: string) => {
 		try {
 			const { error } = await supabase.from("bids").insert([
@@ -230,6 +241,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 				error,
 				categories,
 				getAllBids,
+				fetchItems,
 				bids,
 			}}>
 			{children}

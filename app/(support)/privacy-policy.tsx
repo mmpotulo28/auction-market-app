@@ -3,7 +3,7 @@ import { ThemedView } from "@/components/ThemedView";
 import { ScrollView, StyleSheet } from "react-native";
 
 const PrivacyPolicyScreen = () => (
-	<ThemedView style={styles.container}>
+	<ThemedView type="card" style={styles.container}>
 		<ScrollView contentContainerStyle={styles.content}>
 			<ThemedText type="title" style={styles.heading}>
 				Privacy Policy

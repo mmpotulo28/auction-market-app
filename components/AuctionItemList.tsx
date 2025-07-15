@@ -799,10 +799,13 @@ const styles = StyleSheet.create({
 	},
 	image: {
 		width: "100%",
-		height: 120,
+		height: 320,
 		borderRadius: 12,
 		marginBottom: 8,
 		backgroundColor: Colors.light.muted,
+		objectFit: "cover",
+		alignItems: "center",
+		// aspectRatio: 6 / ,
 	},
 	imagePlaceholder: {
 		width: "100%",

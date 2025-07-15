@@ -5,6 +5,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { Colors } from "@/constants/Colors";
 import { useAccountContext } from "@/context/AccountContext";
+import { useWebSocket } from "@/context/WebSocketProvider";
 import { setColorScheme, useColorScheme } from "@/hooks/useColorScheme";
 import logger from "@/lib/logger";
 import { useAuth } from "@clerk/clerk-expo";
@@ -12,9 +13,10 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as LocalAuthentication from "expo-local-authentication";
 import * as Location from "expo-location";
 import { router } from "expo-router";
-import { Bell, Info, Lock, LogOut, Moon } from "lucide-react-native";
+import { Bell, Info, Lock, LogOut, Moon, RefreshCcwDot } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import { Alert, ScrollView, StyleSheet, Switch, TouchableOpacity, View } from "react-native";
+import { toast } from "sonner-native";
 
 const SettingsScreen = () => {
 	const colorScheme = useColorScheme();
@@ -25,11 +27,16 @@ const SettingsScreen = () => {
 	const [browserPushNotifications, setBrowserPushNotifications] = useState(false);
 	const [showClearModal, setShowClearModal] = useState(false);
 	const [showAboutModal, setShowAboutModal] = useState(false);
+	const [refreshing, setRefreshing] = useState(false);
 
 	// Privacy controls state
 	const [locationAccess, setLocationAccess] = useState(false);
 	const [cookieConsent, setCookieConsent] = useState(false);
 	const [emailSubscribe, setEmailSubscribe] = useState(true);
+
+	const { signOut } = useAuth();
+	const { fetchNotifications, fetchOrders, fetchTransactions } = useAccountContext();
+	const { fetchItems, getAllBids } = useWebSocket();
 
 	// Check location permission on mount
 	useEffect(() => {
@@ -38,8 +45,6 @@ const SettingsScreen = () => {
 			setLocationAccess(status === "granted");
 		})();
 	}, []);
-
-	const { signOut } = useAuth();
 
 	const handleThemeChange = (isDark: boolean) => {
 		setDarkModeState(isDark);
@@ -113,6 +118,29 @@ const SettingsScreen = () => {
 		} catch (e) {
 			logger.error("Error logging out:", e);
 			Alert.alert("Error", "Failed to log out.");
+		}
+	};
+
+	const handleRefreshApp = async () => {
+		try {
+			setRefreshing(true);
+			await Promise.all([
+				AsyncStorage.clear(),
+				fetchNotifications(),
+				fetchOrders(),
+				fetchTransactions(),
+				fetchItems(),
+				getAllBids(),
+			]);
+
+			setRefreshing(false);
+
+			toast.success("App data refreshed successfully.", {
+				description: "All data has been reloaded.",
+			});
+		} catch (e) {
+			logger.error("Error refreshing app:", e);
+			Alert.alert("Error", "Failed to refresh app.");
 		}
 	};
 
@@ -269,6 +297,17 @@ const SettingsScreen = () => {
 				</ThemedView>
 
 				<ThemedView type="card" style={styles.section}>
+					<TouchableOpacity
+						style={[styles.logoutBtn, { backgroundColor: Colors.light.tint }]}
+						activeOpacity={0.8}
+						onPress={handleRefreshApp}
+						disabled={refreshing}>
+						<RefreshCcwDot size={20} color="#fff" style={{ marginRight: 8 }} />
+						<ThemedText style={styles.logoutText}>
+							{refreshing ? "Refreshing..." : "Refresh App"}
+						</ThemedText>
+					</TouchableOpacity>
+
 					<TouchableOpacity
 						style={styles.logoutBtn}
 						activeOpacity={0.8}
