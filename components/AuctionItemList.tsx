@@ -42,7 +42,6 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 		const { user } = useUser();
 		const router = useRouter();
 		const [showFilterModal, setShowFilterModal] = useState(false);
-		const [selected, setSelected] = useState<string | null>(null);
 
 		const { placeBid, highestBids, items, isLoading, error, categories } = useWebSocket();
 
@@ -256,103 +255,91 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 					highestBid?.amount ||
 					item.price;
 				const isOwner = highestBid?.userId === user?.id;
-				const isSelected = selected === item.id;
 				return (
-					<TouchableOpacity
-						style={[
-							styles.touchableCard,
-							isSelected && { borderColor: Colors.light.tint, borderWidth: 2 },
-						]}
-						activeOpacity={0.96}
-						onPress={() => setSelected(item.id)}>
-						<ThemedView type="card" style={styles.card}>
-							{isOwner && (
-								<View style={styles.ownerIcon}>
-									<UserCheck size={18} color={Colors.light.tint} />
+					<ThemedView type="card" style={styles.card}>
+						{isOwner && (
+							<View style={styles.ownerIcon}>
+								<UserCheck size={18} color={Colors.light.tint} />
+							</View>
+						)}
+						<View style={styles.cardHeader}>
+							<ThemedText style={styles.title}>{item.title}</ThemedText>
+							<View style={styles.tagsRow}>
+								<View style={styles.badge}>
+									<ThemedText style={styles.badgeText}>
+										Highest Bid: R{" "}
+										{Number(highestBid?.amount || item.price).toFixed(2)}
+									</ThemedText>
+								</View>
+								<View style={[styles.badge, styles.badgeSecondary]}>
+									<ThemedText style={styles.badgeText}>
+										{item.condition?.toUpperCase()}
+									</ThemedText>
+								</View>
+							</View>
+						</View>
+						<View style={styles.cardContent}>
+							{item.image ? (
+								<Image
+									source={{ uri: item.image }}
+									style={styles.image}
+									resizeMode="cover"
+								/>
+							) : (
+								<View style={styles.imagePlaceholder}>
+									<ThemedText>No Image</ThemedText>
 								</View>
 							)}
-							<View style={styles.cardHeader}>
-								<ThemedText style={styles.title}>{item.title}</ThemedText>
-								<View style={styles.tagsRow}>
-									<View style={styles.badge}>
-										<ThemedText style={styles.badgeText}>
-											Highest Bid: R{" "}
-											{Number(highestBid?.amount || item.price).toFixed(2)}
-										</ThemedText>
-									</View>
-									<View style={[styles.badge, styles.badgeSecondary]}>
-										<ThemedText style={styles.badgeText}>
-											{item.condition?.toUpperCase()}
-										</ThemedText>
-									</View>
-								</View>
-							</View>
-							<View style={styles.cardContent}>
-								{item.image ? (
-									<Image
-										source={{ uri: item.image }}
-										style={styles.image}
-										resizeMode="cover"
-									/>
-								) : (
-									<View style={styles.imagePlaceholder}>
-										<ThemedText>No Image</ThemedText>
-									</View>
-								)}
-								<ThemedText style={styles.description}>
-									{item.description}
+							<ThemedText style={styles.description}>{item.description}</ThemedText>
+						</View>
+						<View style={styles.cardFooter}>
+							<TouchableOpacity
+								style={styles.bidBtn}
+								onPress={() => adjustBid(item.id, -10)}
+								disabled={
+									currentBid <= (highestBid?.amount || item.price) ||
+									auctionClosed ||
+									auctionNotStarted
+								}>
+								<Minus size={18} color={Colors.light.tint} />
+							</TouchableOpacity>
+							<TouchableOpacity
+								style={[styles.bidBtn, styles.bidBtnMain]}
+								onPress={() => submitBid(item.id)}
+								disabled={
+									currentBid <= (highestBid?.amount || item.price) ||
+									pendingBids.includes(item.id) ||
+									auctionClosed ||
+									auctionNotStarted
+								}>
+								<ThemedText style={styles.bidBtnText}>
+									{currentBid > (highestBid?.amount || item.price) &&
+										!pendingBids.includes(item.id) &&
+										"Submit "}
+									R {Number(currentBid).toFixed(2)}
 								</ThemedText>
-							</View>
-							<View style={styles.cardFooter}>
-								<TouchableOpacity
-									style={styles.bidBtn}
-									onPress={() => adjustBid(item.id, -10)}
-									disabled={
-										currentBid <= (highestBid?.amount || item.price) ||
-										auctionClosed ||
-										auctionNotStarted
-									}>
-									<Minus size={18} color={Colors.light.tint} />
-								</TouchableOpacity>
-								<TouchableOpacity
-									style={[styles.bidBtn, styles.bidBtnMain]}
-									onPress={() => submitBid(item.id)}
-									disabled={
-										currentBid <= (highestBid?.amount || item.price) ||
-										pendingBids.includes(item.id) ||
-										auctionClosed ||
-										auctionNotStarted
-									}>
-									<ThemedText style={styles.bidBtnText}>
-										{currentBid > (highestBid?.amount || item.price) &&
-											!pendingBids.includes(item.id) &&
-											"Submit "}
-										R {Number(currentBid).toFixed(2)}
-									</ThemedText>
-									{pendingBids.includes(item.id) && (
-										<ActivityIndicator
-											size="small"
-											color="#fff"
-											style={{ marginLeft: 6 }}
-										/>
-									)}
-								</TouchableOpacity>
-								<TouchableOpacity
-									style={styles.bidBtn}
-									onPress={() => adjustBid(item.id, 10)}
-									disabled={auctionClosed || auctionNotStarted}>
-									<Plus size={18} color={Colors.light.tint} />
-								</TouchableOpacity>
-							</View>
-						</ThemedView>
-					</TouchableOpacity>
+								{pendingBids.includes(item.id) && (
+									<ActivityIndicator
+										size="small"
+										color="#fff"
+										style={{ marginLeft: 6 }}
+									/>
+								)}
+							</TouchableOpacity>
+							<TouchableOpacity
+								style={styles.bidBtn}
+								onPress={() => adjustBid(item.id, 10)}
+								disabled={auctionClosed || auctionNotStarted}>
+								<Plus size={18} color={Colors.light.tint} />
+							</TouchableOpacity>
+						</View>
+					</ThemedView>
 				);
 			},
 			[
 				highestBids,
 				proposedBids,
 				user,
-				selected,
 				adjustBid,
 				submitBid,
 				pendingBids,
@@ -771,8 +758,8 @@ const styles = StyleSheet.create({
 	},
 	title: {
 		fontWeight: "bold",
-		fontSize: 18,
-		color: Colors.light.textPrimaryForeground,
+		fontSize: 22,
+		marginBottom: 10,
 	},
 	tagsRow: {
 		flexDirection: "row",
@@ -783,7 +770,7 @@ const styles = StyleSheet.create({
 		backgroundColor: Colors.light.destructive,
 		borderRadius: 8,
 		paddingHorizontal: 10,
-		paddingVertical: 4,
+		paddingVertical: 2,
 		marginRight: 6,
 	},
 	badgeSecondary: {

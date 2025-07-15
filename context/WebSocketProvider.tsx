@@ -184,6 +184,36 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			)
 			.subscribe();
 
+		// subscribe to changes in the "items" table
+		supabase
+			.channel("realtime.public.items")
+			.on<iSupabasePayload>(
+				REALTIME_LISTEN_TYPES.POSTGRES_CHANGES as REALTIME_LISTEN_TYPES.SYSTEM,
+				{ event: "*", schema: "public", table: "items" },
+				(payload) => {
+					if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
+						const item = payload.new as iAuctionItem;
+						setItems((prev) => {
+							const existingIndex = prev.findIndex((i) => i.id === item.id);
+							if (existingIndex >= 0) {
+								const updatedItems = [...prev];
+								updatedItems[existingIndex] = item;
+								return updatedItems;
+							}
+							return [...prev, item];
+						});
+						logger.info("Item updated:", item.id);
+						toast.info(`Item "${item.title}" has been updated`);
+					} else if (payload.eventType === "DELETE") {
+						const itemId = payload.old.id as string;
+						setItems((prev) => prev.filter((i) => i.id !== itemId));
+						logger.info("Item deleted:", itemId);
+						toast.info(`Item "${itemId}" has been deleted`);
+					}
+				},
+			)
+			.subscribe();
+
 		logger.info("WebSocket subscription created");
 
 		return () => {
