@@ -98,7 +98,7 @@ const ContactUsScreen = () => {
 				behavior={Platform.OS === "ios" ? "padding" : undefined}
 				style={{ flex: 1 }}>
 				<ScrollView contentContainerStyle={styles.content}>
-					<View style={styles.card}>
+					<ThemedView type="card" style={styles.card}>
 						<View style={styles.headerRow}>
 							<Mail size={28} color={Colors.light.tint} />
 							<ThemedText type="title" style={styles.heading}>
@@ -161,22 +161,22 @@ const ContactUsScreen = () => {
 							</View>
 							<View style={styles.infoRow}>
 								<Phone size={18} color={Colors.light.tint} />
-								<ThemedText style={styles.infoText}>+1 234 567 890</ThemedText>
+								<ThemedText style={styles.infoText}>+27 79 653 0453</ThemedText>
 							</View>
 						</View>
 						<View style={styles.grid}>
-							<View style={styles.gridItem}>
+							<ThemedView style={styles.gridItem}>
 								<MessageCircle size={20} color={Colors.light.tint} />
 								<ThemedText style={styles.gridText}>
 									Live chat available 9am-5pm
 								</ThemedText>
-							</View>
-							<View style={styles.gridItem}>
+							</ThemedView>
+							<ThemedView style={styles.gridItem}>
 								<Users size={20} color={Colors.light.tint} />
 								<ThemedText style={styles.gridText}>
 									Join our community forum
 								</ThemedText>
-							</View>
+							</ThemedView>
 						</View>
 						<View style={styles.responseTime}>
 							<Smile size={20} color="#22c55e" />
@@ -185,7 +185,7 @@ const ContactUsScreen = () => {
 								<ThemedText style={styles.bold}>2 hours</ThemedText>
 							</ThemedText>
 						</View>
-					</View>
+					</ThemedView>
 				</ScrollView>
 			</KeyboardAvoidingView>
 		</ThemedView>
@@ -195,14 +195,13 @@ const ContactUsScreen = () => {
 const styles = StyleSheet.create({
 	container: {
 		flex: 1,
-		paddingTop: 24,
+		paddingTop: 34,
 	},
 	content: {
 		minHeight: "100%",
 		padding: 18,
 	},
 	card: {
-		backgroundColor: Colors.light.card,
 		borderRadius: 18,
 		padding: 20,
 		shadowColor: "#000",
@@ -279,7 +278,6 @@ const styles = StyleSheet.create({
 		flex: 1,
 		flexDirection: "row",
 		alignItems: "center",
-		backgroundColor: Colors.light.muted,
 		borderRadius: 8,
 		padding: 10,
 		gap: 8,
