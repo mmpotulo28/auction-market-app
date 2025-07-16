@@ -67,6 +67,8 @@ const CartScreen = () => {
 	}, [secondsLeft, expired]);
 
 	const handleCheckout = async () => {
+		// Guard: don't open if another modal is already open
+		if (previewItem) return;
 		setShowConsent(true);
 	};
 
@@ -148,7 +150,11 @@ const CartScreen = () => {
 									<TouchableOpacity
 										key={item.id}
 										style={styles.tableRow}
-										onPress={() => setPreviewItem(item)}
+										onPress={() => {
+											// Guard: don't open if another modal is already open
+											if (showConsent) return;
+											setPreviewItem(item);
+										}}
 										activeOpacity={0.85}>
 										<Image
 											source={{ uri: item.image }}
