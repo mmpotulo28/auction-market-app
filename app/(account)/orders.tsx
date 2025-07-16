@@ -109,7 +109,11 @@ export default function OrdersScreen() {
 											</View>
 											<TouchableOpacity
 												activeOpacity={0.92}
-												onPress={() => setSelectedOrder(item)}>
+												onPress={() => {
+													// Guard: don't open if another modal is already open
+													if (selectedOrder) return;
+													setSelectedOrder(item);
+												}}>
 												<ChevronRight
 													size={22}
 													color={Colors.light.textMutedForeground}
