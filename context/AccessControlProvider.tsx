@@ -1,7 +1,7 @@
 import logger from "@/lib/logger";
 import { useUser } from "@clerk/clerk-expo";
 import { useRouter, useSegments } from "expo-router";
-import React, { createContext, useContext } from "react";
+import React, { createContext, useContext, useEffect } from "react";
 import { ActivityIndicator, View } from "react-native";
 
 // Define which routes are public (no login required)
@@ -24,6 +24,7 @@ const PRIVATE_ROUTES = [
 
 // Helper to check if a route is private (requires authentication)
 function isPrivateRoute(segments: string[]) {
+	if (!segments || segments.length === 0) return false;
 	const path = segments.join("/");
 	return PRIVATE_ROUTES.some((priv) => path === priv || path.startsWith(priv + "/"));
 }
@@ -47,12 +48,17 @@ export const AccessControlProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	logger.info("Current segments:", segments);
 	logger.info("Is private route:", isPrivate);
+	logger.info("User authenticated:", !!user);
 
-	React.useEffect(() => {
-		if (isLoaded && !user && isPrivate) {
+	useEffect(() => {
+		if (!isLoaded) return; // Wait until auth state is loaded
+		
+		// If the route is private and user is not authenticated, redirect to sign-in
+		if (!user && isPrivate) {
+			logger.info("Redirecting unauthenticated user to sign-in");
 			router.replace("/(auth)/sign-in");
 		}
-	}, [isLoaded, user, isPrivate, router]);
+	}, [isLoaded, user, isPrivate, router])
 
 	if (!isLoaded) {
 		return (
