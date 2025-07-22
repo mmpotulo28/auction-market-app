@@ -77,6 +77,10 @@ export default Sentry.wrap(function RootLayout() {
 											name="(auctions)"
 											options={{ headerShown: false }}
 										/>
+										<Stack.Screen
+											name="wins"
+											options={{ headerShown: false }}
+										/>
 
 										<Stack.Screen name="+not-found" />
 									</Stack>
