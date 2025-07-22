@@ -47,7 +47,7 @@
           "project": "auction-market-app",
           "organization": "mpotulom"
         }
-      ],
+      ]
     ],
     "experiments": {
       "typedRoutes": true

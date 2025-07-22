@@ -3,7 +3,7 @@ import TabBarBackground from "@/components/ui/TabBarBackground";
 import { Colors } from "@/constants/Colors";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { Tabs } from "expo-router";
-import { HelpCircleIcon, HomeIcon, SettingsIcon, UserIcon } from "lucide-react-native";
+import { HelpCircleIcon, HomeIcon, SettingsIcon, UserIcon, TrophyIcon } from "lucide-react-native";
 import React from "react";
 import { Platform } from "react-native";
 
@@ -51,6 +51,15 @@ const TabsLayout = () => {
 					title: "Support",
 					headerShown: false,
 					tabBarIcon: ({ color, size }) => <HelpCircleIcon color={color} size={size} />,
+				}}
+			/>
+			{/* wins */}
+			<Tabs.Screen
+				name="wins/index"
+				options={{
+					title: "My Wins",
+					headerShown: false,
+					tabBarIcon: ({ color, size }) => <TrophyIcon color={color} size={size} />,
 				}}
 			/>
 			{/* settings */}

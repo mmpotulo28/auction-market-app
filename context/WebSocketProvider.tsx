@@ -1,22 +1,22 @@
 "use client";
 import supabase from "@/lib/db";
-import { DUMMY_BIDS, DUMMY_ITEMS } from "@/lib/dummy-data";
 import logger from "@/lib/logger";
 import { iAuctionItem, iBid, iSupabasePayload } from "@/lib/types";
+import { useUser } from "@clerk/clerk-expo";
 import { REALTIME_LISTEN_TYPES } from "@supabase/supabase-js";
 import React, { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { toast } from "sonner-native";
 
 interface WebSocketContextProps {
-	placeBid: (itemId: string, amount: number, userId: string) => Promise<void>;
+	placeBid: (itemId: string, itemName: string, amount: number, userId: string) => Promise<void>;
 	highestBids: Record<string, iBid>;
 	bids: iBid[];
 	getAllBids: () => Promise<void>;
-	fetchItems: () => Promise<void>;
 	items: iAuctionItem[];
 	isLoading: boolean;
 	error: string[];
 	categories: string[];
+	userWins?: iAuctionItem[];
 }
 
 const WebSocketContext = createContext<WebSocketContextProps | undefined>(undefined);
@@ -28,6 +28,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	const [error, setError] = useState<string[]>([]);
 	const [categories, setCategories] = useState<string[]>([]);
 	const [bids, setBids] = useState<iBid[]>([]);
+	const [userWins, setUserWins] = useState<iAuctionItem[]>();
+	const { user } = useUser();
 
 	// Initialize highest bids with mock data and fetch from the database
 	useEffect(() => {
@@ -35,53 +37,51 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			try {
 				setIsLoading(true);
 				setError([]);
-				let itemsData: iAuctionItem[] = [];
-				try {
-					const { data: dbItems, error: itemsError } = await supabase
-						.from("items")
-						.select("*");
-					if (itemsError || !dbItems) throw new Error("DB error");
-					itemsData = dbItems as iAuctionItem[];
-				} catch {
-					itemsData = DUMMY_ITEMS;
+				const { data: items, error: itemsError } = await supabase.from("items").select("*");
+
+				if (itemsError) {
+					throw new Error(`Error fetching items: ${itemsError.message}`);
 				}
 
-				logger.info("Items fetched:", itemsData.length);
-				setItems(itemsData);
-				setCategories([...new Set(itemsData.map((item) => item.category))]);
-
-				let bidsData: iBid[] = [];
-				try {
-					const { data, error } = await supabase
-						.from("bids")
-						.select("*")
-						.order("timestamp", { ascending: false });
-					if (error || !data) throw new Error("DB error");
-					bidsData = data as iBid[];
-				} catch {
-					bidsData = DUMMY_BIDS;
-				}
-				setBids(bidsData);
+				setItems(items as iAuctionItem[]);
+				setCategories([...new Set(items?.map((item) => item.category))]);
 
 				const mockBidsMap =
-					itemsData.reduce<Record<string, iBid>>((acc, item) => {
-						const bid = bidsData.find((b) => b.itemId === item.id);
-						acc[item.id] = bid
-							? bid
-							: {
-									itemId: item.id,
-									amount: item.price,
-									userId: "system",
-									timestamp: new Date().toISOString(),
-							  };
+					items?.reduce<Record<string, iBid>>((acc, item) => {
+						acc[item.id] = {
+							itemId: item.id,
+							itemName: item.title,
+							amount: item.price,
+							userId: "system",
+							timestamp: new Date().toISOString(),
+						};
 						return acc;
 					}, {}) || {};
 
 				setHighestBids(mockBidsMap);
 
+				const { data, error } = await supabase
+					.from("bids")
+					.select("*")
+					.order("timestamp", { ascending: false });
+
+				if (error) {
+					logger.error("Error fetching bids:", { error });
+					throw new Error(`Error fetching bids: ${error.message}`);
+				}
+
+				const dbBidsMap = (data as iBid[]).reduce<Record<string, iBid>>((acc, bid) => {
+					if (!acc[bid.itemId] || bid.amount > acc[bid.itemId].amount) {
+						acc[bid.itemId] = bid;
+					}
+					return acc;
+				}, {});
+
+				setHighestBids((prev) => ({ ...prev, ...dbBidsMap }));
+
 				// After fetching items and bids, add a field to each item if auction ended
 				setItems(
-					itemsData.map((item) => {
+					(items as iAuctionItem[]).map((item) => {
 						const auctionEnd =
 							item.auction && item.auction.start_time
 								? new Date(item.auction.start_time).getTime() +
@@ -97,24 +97,6 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			} catch (err) {
 				logger.error("Unexpected error fetching bids:", { err });
 				setError((prev) => [...prev, "Unexpected error fetching bids"]);
-				// fallback to dummy data if everything fails
-				setItems(DUMMY_ITEMS);
-				setCategories([...new Set(DUMMY_ITEMS.map((item) => item.category))]);
-				setBids(DUMMY_BIDS);
-				setHighestBids(
-					DUMMY_ITEMS.reduce<Record<string, iBid>>((acc, item) => {
-						const bid = DUMMY_BIDS.find((b) => b.itemId === item.id);
-						acc[item.id] = bid
-							? bid
-							: {
-									itemId: item.id,
-									amount: item.price,
-									userId: "system",
-									timestamp: new Date().toISOString(),
-							  };
-						return acc;
-					}, {}),
-				);
 			} finally {
 				setIsLoading(false);
 			}
@@ -127,10 +109,10 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 	// Subscribe to real-time updates for the "bids" table
 	useEffect(() => {
 		const subscription = supabase
-			.channel("realtime.public.bids")
+			.channel("realtime.public.bids") // Use the "public" schema explicitly
 			.on<iSupabasePayload>(
 				REALTIME_LISTEN_TYPES.POSTGRES_CHANGES as REALTIME_LISTEN_TYPES.SYSTEM,
-				{ event: "*", schema: "public", table: "bids" },
+				{ event: "*", schema: "public", table: "bids" }, // Use the "public" schema explicitly
 				(payload) => {
 					if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
 						const bid = payload.new as iBid;
@@ -142,7 +124,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 								previousBid.userId !== bid.userId &&
 								bid.amount > previousBid.amount
 							) {
-								toast.info(`You lost the bid for item "${bid.itemId}"`);
+								toast.info(`You lost item: "${bid.itemName}"`);
 							}
 							return { ...prev, [bid.itemId]: bid };
 						});
@@ -153,74 +135,30 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 			)
 			.subscribe();
 
-		// --- Notifications subscription ---
-		const notificationSubscription = supabase
-			.channel("realtime.public.notifications")
-			.on(
-				REALTIME_LISTEN_TYPES.POSTGRES_CHANGES as REALTIME_LISTEN_TYPES.SYSTEM,
-				{ event: "INSERT", schema: "public", table: "notifications" },
-				(payload: any) => {
-					const notif = payload.new;
-					// notif.user_id can be "All" or a specific user id
-					// Show notification using toaster
-					if (notif && notif.message) {
-						const type = notif.type || "info";
-						const toastFn =
-							type === "success"
-								? toast.success
-								: type === "error"
-								? toast.error
-								: type === "warning"
-								? toast.warning
-								: toast.info;
-						toastFn(notif.message, {
-							description:
-								notif.user_id === "All"
-									? "Global notification"
-									: "Personal notification",
-						});
-					}
-				},
-			)
-			.subscribe();
-
-		// subscribe to changes in the "items" table
-		supabase
-			.channel("realtime.public.items")
-			.on<iSupabasePayload>(
-				REALTIME_LISTEN_TYPES.POSTGRES_CHANGES as REALTIME_LISTEN_TYPES.SYSTEM,
-				{ event: "*", schema: "public", table: "items" },
-				(payload) => {
-					if (payload.eventType === "INSERT" || payload.eventType === "UPDATE") {
-						const item = payload.new as iAuctionItem;
-						setItems((prev) => {
-							const existingIndex = prev.findIndex((i) => i.id === item.id);
-							if (existingIndex >= 0) {
-								const updatedItems = [...prev];
-								updatedItems[existingIndex] = item;
-								return updatedItems;
-							}
-							return [...prev, item];
-						});
-						logger.info("Item updated:", item.id);
-						toast.info(`Item "${item.title}" has been updated`);
-					} else if (payload.eventType === "DELETE") {
-						const itemId = payload.old.id as string;
-						setItems((prev) => prev.filter((i) => i.id !== itemId));
-						logger.info("Item deleted:", itemId);
-						toast.info(`Item "${itemId}" has been deleted`);
-					}
-				},
-			)
-			.subscribe();
-
 		logger.info("WebSocket subscription created");
 
 		return () => {
 			supabase.removeChannel(subscription);
-			supabase.removeChannel(notificationSubscription);
 		};
 	}, []);
+
+	// calculate user wins
+	useEffect(() => {
+		const w = items
+			.map((item) => {
+				if (highestBids[item.id].userId === user?.id) {
+					return {
+						...item,
+						price: highestBids[item.id].amount,
+					};
+				}
+			})
+			.filter((item) => item !== undefined);
+
+		logger.info("user wins", { w });
+
+		setUserWins(w as iAuctionItem[]);
+	}, [items, highestBids, user]);
 
 	const getAllBids = useCallback(async () => {
 		try {
@@ -232,34 +170,28 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		}
 	}, []);
 
-	const fetchItems = useCallback(async () => {
-		try {
-			const { data, error } = await supabase.from("items").select("*");
-			if (error) throw new Error(`Error fetching items: ${error.message}`);
-			setItems((data ?? []) as iAuctionItem[]);
-		} catch (err) {
-			logger.error("Unexpected error fetching items:", { err });
-		}
-	}, []);
+	const placeBid = useCallback(
+		async (itemId: string, itemName: string, amount: number, userId: string) => {
+			try {
+				const { error } = await supabase.from("bids").insert([
+					{
+						itemId,
+						itemName,
+						amount,
+						userId,
+						timestamp: new Date().toISOString(),
+					},
+				]);
 
-	const placeBid = useCallback(async (itemId: string, amount: number, userId: string) => {
-		try {
-			const { error } = await supabase.from("bids").insert([
-				{
-					itemId,
-					amount,
-					userId,
-					timestamp: new Date().toISOString(),
-				},
-			]);
-
-			if (error) {
-				logger.error("Error placing bid:", { error });
+				if (error) {
+					logger.error("Error placing bid:", { error });
+				}
+			} catch (err) {
+				logger.error("Unexpected error placing bid:", { err });
 			}
-		} catch (err) {
-			logger.error("Unexpected error placing bid:", { err });
-		}
-	}, []);
+		},
+		[],
+	);
 
 	return (
 		<WebSocketContext.Provider
@@ -271,8 +203,8 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 				error,
 				categories,
 				getAllBids,
-				fetchItems,
 				bids,
+				userWins,
 			}}>
 			{children}
 		</WebSocketContext.Provider>
