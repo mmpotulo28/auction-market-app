@@ -9,7 +9,7 @@
     "ios": "expo start --ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "jest --watchAll"
+    "test": "jest --watchAll --coverage"
   },
   "jest": {
     "preset": "jest-expo",
@@ -21,9 +21,11 @@
     ],
     "collectCoverage": true,
     "collectCoverageFrom": [
-      "src/**/*.{js,jsx,ts,tsx}",
+      "**/*.{js,jsx,ts,tsx}",
       "!**/node_modules/**",
-      "!**/babel.config.js"
+      "!**/babel.config.js",
+      "!**/jest.setup.ts",
+      "!**/__tests__/**"
     ]
   },
   "dependencies": {
