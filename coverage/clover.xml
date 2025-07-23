@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<coverage generated="1753266451164" clover="3.2.0">
-  <project timestamp="1753266451164" name="All files">
+<coverage generated="1753267983044" clover="3.2.0">
+  <project timestamp="1753267983044" name="All files">
     <metrics statements="1513" coveredstatements="23" conditionals="1283" coveredconditionals="14" methods="471" coveredmethods="4" elements="3267" coveredelements="41" complexity="0" loc="1513" ncloc="1513" packages="22" files="79" classes="79"/>
     <package name="auction-market-app">
       <metrics statements="6" coveredstatements="0" conditionals="0" coveredconditionals="0" methods="0" coveredmethods="0"/>

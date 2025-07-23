@@ -49,3 +49,6 @@ app-example
 
 # tests
 coverage/
+/coverage
+coverage/**
+/coverage/**
