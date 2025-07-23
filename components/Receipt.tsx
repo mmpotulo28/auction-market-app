@@ -405,7 +405,6 @@ const styles = StyleSheet.create({
 		justifyContent: "center",
 		alignItems: "center",
 		minHeight: "100%",
-		backdropFilter: "blur(5px)",
 	},
 	receiptPaper: {
 		width: "92%",
