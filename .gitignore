@@ -46,3 +46,6 @@ app-example
 .vercel
 
 .env.local
+
+# tests
+coverage/
