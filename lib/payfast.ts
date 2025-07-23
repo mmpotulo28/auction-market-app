@@ -1,5 +1,6 @@
 import axios from "axios";
 import supabase from "./db";
+import logger from "./logger";
 import { iTransaction } from "./types";
 
 export async function ensureTransactionsTable() {

@@ -154,6 +154,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 							...prevBids,
 							{
 								itemId: id,
+								itemName: item.title,
 								amount: minBid + delta,
 								userId: user?.id || "",
 								timestamp: new Date().toISOString(),
@@ -167,7 +168,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 
 		// Memoize submitBid
 		const submitBid = useCallback(
-			async (itemId: string) => {
+			async (itemId: string, itemName: string) => {
 				if (!user) {
 					toast("Login first to submit your bid", {
 						description: "Please log in to place a bid.",
@@ -182,7 +183,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 				if (pendingBids.includes(itemId)) return; // avoid double submit
 
 				setPendingBids((prev) => [...prev, itemId]);
-				await placeBid(itemId, currentBid, user.id);
+				await placeBid(itemId, itemName, currentBid, user.id);
 
 				const highestBid = highestBids[itemId];
 				if (highestBid?.userId === user.id) {
@@ -381,7 +382,7 @@ const AuctionItemList: React.FC<AuctionItemListProps> = React.memo(
 							</TouchableOpacity>
 							<TouchableOpacity
 								style={[styles.bidBtn, styles.bidBtnMain]}
-								onPress={() => submitBid(item.id)}
+								onPress={() => submitBid(item.id, item.title)}
 								disabled={
 									currentBid <= (highestBid?.amount || item.price) ||
 									pendingBids.includes(item.id) ||

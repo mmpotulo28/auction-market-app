@@ -157,7 +157,7 @@ const CartScreen = () => {
 										}}
 										activeOpacity={0.85}>
 										<Image
-											source={{ uri: item.image }}
+											source={{ uri: item.image[0] }}
 											style={styles.itemImage}
 											resizeMode="cover"
 										/>
@@ -190,7 +190,7 @@ const CartScreen = () => {
 							<>
 								<Text style={styles.previewTitle}>{previewItem.title}</Text>
 								<Image
-									source={{ uri: previewItem.image }}
+									source={{ uri: previewItem.image[0] }}
 									style={styles.previewImage}
 									resizeMode="contain"
 								/>

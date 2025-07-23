@@ -3,6 +3,8 @@ import { View, type ViewProps } from "react-native";
 import { Colors } from "@/constants/Colors";
 import { useThemeColor } from "@/hooks/useThemeColor";
 
+export type ThemedViewStyle = Record<string, string | number | { rotate: string }[]>;
+
 export type ThemedViewProps = ViewProps & {
 	lightColor?: string;
 	darkColor?: string;

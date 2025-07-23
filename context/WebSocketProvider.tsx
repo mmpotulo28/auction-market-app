@@ -13,6 +13,7 @@ interface WebSocketContextProps {
 	bids: iBid[];
 	getAllBids: () => Promise<void>;
 	items: iAuctionItem[];
+	fetchItems: () => Promise<void>;
 	isLoading: boolean;
 	error: string[];
 	categories: string[];
@@ -170,6 +171,24 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 		}
 	}, []);
 
+	const fetchItems = useCallback(async () => {
+		try {
+			const { data: items, error: itemsError } = await supabase.from("items").select("*");
+			if (itemsError) {
+				throw new Error(`Error fetching items: ${itemsError.message}`);
+			}
+			setItems(items as iAuctionItem[]);
+		} catch (error) {
+			logger.error("Error fetching items:", { error });
+			toast.error(
+				`Error fetching items: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+			throw new Error(
+				`Error fetching items: ${error instanceof Error ? error.message : "Unknown error"}`,
+			);
+		}
+	}, []);
+
 	const placeBid = useCallback(
 		async (itemId: string, itemName: string, amount: number, userId: string) => {
 			try {
@@ -203,6 +222,7 @@ export const WebSocketProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 				error,
 				categories,
 				getAllBids,
+				fetchItems,
 				bids,
 				userWins,
 			}}>
