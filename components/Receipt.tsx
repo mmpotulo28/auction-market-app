@@ -420,7 +420,6 @@ const styles = StyleSheet.create({
 		shadowRadius: 8,
 		elevation: 6,
 		position: "relative",
-		backdropFilter: "blur(5px)",
 	},
 	closeBtnTop: {
 		position: "absolute",
