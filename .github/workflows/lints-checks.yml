@@ -11,6 +11,7 @@ on:
 
 jobs:
     lint:
+        name: ES Lint Checks
         runs-on: ubuntu-latest
 
         strategy:
@@ -27,6 +28,7 @@ jobs:
             - run: npm ci
             - run: npm run lint
     test:
+        name: Jest Tests
         runs-on: ubuntu-latest
 
         strategy:
@@ -43,6 +45,7 @@ jobs:
             - run: npm ci
             - run: npm test
     tsc:
+        name: Type Checking
         runs-on: ubuntu-latest
 
         strategy:
@@ -58,3 +61,14 @@ jobs:
                   cache: "npm"
             - run: npm ci
             - run: npm run tsc
+    sonarqube:
+        name: SonarQube
+        runs-on: ubuntu-latest
+        steps:
+            - uses: actions/checkout@v4
+              with:
+                  fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+            - name: SonarQube Scan
+              uses: SonarSource/sonarqube-scan-action@v5
+              env:
+                  SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
