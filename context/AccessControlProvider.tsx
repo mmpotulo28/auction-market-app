@@ -39,7 +39,7 @@ const AccessControlContext = createContext<AccessControlContextProps>({
 });
 
 export const AccessControlProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-	const { user, isLoaded } = useUser();
+	const { user, isLoaded, isSignedIn } = useUser();
 	const segments = useSegments();
 	const router = useRouter();
 
@@ -53,11 +53,11 @@ export const AccessControlProvider: React.FC<{ children: React.ReactNode }> = ({
 		if (!isLoaded) return; // Wait until auth state is loaded
 
 		// If the route is private and user is not authenticated, redirect to sign-in
-		if (!user && isPrivate) {
-			logger.info("Redirecting unauthenticated user to sign-in");
+		if (!isSignedIn && isPrivate) {
+			logger.info("Redirecting unauthenticated user to sign-in", { user, isSignedIn });
 			router.push("/(auth)/sign-in");
 		}
-	}, [isLoaded, user, isPrivate, router]);
+	}, [isLoaded, user, isPrivate, router, isSignedIn]);
 
 	if (!isLoaded) {
 		return (
