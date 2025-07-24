@@ -32,7 +32,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>0/22</span>
+                <span class='fraction'>0/20</span>
             </div>
         
             
@@ -395,7 +395,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
@@ -482,38 +481,8 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -533,7 +502,38 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -701,7 +701,6 @@ import {
 	ScrollView,
 	StyleSheet,
 	TextInput,
-	TouchableOpacity,
 	View,
 } from "react-native";
 &nbsp;
@@ -790,18 +789,17 @@ const SignUpScreen = <span class="cstat-no" title="statement not covered" ><span
 							Sign Up
 						&lt;/ThemedText&gt;
 						&lt;View style={styles.socialCol}&gt;
-							{SOCIAL_PROVIDERS.map(<span class="fstat-no" title="function not covered" >(p</span>rovider) =&gt; (
-<span class="cstat-no" title="statement not covered" >								&lt;TouchableOpacity</span>
-									key={provider.key}
-									style={styles.socialBtn}
-									onPress={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >handleSocialSignUp(provider.key)}</span>
-									disabled={loading}&gt;
-									{provider.icon}
-									&lt;ThemedText style={styles.socialBtnText}&gt;
-										Sign up with {provider.name}
-									&lt;/ThemedText&gt;
-								&lt;/TouchableOpacity&gt;
-							))}
+							&lt;Actions
+								fullWidth
+								actions={SOCIAL_PROVIDERS.map(<span class="fstat-no" title="function not covered" >(p</span>rovider) =&gt; (<span class="cstat-no" title="statement not covered" >{</span>
+									label: `Sign in with ${provider.name}`,
+									click: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >handleSocialSignUp(provider.name),</span>
+									iconStart: provider.icon,
+									variant: iVariant.Secondary,
+									isLoading: loading,
+									disabled: true,
+								}))}
+							/&gt;
 						&lt;/View&gt;
 						&lt;View style={styles.dividerRow}&gt;
 							&lt;View style={styles.divider} /&gt;
@@ -834,20 +832,22 @@ const SignUpScreen = <span class="cstat-no" title="statement not covered" ><span
 							&lt;Actions
 								actions={[
 									{
-										label: loading ? "Signing Up..." : "Sign Up",
+										label: "Sign up",
 										click: handleSubmit,
 										disabled: loading,
-										iconEnd: &lt;LogInIcon size={18} color="#fff" /&gt;,
+&nbsp;
 										variant: iVariant.Primary,
+										isLoading: loading,
 									},
 									{
 										label: "Sign In",
 										click: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >router.push("/(auth)/sign-in"),</span>
 										variant: iVariant.Secondary,
+										iconEnd: &lt;LogInIcon size={21} color="#fff" /&gt;,
 									},
 									{
 										click: <span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >router.push("/(tabs)"),</span>
-										iconEnd: &lt;Home size={18} color="#fff" /&gt;,
+										iconEnd: &lt;Home size={22} color="#fff" /&gt;,
 										variant: iVariant.Quinary,
 									},
 								]}
@@ -997,7 +997,7 @@ export default SignUpScreen;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-23T10:53:02.987Z
+                at 2025-07-24T09:42:08.190Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>

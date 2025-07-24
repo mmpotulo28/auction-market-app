@@ -46,7 +46,7 @@
             <div class='fl pad1y space-right2'>
                 <span class="strong">0% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>0/15</span>
+                <span class='fraction'>0/14</span>
             </div>
         
             
@@ -252,10 +252,7 @@
 <a name='L187'></a><a href='#L187'>187</a>
 <a name='L188'></a><a href='#L188'>188</a>
 <a name='L189'></a><a href='#L189'>189</a>
-<a name='L190'></a><a href='#L190'>190</a>
-<a name='L191'></a><a href='#L191'>191</a>
-<a name='L192'></a><a href='#L192'>192</a>
-<a name='L193'></a><a href='#L193'>193</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
+<a name='L190'></a><a href='#L190'>190</a></td><td class="line-coverage quiet"><span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -287,9 +284,6 @@
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
@@ -466,10 +460,10 @@ import {
 	View,
 } from "react-native";
 &nbsp;
-const WinsScreen = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
+const WinsScreen: React.FC = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
 	const { userWins, isLoading } = <span class="cstat-no" title="statement not covered" >useWebSocket();</span>
 	const { isSignedIn } = <span class="cstat-no" title="statement not covered" >useUser();</span>
-	
+&nbsp;
 	// Handle authentication check with useEffect
 <span class="cstat-no" title="statement not covered" >	useEffect(<span class="fstat-no" title="function not covered" >()</span> =&gt; {</span>
 <span class="cstat-no" title="statement not covered" >		if (!isSignedIn) {</span>
@@ -478,29 +472,26 @@ const WinsScreen = <span class="cstat-no" title="statement not covered" ><span c
 	}, [isSignedIn]);
 &nbsp;
 	const renderItem = <span class="cstat-no" title="statement not covered" ><span class="fstat-no" title="function not covered" >({</span> item }: { item: iAuctionItem }) =&gt; (</span>
-<span class="cstat-no" title="statement not covered" >		&lt;TouchableOpacity </span>
-			onPress={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >router.push(`/wins/${item.id}`)}</span>
-			activeOpacity={0.9}
-		&gt;
+<span class="cstat-no" title="statement not covered" >		&lt;TouchableOpacity onPress={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >router.push(`/wins/${item.id}`)}</span> activeOpacity={0.9}&gt;</span>
 			&lt;ThemedView type="card" style={styles.card}&gt;
 				&lt;Image source={{ uri: item.image[0] }} style={styles.image} resizeMode="cover" /&gt;
 				&lt;View style={styles.cardContent}&gt;
-				&lt;View style={styles.badgeContainer}&gt;
-					&lt;View style={styles.badge}&gt;
-						&lt;Text style={styles.badgeText}&gt;Won&lt;/Text&gt;
+					&lt;View style={styles.badgeContainer}&gt;
+						&lt;View style={styles.badge}&gt;
+							&lt;Text style={styles.badgeText}&gt;Won&lt;/Text&gt;
+						&lt;/View&gt;
 					&lt;/View&gt;
-				&lt;/View&gt;
-				&lt;Text style={styles.title}&gt;{item.title}&lt;/Text&gt;
-				&lt;Text style={styles.description} numberOfLines={2}&gt;
-					{item.description}
-				&lt;/Text&gt;
-				&lt;View style={styles.footer}&gt;
-					&lt;Text style={styles.price}&gt;R {item.price}&lt;/Text&gt;
-					&lt;TouchableOpacity
-						style={styles.button}
-						onPress={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >router.push(`/wins/${item.id}`)}</span>&gt;
-						&lt;Text style={styles.buttonText}&gt;View Details&lt;/Text&gt;
-					&lt;/TouchableOpacity&gt;
+					&lt;Text style={styles.title}&gt;{item.title}&lt;/Text&gt;
+					&lt;Text style={styles.description} numberOfLines={2}&gt;
+						{item.description}
+					&lt;/Text&gt;
+					&lt;View style={styles.footer}&gt;
+						&lt;Text style={styles.price}&gt;R {item.price}&lt;/Text&gt;
+						&lt;TouchableOpacity
+							style={styles.button}
+							onPress={<span class="fstat-no" title="function not covered" >()</span> =&gt; <span class="cstat-no" title="statement not covered" >router.push(`/wins/${item.id}`)}</span>&gt;
+							&lt;Text style={styles.buttonText}&gt;View Details&lt;/Text&gt;
+						&lt;/TouchableOpacity&gt;
 					&lt;/View&gt;
 				&lt;/View&gt;
 			&lt;/ThemedView&gt;
@@ -646,7 +637,7 @@ export default WinsScreen;
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-07-23T10:53:02.987Z
+                at 2025-07-24T09:42:08.190Z
             </div>
         <script src="../../../prettify.js"></script>
         <script>
