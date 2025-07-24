@@ -17,10 +17,10 @@ import {
 	View,
 } from "react-native";
 
-const WinsScreen = () => {
+const WinsScreen: React.FC = () => {
 	const { userWins, isLoading } = useWebSocket();
 	const { isSignedIn } = useUser();
-	
+
 	// Handle authentication check with useEffect
 	useEffect(() => {
 		if (!isSignedIn) {
@@ -29,29 +29,26 @@ const WinsScreen = () => {
 	}, [isSignedIn]);
 
 	const renderItem = ({ item }: { item: iAuctionItem }) => (
-		<TouchableOpacity 
-			onPress={() => router.push(`/wins/${item.id}`)}
-			activeOpacity={0.9}
-		>
+		<TouchableOpacity onPress={() => router.push(`/wins/${item.id}`)} activeOpacity={0.9}>
 			<ThemedView type="card" style={styles.card}>
 				<Image source={{ uri: item.image[0] }} style={styles.image} resizeMode="cover" />
 				<View style={styles.cardContent}>
-				<View style={styles.badgeContainer}>
-					<View style={styles.badge}>
-						<Text style={styles.badgeText}>Won</Text>
+					<View style={styles.badgeContainer}>
+						<View style={styles.badge}>
+							<Text style={styles.badgeText}>Won</Text>
+						</View>
 					</View>
-				</View>
-				<Text style={styles.title}>{item.title}</Text>
-				<Text style={styles.description} numberOfLines={2}>
-					{item.description}
-				</Text>
-				<View style={styles.footer}>
-					<Text style={styles.price}>R {item.price}</Text>
-					<TouchableOpacity
-						style={styles.button}
-						onPress={() => router.push(`/wins/${item.id}`)}>
-						<Text style={styles.buttonText}>View Details</Text>
-					</TouchableOpacity>
+					<Text style={styles.title}>{item.title}</Text>
+					<Text style={styles.description} numberOfLines={2}>
+						{item.description}
+					</Text>
+					<View style={styles.footer}>
+						<Text style={styles.price}>R {item.price}</Text>
+						<TouchableOpacity
+							style={styles.button}
+							onPress={() => router.push(`/wins/${item.id}`)}>
+							<Text style={styles.buttonText}>View Details</Text>
+						</TouchableOpacity>
 					</View>
 				</View>
 			</ThemedView>

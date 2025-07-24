@@ -18,7 +18,6 @@ import {
 	ScrollView,
 	StyleSheet,
 	TextInput,
-	TouchableOpacity,
 	View,
 } from "react-native";
 
@@ -107,18 +106,17 @@ const SignUpScreen = () => {
 							Sign Up
 						</ThemedText>
 						<View style={styles.socialCol}>
-							{SOCIAL_PROVIDERS.map((provider) => (
-								<TouchableOpacity
-									key={provider.key}
-									style={styles.socialBtn}
-									onPress={() => handleSocialSignUp(provider.key)}
-									disabled={loading}>
-									{provider.icon}
-									<ThemedText style={styles.socialBtnText}>
-										Sign up with {provider.name}
-									</ThemedText>
-								</TouchableOpacity>
-							))}
+							<Actions
+								fullWidth
+								actions={SOCIAL_PROVIDERS.map((provider) => ({
+									label: `Sign in with ${provider.name}`,
+									click: () => handleSocialSignUp(provider.name),
+									iconStart: provider.icon,
+									variant: iVariant.Secondary,
+									isLoading: loading,
+									disabled: true,
+								}))}
+							/>
 						</View>
 						<View style={styles.dividerRow}>
 							<View style={styles.divider} />
@@ -151,20 +149,22 @@ const SignUpScreen = () => {
 							<Actions
 								actions={[
 									{
-										label: loading ? "Signing Up..." : "Sign Up",
+										label: "Sign up",
 										click: handleSubmit,
 										disabled: loading,
-										iconEnd: <LogInIcon size={18} color="#fff" />,
+
 										variant: iVariant.Primary,
+										isLoading: loading,
 									},
 									{
 										label: "Sign In",
 										click: () => router.push("/(auth)/sign-in"),
 										variant: iVariant.Secondary,
+										iconEnd: <LogInIcon size={21} color="#fff" />,
 									},
 									{
 										click: () => router.push("/(tabs)"),
-										iconEnd: <Home size={18} color="#fff" />,
+										iconEnd: <Home size={22} color="#fff" />,
 										variant: iVariant.Quinary,
 									},
 								]}

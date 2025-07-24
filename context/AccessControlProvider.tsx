@@ -17,8 +17,7 @@ const PRIVATE_ROUTES = [
 	"(auctions)/[auction]",
 	"(auctions)/[auction]/[item]",
 	"(tabs)/account",
-	"(tabs)/support",
-	"(tabs)/settings",
+	"(tabs)/wins",
 	// Add more private routes as needed
 ];
 
@@ -52,13 +51,13 @@ export const AccessControlProvider: React.FC<{ children: React.ReactNode }> = ({
 
 	useEffect(() => {
 		if (!isLoaded) return; // Wait until auth state is loaded
-		
+
 		// If the route is private and user is not authenticated, redirect to sign-in
 		if (!user && isPrivate) {
 			logger.info("Redirecting unauthenticated user to sign-in");
-			router.replace("/(auth)/sign-in");
+			router.push("/(auth)/sign-in");
 		}
-	}, [isLoaded, user, isPrivate, router])
+	}, [isLoaded, user, isPrivate, router]);
 
 	if (!isLoaded) {
 		return (

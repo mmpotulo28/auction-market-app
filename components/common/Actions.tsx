@@ -1,7 +1,15 @@
 import { Colors } from "@/constants/Colors";
 import { iButtonProps, iButtonType, iVariant } from "@/lib/types";
 import React from "react";
-import { Linking, StyleSheet, Text, TouchableOpacity, View, ViewStyle } from "react-native";
+import {
+	ActivityIndicator,
+	Linking,
+	StyleSheet,
+	Text,
+	TouchableOpacity,
+	View,
+	ViewStyle,
+} from "react-native";
 
 export interface iActionProps {
 	actions?: iButtonProps[];
@@ -63,11 +71,16 @@ const Actions: React.FC<iActionProps> = ({ actions, fullWidth = false, style }) 
 						onPress={() => handlePress(action)}
 						activeOpacity={0.8}
 						disabled={action.disabled || action.isLoading}>
-						{action.iconStart && <View style={styles.icon}>{action.iconStart}</View>}
+						{action.isLoading && <ActivityIndicator />}
+						{action.iconStart && !action.isLoading && (
+							<View style={styles.icon}>{action.iconStart}</View>
+						)}
 						{action.label && (
 							<Text style={getLabelStyle(action.variant)}>{action.label}</Text>
 						)}
-						{action.iconEnd && <View style={styles.icon}>{action.iconEnd}</View>}
+						{action.iconEnd && !action.isLoading && (
+							<View style={styles.icon}>{action.iconEnd}</View>
+						)}
 					</TouchableOpacity>
 				),
 			)}
@@ -101,6 +114,7 @@ const styles = StyleSheet.create({
 		borderRadius: 8,
 		marginVertical: 4,
 		width: "100%",
+		justifyContent: "space-evenly",
 	},
 	primary: {
 		backgroundColor: Colors.light.tint,

@@ -169,18 +169,17 @@ const SignInScreen = () => {
 						)}
 
 						<View style={styles.socialCol}>
-							{SOCIAL_PROVIDERS.map((provider) => (
-								<TouchableOpacity
-									key={provider.key}
-									style={styles.socialBtn}
-									onPress={() => handleSocialSignIn(provider.key)}
-									disabled={loading}>
-									{provider.icon}
-									<ThemedText style={styles.socialBtnText}>
-										Sign in with {provider.name}
-									</ThemedText>
-								</TouchableOpacity>
-							))}
+							<Actions
+								fullWidth
+								actions={SOCIAL_PROVIDERS.map((provider) => ({
+									label: `Sign in with ${provider.name}`,
+									click: () => handleSocialSignIn(provider.name),
+									iconStart: provider.icon,
+									variant: iVariant.Secondary,
+									isLoading: loading,
+									disabled: true,
+								}))}
+							/>
 						</View>
 						<View style={styles.dividerRow}>
 							<View style={styles.divider} />
@@ -208,11 +207,12 @@ const SignInScreen = () => {
 							<Actions
 								actions={[
 									{
-										label: loading ? "Signing in..." : "Sign In",
+										label: "Sign In",
 										click: () => handleSubmit(false),
 										disabled: loading,
 										iconEnd: <LogInIcon size={18} color="#fff" />,
 										variant: iVariant.Primary,
+										isLoading: loading,
 									},
 									{
 										label: "Sign Up",
