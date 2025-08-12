@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "230279057383",
+    "project_id": "auctionmarketapp",
+    "storage_bucket": "auctionmarketapp.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:230279057383:android:58c8eea29634ddccf73742",
+        "android_client_info": {
+          "package_name": "com.mmpotulo.auctionmarketapp"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDaW250RuMRsIDhDFKCA5Mw1GXcKjUHHSA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -52,3 +52,8 @@ coverage/
 /coverage
 coverage/**
 /coverage/**
+
+# apps
+android/
+ios/
+web/
